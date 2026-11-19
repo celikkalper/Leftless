@@ -13,8 +13,10 @@ private func writePlist(_ fs: FakeSystem, _ relative: String, _ dict: [String: A
     try PropertyListSerialization.data(fromPropertyList: dict, format: .xml, options: 0).write(to: url)
 }
 
-private func scan(_ fs: FakeSystem, known: Set<String>, restricted: Bool = false) -> OrphanScanResult {
-    OrphanScanner(environment: env(fs), knownBundleIDs: known, restricted: restricted).scan()
+private func scan(_ fs: FakeSystem, known: Set<String>, names: [String] = [],
+                  restricted: Bool = false) -> OrphanScanResult {
+    OrphanScanner(environment: env(fs), knownApps: KnownApps(bundleIDs: known, names: names),
+                  restricted: restricted).scan()
 }
 
 private func names(_ r: OrphanScanResult) -> Set<String> {
@@ -107,9 +109,15 @@ private func names(_ r: OrphanScanResult) -> Set<String> {
     // Reverse-DNS olmayan ad, eksik program → yetim.
     try writePlist(fs, lib("LaunchAgents/updater.plist"),
                    ["Label": "updater", "Program": "/usr/local/bin/gone-updater"])
-    // Program var, ad sahipli → listelenmez.
+    // Program var → adı ne olursa olsun listelenmez.
+    let existingPath = "/" + existing.path.dropFirst(fs.root.path.count + 1)
     try writePlist(fs, lib("LaunchAgents/com.acme.editor.helper.plist"),
-                   ["Label": "com.acme.editor.helper", "Program": "/" + existing.path.dropFirst(fs.root.path.count + 1)])
+                   ["Label": "com.acme.editor.helper", "Program": existingPath])
+    try writePlist(fs, lib("LaunchAgents/com.unknown.vendor.agent.plist"),
+                   ["Label": "com.unknown.vendor.agent", "ProgramArguments": [existingPath]])
+    // Reverse-DNS olmayan dosya adı, reverse-DNS etiket: etiketin köküyle gruplanır.
+    try writePlist(fs, lib("LaunchAgents/oddname.plist"),
+                   ["Label": "com.gone.thing.agent", "Program": "/Applications/Gone.app/Contents/MacOS/y"])
     // Sistem yolundaki program (sahte kökte yok) → var sayılır.
     try writePlist(fs, lib("LaunchAgents/local.system.plist"),
                    ["Label": "local.system", "ProgramArguments": ["/usr/bin/true"]])
@@ -121,7 +129,8 @@ private func names(_ r: OrphanScanResult) -> Set<String> {
     try writePlist(fs, lib("LaunchAgents/com.gone.sync.plist"), ["Label": "com.gone.sync"])
 
     let r = scan(fs, known: ["com.acme.editor"])
-    #expect(names(r) == ["com.acme.editor.agent.plist", "updater.plist", "com.gone.sync.plist"])
+    #expect(names(r) == ["com.acme.editor.agent.plist", "updater.plist", "com.gone.sync.plist", "oddname.plist"])
+    #expect(r.groups.contains { $0.id == "com.gone.thing" && $0.items.map(\.url.lastPathComponent) == ["oddname.plist"] })
     let items = r.groups.flatMap(\.items)
     #expect(items.allSatisfy { $0.kind == .launchAgent })
     let agent = try #require(items.first { $0.url.lastPathComponent == "com.acme.editor.agent.plist" })
@@ -135,11 +144,12 @@ private func names(_ r: OrphanScanResult) -> Set<String> {
     let fs = try FakeSystem(); defer { fs.cleanup() }
     try fs.touch(lib("Containers/com.gone.app/Data/x"))
     try fs.touch(lib("Group Containers/ABCDE12345.com.gone.app/x"))
+    try fs.touch(lib("Cookies/com.gone.app.binarycookies"))
     try fs.touch(lib("Caches/com.gone.app/x"))
     let r = scan(fs, known: [], restricted: true)
     #expect(names(r) == ["com.gone.app"])
     #expect(r.groups.flatMap(\.items).allSatisfy { $0.kind == .caches })
-    #expect(r.skippedLocations == [LeftoverScanner.containersDisplayName])
+    #expect(r.skippedLocations == [LeftoverScanner.containersDisplayName, LeftoverKind.cookies.displayName])
 }
 
 @Test func groupsSortedBySize() throws {
@@ -189,4 +199,55 @@ private func names(_ r: OrphanScanResult) -> Set<String> {
     let ids = InstalledApps(environment: env(fs), inspector: AppInspector(commands: runner))
         .allKnownBundleIDs(commands: runner)
     #expect(ids == ["com.top.app"])
+}
+
+// MARK: - Gerçek yanlış pozitifler (inceleme turu 1)
+
+@Test func ownedByKnownAppName() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    try fs.makeApp(name: "CapCut", bundleID: "com.lemon.lvoverseas")
+    try fs.makeApp(name: "Docker", bundleID: "com.docker.docker", executable: "com.docker.docker")
+    try fs.makeApp(name: "Riot Client", bundleID: "com.riotgames.RiotGames.RiotClient", executable: "RiotClientServices")
+    try fs.touch(lib("Preferences/com.capcut.CapCut.plist"))
+    try fs.touch(lib("Preferences/com.electron.dockerdesktop.plist"))
+    try fs.touch(lib("Caches/com.riot.riotclient/x"))
+    try fs.touch(lib("Application Support/com.oldvendor.goneapp/x"))   // gerçek yetim: hâlâ listelenir
+    let runner = FakeRunner(output: CommandOutput(status: 1, stdout: "", stderr: ""))
+    let known = InstalledApps(environment: env(fs), inspector: AppInspector(commands: runner)).knownApps(commands: runner)
+    #expect(known.names.isSuperset(of: ["capcut", "docker", "riotclient", "riotclientservices", "comdockerdocker"]))
+    let r = OrphanScanner(environment: env(fs), knownApps: known).scan()
+    #expect(names(r) == ["com.oldvendor.goneapp"])
+    #expect(r.groups.map(\.id) == ["com.oldvendor.goneapp"])
+}
+
+@Test func dockerElectronPrefOwnedByDenylistAlone() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    try fs.touch(lib("Preferences/com.electron.dockerdesktop.plist"))
+    #expect(scan(fs, known: []).groups.isEmpty)
+}
+
+@Test func launchAgentWithExistingProgramIsOwned() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    let program = try fs.touch("Users/Shared/Riot Games/Riot Client.app/Contents/MacOS/RiotClientServices")
+    try writePlist(fs, lib("LaunchAgents/com.riot.riotclient.checkinstalls.plist"),
+                   ["Label": "com.riot.riotclient.checkinstalls",
+                    "ProgramArguments": ["/" + program.path.dropFirst(fs.root.path.count + 1), "--check"]])
+    #expect(scan(fs, known: []).groups.isEmpty)
+}
+
+@Test func sharedToolchainAndSDKCachesOwned() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    for name in ["org.swift.swiftpm", "io.branch.network.cache", "org.llvm.clang", "com.crashlytics.data",
+                 "io.fabric.sdk.mac.data", "com.plausiblelabs.crashreporter.data", "com.github.Squirrel.x",
+                 "org.sparkle-project.Sparkle", "com.google.Keystone.Agent", "com.microsoft.autoupdate2",
+                 "com.adobe.accmac", "org.chromium.chromoting"] {
+        try fs.touch(lib("Caches/\(name)/x"))
+    }
+    try fs.touch(lib("Caches/com.oldvendor.goneapp/x"))
+    #expect(names(scan(fs, known: [])) == ["com.oldvendor.goneapp"])
+}
+
+@Test func knownAppNamesIgnoreGenericAndShort() {
+    let k = KnownApps(bundleIDs: [], names: ["Electron", "Helper", "App", "Foo", "Riot Client", "Sound-Wave 2"])
+    #expect(k.names == ["riotclient", "soundwave2"])
 }

@@ -11,6 +11,25 @@ public struct InstalledApp: Identifiable, Hashable, Sendable {
     }
 }
 
+/// Bu Mac'teki uygulamaların kimlikleri ve adları (yetim taraması için sahiplik bilgisi).
+public struct KnownApps: Sendable {
+    public var bundleIDs: Set<String>
+    /// Normalize adlar: küçük harf, yalnızca harf/rakam; genel adlar ve 4 karakterden kısalar atılır.
+    public var names: Set<String>
+
+    public init(bundleIDs: Set<String>, names: some Sequence<String> = []) {
+        self.bundleIDs = bundleIDs
+        self.names = Set(names.map(Self.normalize).filter {
+            $0.count >= 4 && !MatchKeys.genericNames.contains($0)
+        })
+    }
+
+    /// Küçük harf; harf ve rakam dışındaki her şey atılır ("Riot Client" → "riotclient").
+    static func normalize(_ s: String) -> String {
+        String(s.lowercased().filter { $0.isLetter || $0.isNumber })
+    }
+}
+
 public struct InstalledApps: Sendable {
     private let environment: ScanEnvironment
     private let inspector: AppInspector
@@ -46,6 +65,12 @@ public struct InstalledApps: Sendable {
     /// ~/Applications (2 alt klasör seviyesi), /System/Applications ve Spotlight'ın bildiği her uygulama.
     /// mdfind başarısız olursa yalnızca klasör tabanlı liste kullanılır.
     public func allKnownBundleIDs(commands: CommandRunning) -> Set<String> {
+        knownApps(commands: commands).bundleIDs
+    }
+
+    /// `allKnownBundleIDs` ile aynı uygulamalar; bundle ID'lerle birlikte normalize edilmiş adlar
+    /// (paket dosya adı, CFBundleName, CFBundleExecutable).
+    public func knownApps(commands: CommandRunning) -> KnownApps {
         var bundles: [URL] = []
         for dir in [environment.path("/Applications"), environment.homePath("Applications")] {
             bundles += appBundles(in: dir, depth: 2)
@@ -59,14 +84,17 @@ public struct InstalledApps: Sendable {
             }
         }
         var ids = Set<String>()
+        var names: [String] = []
         for bundle in bundles {
             let plistURL = bundle.appendingPathComponent("Contents/Info.plist")
             guard let data = try? Data(contentsOf: plistURL),
                   let plist = (try? PropertyListSerialization.propertyList(from: data, format: nil)) as? [String: Any],
                   let id = plist["CFBundleIdentifier"] as? String, !id.isEmpty else { continue }
             ids.insert(id)
+            names.append(bundle.deletingPathExtension().lastPathComponent)
+            names += [plist["CFBundleName"], plist["CFBundleExecutable"]].compactMap { $0 as? String }
         }
-        return ids
+        return KnownApps(bundleIDs: ids, names: names)
     }
 
     /// `dir` içindeki .app paketleri; `depth` kadar alt klasöre iner (.app içine inmez).

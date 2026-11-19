@@ -35,14 +35,25 @@ public struct OrphanScanner: Sendable {
     private let environment: ScanEnvironment
     /// Küçük harfli bilinen bundle ID'ler.
     private let known: Set<String>
+    /// Normalize bilinen uygulama adları (bkz. `KnownApps.names`).
+    private let knownNames: Set<String>
     private let restricted: Bool
 
-    public init(environment: ScanEnvironment, knownBundleIDs: Set<String>, restricted: Bool = false) {
+    public init(environment: ScanEnvironment, knownApps: KnownApps, restricted: Bool = false) {
         self.environment = environment
         // Leftless'in kendisi her zaman sahiplidir (ör. kurulu kopya dışında çalışırken).
-        self.known = Set(knownBundleIDs.map { $0.lowercased() }).union(["com.leftless.app"])
+        self.known = Set(knownApps.bundleIDs.map { $0.lowercased() }).union(["com.leftless.app"])
+        self.knownNames = knownApps.names
         self.restricted = restricted
     }
+
+    /// Tek bir uygulamanın değil, birçok uygulamanın paylaştığı araç zinciri / SDK / çatı kimlikleri:
+    /// her zaman sahipli sayılır (küçük harf önek eşleşmesi).
+    static let sharedPrefixes = [
+        "org.swift.", "org.llvm.", "io.branch.", "com.crashlytics", "io.fabric.", "com.plausiblelabs.",
+        "com.electron.", "com.github.squirrel", "org.sparkle-project.", "com.google.keystone",
+        "com.microsoft.autoupdate", "com.adobe.acc", "org.chromium.",
+    ]
 
     private static let locations: [(name: String, kind: LeftoverKind)] = [
         ("Application Support", .applicationSupport), ("Caches", .caches),
@@ -61,7 +72,7 @@ public struct OrphanScanner: Sendable {
     public func scan() -> OrphanScanResult {
         var found: [(root: String, item: Leftover)] = []
         for loc in Self.locations {
-            if restricted, loc.kind == .container || loc.kind == .groupContainer { continue }
+            if restricted, Self.restrictedKinds.contains(loc.kind) { continue }
             for entry in entries(of: environment.homePath("Library/\(loc.name)")) {
                 guard !ProtectedPaths.isProtected(entry, root: environment.root),
                       let id = Self.identifier(entry.lastPathComponent, groupContainer: loc.kind == .groupContainer),
@@ -83,12 +94,19 @@ public struct OrphanScanner: Sendable {
             })
         }.sorted { $0.totalSize != $1.totalSize ? $0.totalSize > $1.totalSize : $0.id < $1.id }
         return OrphanScanResult(groups: groups,
-                                skippedLocations: restricted ? [LeftoverScanner.containersDisplayName] : [])
+                                skippedLocations: restricted ? Self.restrictedDisplayNames : [])
+    }
+
+    /// Tam Disk Erişimi olmadan okunamayan (izin penceresi tetikleyen) yerler.
+    private static let restrictedKinds: Set<LeftoverKind> = [.container, .groupContainer, .cookies]
+    private static var restrictedDisplayNames: [String] {
+        [LeftoverScanner.containersDisplayName, LeftoverKind.cookies.displayName]
     }
 
     // MARK: - LaunchAgents
 
-    /// ~/Library/LaunchAgents: ad reverse-DNS ve sahipsizse ya da programı artık yoksa yetimdir.
+    /// ~/Library/LaunchAgents: mutlak program yolu varsa yalnızca o yol artık yoksa yetimdir;
+    /// çözülebilir program yoksa ad reverse-DNS ve sahipsizse yetimdir.
     private func launchAgents() -> [(root: String, item: Leftover)] {
         var result: [(root: String, item: Leftover)] = []
         for file in entries(of: environment.homePath("Library/LaunchAgents")) where file.pathExtension == "plist" {
@@ -99,12 +117,16 @@ public struct OrphanScanner: Sendable {
             if let label, ProtectedPaths.isAppleBundleID(label) { continue }
 
             let id = Self.identifier(file.lastPathComponent, groupContainer: false)
-            let orphanByName = id.map { !isOwned($0) } ?? false
-            let orphanByProgram = plist.map { programMissing($0) } ?? false
-            guard orphanByName || orphanByProgram else { continue }
+            let orphan: Bool
+            switch plist.map(programState) ?? .unresolvable {
+            case .missing: orphan = true
+            case .present: orphan = false
+            case .unresolvable: orphan = id.map { !isOwned($0) } ?? false
+            }
+            guard orphan else { continue }
 
             let root = id.map(Self.identifierRoot)
-                ?? label.flatMap { $0.isEmpty ? nil : $0 }
+                ?? label.flatMap { $0.isEmpty ? nil : Self.identifierRoot($0) }
                 ?? file.deletingPathExtension().lastPathComponent
             var item = leftover(file, kind: .launchAgent)
             item.launchdLabel = label
@@ -113,34 +135,48 @@ public struct OrphanScanner: Sendable {
         return result
     }
 
-    /// Program / ProgramArguments[0] mutlak bir yol ve orada hiçbir şey yoksa true.
+    private enum ProgramState { case present, missing, unresolvable }
+
+    /// Program / ProgramArguments[0]: mutlak değilse (ya da yoksa) çözülemez; orada hiçbir şey yoksa eksik.
     /// Sistem yolları (/System, /usr — /usr/local hariç —, /bin, /sbin, /Library/Apple) ve
-    /// çözülemeyen ya da erişilemeyen yollar var sayılır.
-    private func programMissing(_ plist: [String: Any]) -> Bool {
+    /// erişilemeyen yollar var sayılır.
+    private func programState(_ plist: [String: Any]) -> ProgramState {
         let program = (plist["Program"] as? String) ?? (plist["ProgramArguments"] as? [String])?.first
-        guard let program, program.hasPrefix("/") else { return false }
+        guard let program, program.hasPrefix("/") else { return .unresolvable }
         let url = environment.path(program)
-        guard !ProtectedPaths.isProtected(url, root: environment.root) else { return false }
+        guard !ProtectedPaths.isProtected(url, root: environment.root) else { return .present }
         let fm = FileManager.default
-        if fm.fileExists(atPath: url.path) || (try? fm.attributesOfItem(atPath: url.path)) != nil { return false }
+        if fm.fileExists(atPath: url.path) || (try? fm.attributesOfItem(atPath: url.path)) != nil { return .present }
         // Var olan en yakın üst klasörde arama izni yoksa yokluğundan emin olunamaz.
         var ancestor = url.deletingLastPathComponent()
         while !fm.fileExists(atPath: ancestor.path), ancestor.path != "/" {
             ancestor = ancestor.deletingLastPathComponent()
         }
-        return fm.isExecutableFile(atPath: ancestor.path) && fm.isReadableFile(atPath: ancestor.path)
+        let searchable = fm.isExecutableFile(atPath: ancestor.path) && fm.isReadableFile(atPath: ancestor.path)
+        return searchable ? .missing : .present
     }
 
     // MARK: - Kimlik
 
-    /// Bilinen bir uygulamaya ait mi: Apple; tam eşitlik; bilinen bir kimliğin noktalı uzantısı
-    /// (`com.v.app.helper`); ya da bilinen bir kimlikle aynı üretici öneki (`com.v.`).
+    /// Bilinen bir uygulamaya ait mi: Apple; paylaşılan araç/SDK önekleri; tam eşitlik; bilinen bir
+    /// kimliğin noktalı uzantısı (`com.v.app.helper`); bilinen bir kimlikle aynı üretici öneki (`com.v.`);
+    /// ya da TLD sonrası bir bileşenin bilinen bir uygulama adıyla eşleşmesi (`com.capcut.CapCut` ↔ CapCut.app).
     private func isOwned(_ identifier: String) -> Bool {
         let id = identifier.lowercased()
         if ProtectedPaths.isAppleBundleID(id) || known.contains(id) { return true }
+        if Self.sharedPrefixes.contains(where: { id.hasPrefix($0) }) { return true }
         let parts = id.split(separator: ".", omittingEmptySubsequences: false)
         let vendor = parts[0] + "." + parts[1] + "."
-        return known.contains { id.hasPrefix($0 + ".") || $0.hasPrefix(vendor) }
+        if known.contains(where: { id.hasPrefix($0 + ".") || $0.hasPrefix(vendor) }) { return true }
+        for part in parts.dropFirst() {
+            let component = KnownApps.normalize(String(part))
+            guard !component.isEmpty else { continue }
+            for name in knownNames {
+                if component.contains(name) { return true }   // eşitlik dahil; adlar ≥ 4 karakter
+                if component.count >= 4, name.contains(component) { return true }
+            }
+        }
+        return false
     }
 
     /// Girdi adından reverse-DNS kimliği; değilse nil. Bilinen uzantılar ve (Group Containers'ta)
