@@ -67,11 +67,19 @@ public struct Uninstaller: Sendable {
     /// silinir ve hiçbir şey taşınmadan fırlatır. Öğe bazlı hatalar fırlatılmaz, kayıtta `failed` olarak tutulur.
     public func uninstall(batch jobs: [UninstallJob]) throws -> [UninstallOutcome] {
         var chosenTargets = Set<String>()
-        var claimedPaths = Set<String>()
+        var claimedEarlier: [String] = []
         var works: [Work] = []
         for job in jobs {
-            // Bir yol yalnızca bir kez taşınabilir: önceki bir işin aldığı öğe sonraki işlerden çıkarılır.
-            let selected = job.selected.filter { claimedPaths.insert($0.url.path).inserted }
+            // Bir yol yalnızca bir kez taşınabilir. Önceki bir işin aldığı yolla aynı, onun içinde ya da onu
+            // içeren öğe sonraki işten çıkarılır: aksi halde `mv -n` kaynak bulamaz ve `&&` zinciri tüm işler
+            // için durur. İş içi tam yinelenenler de çıkarılır.
+            var seenInJob = Set<String>()
+            let selected = job.selected.filter { leftover in
+                let path = leftover.url.path
+                guard !claimedEarlier.contains(where: { Self.overlaps(path, $0) }) else { return false }
+                return seenInJob.insert(path).inserted
+            }
+            claimedEarlier += selected.map(\.url.path)
             let items: [HistoryItem] = selected.map { leftover in
                 var item = HistoryItem(originalPath: leftover.url.path, kind: leftover.kind, size: leftover.size,
                                        requiresAdmin: leftover.requiresAdmin, launchdLabel: leftover.launchdLabel,
@@ -96,7 +104,8 @@ public struct Uninstaller: Sendable {
 
         var savedIDs: [UUID] = []
         do {
-            for work in works {
+            // Öğesi kalmayan iş için kayıt yazılmaz (Geçmiş'te 0 öğeli kayıt görünmez).
+            for work in works where !work.items.isEmpty {
                 try history.save(work.record)
                 savedIDs.append(work.record.id)
             }
@@ -146,10 +155,14 @@ public struct Uninstaller: Sendable {
                 retargeted.insert(target.path)
                 works[w].items[index].trashPath = target.path
             }
-            guard !adminIndices.isEmpty else { continue }
+            // Yönetici istemi açıkken (ya da çökme olursa) diskteki kayıt doğru olsun: yalnızca Çöp'e taşınmış
+            // öğeleri olan işler de yönetici adımından önce yeniden kaydedilir.
+            guard !works[w].items.isEmpty else { continue }
             works[w].record.items = works[w].items
             do {
                 try history.save(works[w].record)
+            } catch where adminIndices.isEmpty {
+                // Yönetici öğesi yok: ilk manifest diskte, son kayıt yine denenir.
             } catch {
                 // Root, diskteki manifestte olmayan hedeflere taşıma yapmamalı: bu işin yönetici adımı atlanır.
                 works[w].manifestSaved = false
@@ -207,7 +220,7 @@ public struct Uninstaller: Sendable {
             var record = work.record
             record.items = work.items
             // Dosyalar zaten taşındı; kayıt güncellenemese de sonuç döndürülür (ilk manifest diskte).
-            try? history.save(record)
+            if !record.items.isEmpty { try? history.save(record) }
             return UninstallOutcome(record: record, failures: work.items.filter { $0.state == .failed })
         }
     }
@@ -221,6 +234,11 @@ public struct Uninstaller: Sendable {
         if ns.domain == NSPOSIXErrorDomain, ns.code == Int(EACCES) || ns.code == Int(EPERM) { return true }
         if let underlying = ns.userInfo[NSUnderlyingErrorKey] as? Error { return isPermissionError(underlying) }
         return false
+    }
+
+    /// Aynı yol mu, ya da biri diğerinin içinde mi?
+    static func overlaps(_ a: String, _ b: String) -> Bool {
+        a == b || a.hasPrefix(b + "/") || b.hasPrefix(a + "/")
     }
 
     private static func isLaunchd(_ kind: LeftoverKind) -> Bool {

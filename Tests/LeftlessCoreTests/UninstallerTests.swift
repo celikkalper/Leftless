@@ -474,4 +474,66 @@ private struct Rig {
         #expect(outs[0].record.operation == .orphans)
         #expect(try rig.store.all()[0].operation == .orphans)
     }
+
+    @Test func batchResavesNonAdminJobBeforePrivilegedRun() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let a = rig.leftover("/u/a"), b = rig.leftover("/Library/b", admin: true)
+        let jobA = UninstallJob(scan: rig.scan([a], name: "A", bundleID: "com.a"), selected: [a], icon: nil)
+        nonisolated(unsafe) var aItemOnDisk: HistoryItem?
+        rig.priv.action = { cmds in
+            aItemOnDisk = (try? rig.store.all())?.first { $0.bundleID == "com.a" }?.items.first
+            rig.applyMoves(cmds)
+        }
+        _ = try rig.uninstaller().uninstall(batch: [
+            jobA, UninstallJob(scan: rig.scan([b], name: "B", bundleID: "com.b"), selected: [b], icon: nil),
+        ])
+        #expect(rig.priv.calls.count == 1)
+        #expect(aItemOnDisk?.state == .trashed)
+        #expect(aItemOnDisk?.trashPath == "/trash/a")
+    }
+
+    @Test func batchDropsLaterItemInsideEarlierClaimedFolder() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let folder = rig.leftover("/Library/Application Support/Vendor", admin: true)
+        let inside = rig.leftover("/Library/Application Support/Vendor/AppB", admin: true)
+        let other = rig.leftover("/Library/Application Support/VendorX", admin: true)
+        rig.priv.action = { rig.applyMoves($0) }
+        let outs = try rig.uninstaller().uninstall(batch: [
+            UninstallJob(scan: rig.scan([folder], name: "A", bundleID: "com.a"), selected: [folder], icon: nil),
+            UninstallJob(scan: rig.scan([inside, other], name: "B", bundleID: "com.b"), selected: [inside, other], icon: nil),
+        ])
+        #expect(outs[1].record.items.map(\.originalPath) == ["/Library/Application Support/VendorX"])
+        #expect(!rig.priv.calls[0].contains { $0.contains("Vendor/AppB") })
+    }
+
+    @Test func batchDropsLaterFolderContainingEarlierClaimedItem() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let inside = rig.leftover("/Library/Application Support/Vendor/AppA", admin: true)
+        let folder = rig.leftover("/Library/Application Support/Vendor", admin: true)
+        rig.priv.action = { rig.applyMoves($0) }
+        let outs = try rig.uninstaller().uninstall(batch: [
+            UninstallJob(scan: rig.scan([inside], name: "A", bundleID: "com.a"), selected: [inside], icon: nil),
+            UninstallJob(scan: rig.scan([folder], name: "B", bundleID: "com.b"), selected: [folder], icon: nil),
+        ])
+        #expect(outs[0].record.items.count == 1)
+        #expect(outs[1].record.items.isEmpty)
+        #expect(rig.priv.calls[0].filter { $0.contains("/bin/mv") }.count == 1)
+    }
+
+    @Test func zeroItemJobIsNotSavedToHistory() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let shared = rig.leftover("/u/shared")
+        let outs = try rig.uninstaller().uninstall(batch: [
+            UninstallJob(scan: rig.scan([shared], name: "A", bundleID: "com.a"), selected: [shared], icon: nil),
+            UninstallJob(scan: rig.scan([shared], name: "B", bundleID: "com.b"), selected: [shared], icon: nil),
+            UninstallJob(scan: rig.scan([], name: "C", bundleID: "com.c"), selected: [], icon: nil),
+        ])
+        #expect(outs.count == 3)
+        #expect(outs[1].record.items.isEmpty && outs[2].record.items.isEmpty)
+        #expect(try rig.store.all().map(\.bundleID) == ["com.a"])
+    }
 }
