@@ -38,7 +38,7 @@ public struct Uninstaller: Sendable {
                                    requiresAdmin: leftover.requiresAdmin, launchdLabel: leftover.launchdLabel,
                                    packageID: leftover.packageID)
             if Self.isLaunchd(leftover.kind) {
-                item.launchdDomain = leftover.requiresAdmin ? "system" : "gui/\(environment.uid)"
+                item.launchdDomain = leftover.kind == .launchDaemon ? "system" : "gui/\(environment.uid)"
             }
             if leftover.requiresAdmin {
                 let target = uniqueTrashURL(for: leftover.url, trashDirectory: trashDirectory) {
@@ -57,7 +57,7 @@ public struct Uninstaller: Sendable {
         for index in items.indices where items[index].launchdDomain != nil {
             let item = items[index]
             if item.requiresAdmin {
-                adminCommands.append("/bin/launchctl bootout system \(ShellQuoting.quote(item.originalPath)) || true")
+                adminCommands.append("/bin/launchctl bootout \(item.launchdDomain ?? "system") \(ShellQuoting.quote(item.originalPath)) || true")
             } else if let domain = item.launchdDomain {
                 // Zaten yüklü olmayabilir: hata ve sıfırdan farklı çıkış yok sayılır.
                 _ = try? commands.run("/bin/launchctl", ["bootout", domain, item.originalPath])
@@ -76,11 +76,27 @@ public struct Uninstaller: Sendable {
         }
 
         let adminIndices = items.indices.filter { items[$0].requiresAdmin }
+        // trashItem kendi boş adını seçer; bir yönetici hedefiyle çakışmış olabilir. Hedefler yeniden seçilir.
+        var retargeted = Set<String>()
+        for index in adminIndices {
+            let original = URL(fileURLWithPath: items[index].originalPath)
+            let target = uniqueTrashURL(for: original, trashDirectory: trashDirectory) {
+                files.exists($0) || retargeted.contains($0.path)
+            }
+            retargeted.insert(target.path)
+            items[index].trashPath = target.path
+        }
+        if !adminIndices.isEmpty {
+            record.items = items
+            // Dosyalar zaten taşınmış olabilir; hedef güncellemesi kaydedilemese de devam edilir.
+            try? history.save(record)
+        }
         for index in adminIndices {
             guard let target = items[index].trashPath else { continue }
-            adminCommands.append("/bin/mv -n \(ShellQuoting.quote(items[index].originalPath)) \(ShellQuoting.quote(target))")
+            let src = ShellQuoting.quote(items[index].originalPath), dst = ShellQuoting.quote(target)
+            adminCommands.append("[ ! -e \(dst) ] && /bin/mv -n \(src) \(dst)")
         }
-        adminCommands += receiptsToForget(result: result, selected: selected)
+        adminCommands += receiptsToForget(result: result, selected: selected, items: items)
             .map { "/usr/sbin/pkgutil --forget \(ShellQuoting.quote($0))" }
 
         if !adminCommands.isEmpty {
@@ -118,14 +134,16 @@ public struct Uninstaller: Sendable {
     }
 
     /// Yalnızca o paket kimliğine ait TÜM kalıntılar seçiliyse makbuz unutulur.
-    private func receiptsToForget(result: ScanResult, selected: [Leftover]) -> [String] {
+    /// Ayrıca o paketin yönetici olmayan öğelerinden biri Çöp'e taşınamadıysa unutulmaz.
+    private func receiptsToForget(result: ScanResult, selected: [Leftover], items: [HistoryItem]) -> [String] {
         let selectedIDs = Set(selected.map(\.id))
         var seen = Set<String>()
         var ids: [String] = []
         for leftover in selected {
             guard let pkg = leftover.packageID, seen.insert(pkg).inserted else { continue }
             let all = result.leftovers.filter { $0.packageID == pkg }
-            if all.allSatisfy({ selectedIDs.contains($0.id) }) { ids.append(pkg) }
+            let nonAdminFailed = items.contains { $0.packageID == pkg && !$0.requiresAdmin && $0.state == .failed }
+            if all.allSatisfy({ selectedIDs.contains($0.id) }), !nonAdminFailed { ids.append(pkg) }
         }
         return ids
     }

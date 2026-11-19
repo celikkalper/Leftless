@@ -17,7 +17,7 @@ private final class FakeFiles: FileMoving, @unchecked Sendable {
         trashCalls.append(url.path)
         if failing.contains(url.path) { throw CocoaError(.fileWriteNoPermission) }
         existing.remove(url.path)
-        let dest = URL(fileURLWithPath: trashRoot).appendingPathComponent(url.lastPathComponent)
+        let dest = uniqueTrashURL(for: url, trashDirectory: URL(fileURLWithPath: trashRoot)) { existing.contains($0.path) }
         existing.insert(dest.path)
         return dest
     }
@@ -113,8 +113,8 @@ private struct Rig {
         let out = try rig.uninstaller().uninstall(rig.scan([a, b]), selected: [a, b], icon: nil)
         #expect(rig.priv.calls.count == 1)
         let cmds = rig.priv.calls[0]
-        #expect(cmds.contains("/bin/mv -n '/Library/App Support/it'\\''s' '/trash/it'\\''s'"))
-        #expect(cmds.contains("/bin/mv -n '/Library/Other/it'\\''s' '/trash/it'\\''s 2'"))
+        #expect(cmds.contains("[ ! -e '/trash/it'\\''s' ] && /bin/mv -n '/Library/App Support/it'\\''s' '/trash/it'\\''s'"))
+        #expect(cmds.contains("[ ! -e '/trash/it'\\''s 2' ] && /bin/mv -n '/Library/Other/it'\\''s' '/trash/it'\\''s 2'"))
         #expect(rig.files.trashCalls.isEmpty)
         #expect(out.record.items.allSatisfy { $0.state == .trashed })
         #expect(out.failures.isEmpty)
@@ -138,7 +138,7 @@ private struct Rig {
         _ = try rig.uninstaller().uninstall(rig.scan([d]), selected: [d], icon: nil)
         let cmds = rig.priv.calls[0]
         #expect(cmds[0].hasPrefix("/bin/launchctl bootout system '/Library/LaunchDaemons/com.x.plist'"))
-        #expect(cmds[1].hasPrefix("/bin/mv -n"))
+        #expect(cmds[1].contains("/bin/mv -n"))
         #expect(rig.cmds.calls.isEmpty)
     }
 
@@ -196,5 +196,47 @@ private struct Rig {
         let cmds = rig.priv.calls[0]
         #expect(cmds.contains("/usr/sbin/pkgutil --forget 'com.full'"))
         #expect(!cmds.contains { $0.contains("com.part") && $0.contains("pkgutil") })
+    }
+
+    @Test func adminLaunchAgentUsesGuiDomain() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let a = rig.leftover("/Library/LaunchAgents/com.x.plist", kind: .launchAgent, admin: true, label: "com.x")
+        let out = try rig.uninstaller().uninstall(rig.scan([a]), selected: [a], icon: nil)
+        #expect(rig.priv.calls[0][0].hasPrefix("/bin/launchctl bootout gui/501 '/Library/LaunchAgents/com.x.plist'"))
+        #expect(out.record.items[0].launchdDomain == "gui/501")
+    }
+
+    @Test func sharedBasenameBetweenAdminAndNonAdminDoesNotCollide() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let user = rig.leftover("/Users/t/Library/Preferences/com.x.plist", kind: .preferences)
+        let admin = rig.leftover("/Library/Preferences/com.x.plist", kind: .preferences, admin: true)
+        nonisolated(unsafe) var manifestAdminTarget: String?
+        rig.priv.action = { cmds in
+            manifestAdminTarget = (try? rig.store.all())?.first?.items.first { $0.requiresAdmin }?.trashPath
+            rig.files.existing.remove(admin.url.path)
+            for c in cmds where c.contains("/bin/mv") {
+                let dst = c.components(separatedBy: "' '").last!.dropLast()
+                rig.files.existing.insert(String(dst))
+            }
+        }
+        let out = try rig.uninstaller().uninstall(rig.scan([user, admin]), selected: [user, admin], icon: nil)
+        let items = out.record.items
+        #expect(items.allSatisfy { $0.state == .trashed })
+        #expect(items[0].trashPath != items[1].trashPath)
+        #expect(items[1].trashPath == "/trash/com.x 2.plist")
+        #expect(manifestAdminTarget == items[1].trashPath)
+        #expect(rig.priv.calls[0].contains { $0.contains("'/trash/com.x 2.plist'") })
+    }
+
+    @Test func doesNotForgetReceiptWhenNonAdminItemOfPackageFailed() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let user = rig.leftover("/Users/t/a", kind: .packageFile, pkg: "com.pkg")
+        let admin = rig.leftover("/Library/b", kind: .packageFile, admin: true, pkg: "com.pkg")
+        rig.files.failing.insert(user.url.path)
+        _ = try rig.uninstaller().uninstall(rig.scan([user, admin]), selected: [user, admin], icon: nil)
+        #expect(!rig.priv.calls[0].contains { $0.contains("pkgutil") })
     }
 }
