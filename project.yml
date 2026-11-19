@@ -1,0 +1,59 @@
+name: Kalintisiz
+options:
+  bundleIdPrefix: com.kalintisiz
+  deploymentTarget:
+    macOS: "15.0"
+packages:
+  KalintisizCore:
+    path: .
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    ARCHS: $(ARCHS_STANDARD)
+targets:
+  Kalintisiz:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/Kalintisiz
+    dependencies:
+      - package: KalintisizCore
+        product: KalintisizCore
+    settings:
+      base:
+        INFOPLIST_FILE: App/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.kalintisiz.app
+        PRODUCT_NAME: Kalintisiz
+        CODE_SIGN_ENTITLEMENTS: App/Kalintisiz.entitlements
+        ENABLE_APP_SANDBOX: NO
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        ENABLE_HARDENED_RUNTIME: NO
+        GENERATE_INFOPLIST_FILE: NO
+  KalintisizCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/KalintisizCoreTests
+    dependencies:
+      - package: KalintisizCore
+        product: KalintisizCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+schemes:
+  Kalintisiz:
+    build:
+      targets:
+        Kalintisiz: all
+        KalintisizCoreTests: [test]
+    run:
+      config: Debug
+      executable: Kalintisiz
+    test:
+      config: Debug
+      targets:
+        - KalintisizCoreTests

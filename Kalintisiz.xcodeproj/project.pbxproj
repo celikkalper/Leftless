@@ -1,0 +1,538 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		09F3AA76D036A2F4E679DD5F /* KalintisizCore in Frameworks */ = {isa = PBXBuildFile; productRef = 912F20DEA2340A42A16D154C /* KalintisizCore */; };
+		0B4313034210774880B5CD5C /* LeftoverListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D42FB78CF6BA82E6DED9D283 /* LeftoverListView.swift */; };
+		341099FD43EC11B5394480C3 /* RestorerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342FF0E7EC59D293231CDF96 /* RestorerTests.swift */; };
+		475F5C967A5D54E735A94C30 /* ProtectedPathsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703684B4464FAA39CB7FCA66 /* ProtectedPathsTests.swift */; };
+		4E7117CDCEF6E0ADDB96C4C0 /* HistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F5BE0FF49F4CF28CBC15A5 /* HistoryStoreTests.swift */; };
+		535C0813A04FAC84B03F292C /* KalintisizCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0341EEE35280A2CF2A254531 /* KalintisizCore */; };
+		54B68500B1E7213834F179BA /* EndToEndTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 971F9604321989451A43C472 /* EndToEndTests.swift */; };
+		55F97D1FE74EE5A96ED56013 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3925FB66032D1296B36897A /* OnboardingView.swift */; };
+		571DB1562C0ED24D74B28173 /* UninstallResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93DFB5C35E59209DA09F5CB /* UninstallResultView.swift */; };
+		572AACE97E0641EE242C8E92 /* AppInspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F776834C3A8A54F335384AD /* AppInspectorTests.swift */; };
+		6CB2F5086FECE12368BF5A6A /* AppTerminator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C2D357692895AAB7CAC8BA /* AppTerminator.swift */; };
+		6CE035AF7C250BE9D4619D43 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B211B5B3E309360E16288 /* AppModel.swift */; };
+		88A222BC830B02B2E0F06237 /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39BCFEA2E8F8FEFB40217614 /* PresentationTests.swift */; };
+		9AFEA2DC267127171B6B3D91 /* AppListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1DE63137E93D21164DC4C56 /* AppListView.swift */; };
+		A228E1886AB1F798A012942A /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C651602A27D4C2C7D56AFB0B /* HistoryView.swift */; };
+		A8D949460878CB3C8E9536C5 /* Fixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A1C19E6BD330EF6C99AD29A /* Fixtures.swift */; };
+		AFB29389F57D8E3509C9985E /* KalintisizApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1EE4DD9139691EDF16331EF /* KalintisizApp.swift */; };
+		B7620FA1CF86514E670C490C /* LaunchdScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A7FA40710DACC1F2FB8C2F4 /* LaunchdScannerTests.swift */; };
+		BB138B6DEC7CB2C4B1A308E5 /* FullDiskAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB90011114F9A591F2AC2F2E /* FullDiskAccess.swift */; };
+		BE464AF135A2E047A48DE488 /* FileOpsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C58EA0D0A5C8BB366D01BDE0 /* FileOpsTests.swift */; };
+		CBB389648BB1A4D7C49888ED /* ReceiptScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EDF61EC6474C49C53C293A8 /* ReceiptScannerTests.swift */; };
+		E65A0A14174AF3665055EAF9 /* ScanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080CB93ACCA8EE85086711C1 /* ScanDetailView.swift */; };
+		FD2775436A3B9998543979B6 /* LeftoverScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD5F2C2D581A1016B33A983 /* LeftoverScannerTests.swift */; };
+		FF77DFCA7F68A73DC3C6F53F /* UninstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F41C6AF72D28A52E3436B /* UninstallerTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		030F41C6AF72D28A52E3436B /* UninstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UninstallerTests.swift; sourceTree = "<group>"; };
+		080CB93ACCA8EE85086711C1 /* ScanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDetailView.swift; sourceTree = "<group>"; };
+		22F5BE0FF49F4CF28CBC15A5 /* HistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreTests.swift; sourceTree = "<group>"; };
+		342FF0E7EC59D293231CDF96 /* RestorerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestorerTests.swift; sourceTree = "<group>"; };
+		39BCFEA2E8F8FEFB40217614 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
+		3CCF1716F8347CCAE7B5285C /* KalintisizCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KalintisizCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3F776834C3A8A54F335384AD /* AppInspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInspectorTests.swift; sourceTree = "<group>"; };
+		4A1C19E6BD330EF6C99AD29A /* Fixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fixtures.swift; sourceTree = "<group>"; };
+		4A7FA40710DACC1F2FB8C2F4 /* LaunchdScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchdScannerTests.swift; sourceTree = "<group>"; };
+		4CD5F2C2D581A1016B33A983 /* LeftoverScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftoverScannerTests.swift; sourceTree = "<group>"; };
+		4EDF61EC6474C49C53C293A8 /* ReceiptScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptScannerTests.swift; sourceTree = "<group>"; };
+		703684B4464FAA39CB7FCA66 /* ProtectedPathsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtectedPathsTests.swift; sourceTree = "<group>"; };
+		7F1B211B5B3E309360E16288 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		8743F1B7545B3BAB8E2246D3 /* Kalintisiz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kalintisiz.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		90C2D357692895AAB7CAC8BA /* AppTerminator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTerminator.swift; sourceTree = "<group>"; };
+		971F9604321989451A43C472 /* EndToEndTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndToEndTests.swift; sourceTree = "<group>"; };
+		A93DFB5C35E59209DA09F5CB /* UninstallResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UninstallResultView.swift; sourceTree = "<group>"; };
+		B1DE63137E93D21164DC4C56 /* AppListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListView.swift; sourceTree = "<group>"; };
+		B3925FB66032D1296B36897A /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		C1EE4DD9139691EDF16331EF /* KalintisizApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KalintisizApp.swift; sourceTree = "<group>"; };
+		C32DE625D698B9F0748101BC /* macos-apps */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "macos-apps"; path = .; sourceTree = SOURCE_ROOT; };
+		C58EA0D0A5C8BB366D01BDE0 /* FileOpsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOpsTests.swift; sourceTree = "<group>"; };
+		C651602A27D4C2C7D56AFB0B /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		CB90011114F9A591F2AC2F2E /* FullDiskAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullDiskAccess.swift; sourceTree = "<group>"; };
+		D42FB78CF6BA82E6DED9D283 /* LeftoverListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftoverListView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2EFD21AD41DAC78F58C6EF6C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				09F3AA76D036A2F4E679DD5F /* KalintisizCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		644DD33519D2970FCF02AB9F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				535C0813A04FAC84B03F292C /* KalintisizCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		11174F5F47991DC2A2DB14ED /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				C32DE625D698B9F0748101BC /* macos-apps */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		1147A0CBBF1BF3DF0A65034E /* KalintisizCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				3F776834C3A8A54F335384AD /* AppInspectorTests.swift */,
+				971F9604321989451A43C472 /* EndToEndTests.swift */,
+				C58EA0D0A5C8BB366D01BDE0 /* FileOpsTests.swift */,
+				4A1C19E6BD330EF6C99AD29A /* Fixtures.swift */,
+				22F5BE0FF49F4CF28CBC15A5 /* HistoryStoreTests.swift */,
+				4A7FA40710DACC1F2FB8C2F4 /* LaunchdScannerTests.swift */,
+				4CD5F2C2D581A1016B33A983 /* LeftoverScannerTests.swift */,
+				39BCFEA2E8F8FEFB40217614 /* PresentationTests.swift */,
+				703684B4464FAA39CB7FCA66 /* ProtectedPathsTests.swift */,
+				4EDF61EC6474C49C53C293A8 /* ReceiptScannerTests.swift */,
+				342FF0E7EC59D293231CDF96 /* RestorerTests.swift */,
+				030F41C6AF72D28A52E3436B /* UninstallerTests.swift */,
+			);
+			name = KalintisizCoreTests;
+			path = Tests/KalintisizCoreTests;
+			sourceTree = "<group>";
+		};
+		278688EBCCBC59754B1CE909 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B1DE63137E93D21164DC4C56 /* AppListView.swift */,
+				C651602A27D4C2C7D56AFB0B /* HistoryView.swift */,
+				D42FB78CF6BA82E6DED9D283 /* LeftoverListView.swift */,
+				B3925FB66032D1296B36897A /* OnboardingView.swift */,
+				080CB93ACCA8EE85086711C1 /* ScanDetailView.swift */,
+				A93DFB5C35E59209DA09F5CB /* UninstallResultView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		97310C710F23CD274252B3FA = {
+			isa = PBXGroup;
+			children = (
+				DA568A759D373E8391A8B670 /* Kalintisiz */,
+				1147A0CBBF1BF3DF0A65034E /* KalintisizCoreTests */,
+				11174F5F47991DC2A2DB14ED /* Packages */,
+				CB6F218479F97EBB53393E25 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CB6F218479F97EBB53393E25 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8743F1B7545B3BAB8E2246D3 /* Kalintisiz.app */,
+				3CCF1716F8347CCAE7B5285C /* KalintisizCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CFAD81558CABBD5F90E8F302 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				90C2D357692895AAB7CAC8BA /* AppTerminator.swift */,
+				CB90011114F9A591F2AC2F2E /* FullDiskAccess.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		DA568A759D373E8391A8B670 /* Kalintisiz */ = {
+			isa = PBXGroup;
+			children = (
+				7F1B211B5B3E309360E16288 /* AppModel.swift */,
+				C1EE4DD9139691EDF16331EF /* KalintisizApp.swift */,
+				CFAD81558CABBD5F90E8F302 /* Support */,
+				278688EBCCBC59754B1CE909 /* Views */,
+			);
+			name = Kalintisiz;
+			path = Sources/Kalintisiz;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		73A9D5094581E171CC77D21B /* Kalintisiz */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A61F831497635193AD8889B7 /* Build configuration list for PBXNativeTarget "Kalintisiz" */;
+			buildPhases = (
+				6716B055316D8C4C79D4B21E /* Sources */,
+				644DD33519D2970FCF02AB9F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Kalintisiz;
+			packageProductDependencies = (
+				0341EEE35280A2CF2A254531 /* KalintisizCore */,
+			);
+			productName = Kalintisiz;
+			productReference = 8743F1B7545B3BAB8E2246D3 /* Kalintisiz.app */;
+			productType = "com.apple.product-type.application";
+		};
+		CAE7A10F99299C7E591B19E2 /* KalintisizCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2BC4B12F61112A8E89EDA05D /* Build configuration list for PBXNativeTarget "KalintisizCoreTests" */;
+			buildPhases = (
+				4691545E162FAB1962F034D2 /* Sources */,
+				2EFD21AD41DAC78F58C6EF6C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KalintisizCoreTests;
+			packageProductDependencies = (
+				912F20DEA2340A42A16D154C /* KalintisizCore */,
+			);
+			productName = KalintisizCoreTests;
+			productReference = 3CCF1716F8347CCAE7B5285C /* KalintisizCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5D4574171BFDDA4F8F4A2153 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					73A9D5094581E171CC77D21B = {
+						ProvisioningStyle = Manual;
+					};
+					CAE7A10F99299C7E591B19E2 = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 27809ECE4934CFD38C2E6DEB /* Build configuration list for PBXProject "Kalintisiz" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 97310C710F23CD274252B3FA;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				6BFF99FB8ABC2C2FC861CF60 /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = CB6F218479F97EBB53393E25 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				73A9D5094581E171CC77D21B /* Kalintisiz */,
+				CAE7A10F99299C7E591B19E2 /* KalintisizCoreTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4691545E162FAB1962F034D2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				572AACE97E0641EE242C8E92 /* AppInspectorTests.swift in Sources */,
+				54B68500B1E7213834F179BA /* EndToEndTests.swift in Sources */,
+				BE464AF135A2E047A48DE488 /* FileOpsTests.swift in Sources */,
+				A8D949460878CB3C8E9536C5 /* Fixtures.swift in Sources */,
+				4E7117CDCEF6E0ADDB96C4C0 /* HistoryStoreTests.swift in Sources */,
+				B7620FA1CF86514E670C490C /* LaunchdScannerTests.swift in Sources */,
+				FD2775436A3B9998543979B6 /* LeftoverScannerTests.swift in Sources */,
+				88A222BC830B02B2E0F06237 /* PresentationTests.swift in Sources */,
+				475F5C967A5D54E735A94C30 /* ProtectedPathsTests.swift in Sources */,
+				CBB389648BB1A4D7C49888ED /* ReceiptScannerTests.swift in Sources */,
+				341099FD43EC11B5394480C3 /* RestorerTests.swift in Sources */,
+				FF77DFCA7F68A73DC3C6F53F /* UninstallerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6716B055316D8C4C79D4B21E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9AFEA2DC267127171B6B3D91 /* AppListView.swift in Sources */,
+				6CE035AF7C250BE9D4619D43 /* AppModel.swift in Sources */,
+				6CB2F5086FECE12368BF5A6A /* AppTerminator.swift in Sources */,
+				BB138B6DEC7CB2C4B1A308E5 /* FullDiskAccess.swift in Sources */,
+				A228E1886AB1F798A012942A /* HistoryView.swift in Sources */,
+				AFB29389F57D8E3509C9985E /* KalintisizApp.swift in Sources */,
+				0B4313034210774880B5CD5C /* LeftoverListView.swift in Sources */,
+				55F97D1FE74EE5A96ED56013 /* OnboardingView.swift in Sources */,
+				E65A0A14174AF3665055EAF9 /* ScanDetailView.swift in Sources */,
+				571DB1562C0ED24D74B28173 /* UninstallResultView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0A56AD4ECA0F9002865EC6D6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		4E26E370C8EB746DF86043C0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		658817278E4273AAB697924C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/Kalintisiz.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kalintisiz.app;
+				PRODUCT_NAME = Kalintisiz;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		8214D9873A95E6364AB0AE17 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kalintisiz.KalintisizCoreTests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D41CA8B7D125A7D9450808B2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kalintisiz.KalintisizCoreTests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		EADA083D2E064CCD3C161232 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/Kalintisiz.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kalintisiz.app;
+				PRODUCT_NAME = Kalintisiz;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		27809ECE4934CFD38C2E6DEB /* Build configuration list for PBXProject "Kalintisiz" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A56AD4ECA0F9002865EC6D6 /* Debug */,
+				4E26E370C8EB746DF86043C0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		2BC4B12F61112A8E89EDA05D /* Build configuration list for PBXNativeTarget "KalintisizCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D41CA8B7D125A7D9450808B2 /* Debug */,
+				8214D9873A95E6364AB0AE17 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A61F831497635193AD8889B7 /* Build configuration list for PBXNativeTarget "Kalintisiz" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				658817278E4273AAB697924C /* Debug */,
+				EADA083D2E064CCD3C161232 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		6BFF99FB8ABC2C2FC861CF60 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0341EEE35280A2CF2A254531 /* KalintisizCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KalintisizCore;
+		};
+		912F20DEA2340A42A16D154C /* KalintisizCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KalintisizCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 5D4574171BFDDA4F8F4A2153 /* Project object */;
+}
