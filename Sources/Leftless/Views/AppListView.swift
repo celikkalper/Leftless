@@ -5,7 +5,8 @@ import SwiftUI
 struct AppListView: View {
     @Bindable var model: AppModel
 
-    private var selection: Binding<InstalledApp?> {
+    /// ⌘/⇧-click selects several apps; the detail then shows all of them for one batch uninstall.
+    private var selection: Binding<Set<InstalledApp.ID>> {
         Binding(get: { model.selection }, set: { newValue in model.tab = .apps; Task { await model.select(newValue) } })
     }
 
@@ -17,7 +18,7 @@ struct AppListView: View {
                         .accessibilityLabel("Loading apps")
                 }
                 ForEach(model.visibleApps) { app in
-                    AppRow(app: app).tag(app)
+                    AppRow(app: app).tag(app.id)
                 }
             }
         }

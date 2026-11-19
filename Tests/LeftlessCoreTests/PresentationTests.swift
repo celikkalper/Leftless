@@ -182,6 +182,78 @@ import Foundation
         #expect(!plan.isValid(for: scanResult("/Applications/T.app", [rescanned])))
     }
 
+    // MARK: - Toplu kaldırma planı
+
+    func appScan(_ name: String, _ leftovers: [Leftover]) -> ScanResult {
+        ScanResult(app: AppInfo(url: URL(fileURLWithPath: "/Applications/\(name).app"),
+                                bundleID: "com.test.\(name.lowercased())", name: name), leftovers: leftovers)
+    }
+
+    @Test func batchPlanFreezesSelectionPerApp() throws {
+        let aApp = leftover("/Applications/A.app", .appBundle, size: 100)
+        let aCache = leftover("/u/Library/Caches/a", .caches, size: 10)
+        let aLog = leftover("/u/Library/Logs/a", .logs, size: 1)
+        let bApp = leftover("/Applications/B.app", .appBundle, size: 50)
+        let bPrefs = leftover("/u/Library/Preferences/b.plist", .preferences, size: 2)
+        let a = appScan("A", [aApp, aCache, aLog]), b = appScan("B", [bApp, bPrefs])
+        var checked: Set<UUID> = [aLog.id, aApp.id, bApp.id, bPrefs.id]
+        let plan = try #require(BatchUninstallPlan(scans: [a, b], checked: checked))
+        #expect(plan.plans.map(\.scan.app.name) == ["A", "B"])
+        #expect(plan.plans[0].selected.map(\.id) == [aApp.id, aLog.id])
+        #expect(plan.plans[1].selected.map(\.id) == [bApp.id, bPrefs.id])
+        #expect(plan.summary.appCount == 2)
+        #expect(plan.summary.otherCount == 2)
+        #expect(plan.summary.totalCount == 4)
+        #expect(plan.summary.totalSize == 153)
+        // Sonradan değişen işaretler dondurulmuş planı etkilemez.
+        checked.insert(aCache.id)
+        #expect(plan.plans[0].selected.map(\.id) == [aApp.id, aLog.id])
+        #expect(plan.isValid(for: [a, b]))
+    }
+
+    @Test func batchPlanInvalidWhenAScanChanged() throws {
+        let aApp = leftover("/Applications/A.app", .appBundle, size: 100)
+        let bApp = leftover("/Applications/B.app", .appBundle, size: 50)
+        let a = appScan("A", [aApp]), b = appScan("B", [bApp])
+        let plan = try #require(BatchUninstallPlan(scans: [a, b], checked: [aApp.id, bApp.id]))
+        #expect(plan.isValid(for: [b, a]))
+        // Yeniden taranan uygulama yeni kimlikler üretir.
+        let rescanned = appScan("B", [leftover("/Applications/B.app", .appBundle, size: 50)])
+        #expect(!plan.isValid(for: [a, rescanned]))
+        // Seçimden çıkan, eklenen ya da henüz taranmamış uygulama da planı geçersiz kılar.
+        #expect(!plan.isValid(for: [a]))
+        let c = appScan("C", [leftover("/Applications/C.app", .appBundle, size: 1)])
+        #expect(!plan.isValid(for: [a, b, c]))
+        #expect(!plan.isValid(for: []))
+    }
+
+    @Test func batchPlanSkipsAppsWithNothingChecked() throws {
+        let aApp = leftover("/Applications/A.app", .appBundle, size: 100)
+        let bCache = leftover("/u/Library/Caches/b", .caches, size: 7)
+        let a = appScan("A", [aApp]), b = appScan("B", [bCache])
+        let plan = try #require(BatchUninstallPlan(scans: [a, b], checked: [bCache.id]))
+        #expect(plan.plans.map(\.scan.app.name) == ["B"])
+        #expect(plan.summary.appCount == 0)
+        #expect(plan.summary.otherCount == 1)
+        // Hiçbir şey seçilmeyen uygulama yine de seçimin parçasıdır: plan ona göre doğrulanır.
+        #expect(plan.isValid(for: [a, b]))
+        #expect(!plan.isValid(for: [b]))
+        #expect(BatchUninstallPlan(scans: [a, b], checked: []) == nil)
+        #expect(BatchUninstallPlan(scans: [], checked: [aApp.id]) == nil)
+    }
+
+    @Test func batchConfirmationText() {
+        func summary(apps: Int, others: Int) -> BatchUninstallSummary {
+            BatchUninstallSummary(appCount: apps, otherCount: others, totalSize: 0)
+        }
+        #expect(summary(apps: 3, others: 41).confirmationText(formattedSize: "1.2 GB")
+            == "3 apps and 41 items will be moved to the Trash (1.2 GB). You can undo this from History.")
+        #expect(summary(apps: 2, others: 0).confirmationText(formattedSize: "5 MB")
+            == "2 apps will be moved to the Trash (5 MB). You can undo this from History.")
+        #expect(summary(apps: 0, others: 4).confirmationText(formattedSize: "2 KB")
+            == "4 items will be moved to the Trash (2 KB). You can undo this from History.")
+    }
+
     // MARK: - Geçmiş öğesi metinleri
 
     @Test func historyItemLabelHidesPath() {

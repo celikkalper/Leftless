@@ -159,7 +159,7 @@ enum DemoData {
             history[0].id: .restorable, history[1].id: .partial(missing: 1),
             history[2].id: .restored, history[3].id: .unrecoverable
         ]
-        return AppModel(demoApps: apps, selection: selected, scan: scan, history: history, historyStatus: status)
+        return AppModel(demoApps: apps, selection: [selected], scans: [scan], history: history, historyStatus: status)
     }
 }
 #endif

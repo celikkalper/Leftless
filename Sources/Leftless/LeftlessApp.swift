@@ -95,10 +95,12 @@ struct ContentView: View {
     }
 
     @ViewBuilder private var detail: some View {
-        switch model.selection {
-        case .some:
+        switch model.selectedApps.count {
+        case 1:
             ScanDetailView(model: model)
-        case nil:
+        case 2...:
+            BatchDetailView(model: model)
+        default:
             ContentUnavailableView {
                 Label("Select an App", systemImage: "trash.square")
             } description: {

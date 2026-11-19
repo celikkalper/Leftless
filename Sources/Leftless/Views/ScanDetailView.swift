@@ -11,7 +11,7 @@ struct ScanDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             if !model.hasFullDiskAccess {
-                fullDiskAccessBanner
+                FullDiskAccessBanner(model: model, skipped: model.scan?.skippedLocations ?? [])
             }
             if let outcome = model.lastOutcome {
                 UninstallResultView(model: model, outcome: outcome)
@@ -122,14 +122,20 @@ struct ScanDetailView: View {
         }
         .padding()
     }
+}
 
-    private var fullDiskAccessBanner: some View {
+/// Yellow strip shown without Full Disk Access, with the places that weren't searched.
+struct FullDiskAccessBanner: View {
+    @Bindable var model: AppModel
+    let skipped: [String]
+
+    var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text("No Full Disk Access; some leftovers may not be shown")
-                if let skipped = model.scan?.skippedLocations, !skipped.isEmpty {
+                if !skipped.isEmpty {
                     Text("Not searched: \(skipped.joined(separator: "; "))")
                         .font(.caption)
                         .fixedSize(horizontal: false, vertical: true)

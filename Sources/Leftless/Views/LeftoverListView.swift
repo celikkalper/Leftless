@@ -6,25 +6,38 @@ import SwiftUI
 struct LeftoverListView: View {
     @Bindable var model: AppModel
     let groups: [LeftoverGroup]
-    @State private var collapsed: Set<LeftoverKind> = []
+    /// Groups whose open/closed state the user changed from the default.
+    @State private var toggled: Set<LeftoverKind> = []
+
+    var body: some View {
+        List {
+            LeftoverGroupRows(model: model, groups: groups) { kind in
+                Binding(get: { toggled.contains(kind) },
+                        set: { if $0 { toggled.insert(kind) } else { toggled.remove(kind) } })
+            }
+        }
+    }
+}
+
+/// The grouped rows (disclosure per kind) for use inside a `List`; the batch view shows one set per app.
+struct LeftoverGroupRows: View {
+    @Bindable var model: AppModel
+    let groups: [LeftoverGroup]
+    /// Whether the user flipped a group from its default open/closed state.
+    let toggled: (LeftoverKind) -> Binding<Bool>
 
     /// Çok öğeli gruplar (ör. paket dosyaları) başlangıçta kapalı.
     private static let autoCollapseThreshold = 8
 
     var body: some View {
-        List {
-            ForEach(groups) { group in
-                DisclosureGroup(isExpanded: expansion(for: group)) {
-                    ForEach(group.items) { item in
-                        LeftoverRow(item: item, isOn: binding(for: item.id))
-                    }
-                } label: {
-                    groupHeader(group)
+        ForEach(groups) { group in
+            DisclosureGroup(isExpanded: expansion(for: group)) {
+                ForEach(group.items) { item in
+                    LeftoverRow(item: item, isOn: binding(for: item.id))
                 }
+            } label: {
+                groupHeader(group)
             }
-        }
-        .onAppear {
-            collapsed = Set(groups.filter { $0.items.count > Self.autoCollapseThreshold }.map(\.kind))
         }
     }
 
@@ -43,8 +56,10 @@ struct LeftoverListView: View {
     }
 
     private func expansion(for group: LeftoverGroup) -> Binding<Bool> {
-        Binding(get: { !collapsed.contains(group.kind) },
-                set: { if $0 { collapsed.remove(group.kind) } else { collapsed.insert(group.kind) } })
+        let collapsedByDefault = group.items.count > Self.autoCollapseThreshold
+        let flipped = toggled(group.kind)
+        return Binding(get: { collapsedByDefault == flipped.wrappedValue },
+                       set: { flipped.wrappedValue = ($0 == collapsedByDefault) })
     }
 
     private func binding(for id: UUID) -> Binding<Bool> {

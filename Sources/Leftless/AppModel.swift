@@ -19,15 +19,19 @@ final class AppModel {
 
     var apps: [InstalledApp] = []
     var tab: MainTab = .apps
-    var selection: InstalledApp?
-    var scan: ScanResult?
+    /// Selected apps in list order. One app shows the single-app detail; two or more show the batch detail.
+    private(set) var selectedApps: [InstalledApp] = []
+    /// Finished scans of the selected apps (scans of deselected apps are dropped).
+    private(set) var scans: [InstalledApp.ID: ScanResult] = [:]
+    /// Checked leftovers of all shown scans (leftover ids are unique across scans).
     var checked: Set<UUID> = []
-    var isScanning = false
     var isLoadingApps = false
     var isWorking = false
     var history: [HistoryRecord] = []
     var historyStatus: [UUID: RestoreStatus] = [:]
     var lastOutcome: UninstallOutcome?
+    /// Result of a batch uninstall, one outcome per app that had items moved.
+    var batchOutcomes: [UninstallOutcome]?
     var pendingRestore: PendingRestore?
     var alertMessage: String?
     var restoreSummary: String?
@@ -38,7 +42,17 @@ final class AppModel {
 
     private let environment = ScanEnvironment.live()
     private let store = HistoryStore(directory: HistoryStore.liveDirectory())
-    private var scanToken = UUID()
+    /// Scans in progress; a result whose token no longer matches (app deselected or rescanned) is ignored.
+    private var scanTokens: [InstalledApp.ID: UUID] = [:]
+
+    var selection: Set<InstalledApp.ID> { Set(selectedApps.map(\.id)) }
+    /// The selected app when exactly one is selected.
+    var singleSelection: InstalledApp? { selectedApps.count == 1 ? selectedApps[0] : nil }
+    /// Scan shown by the single-app detail.
+    var scan: ScanResult? { singleSelection.flatMap { scans[$0.id] } }
+    var isScanning: Bool { !scanTokens.isEmpty }
+    /// Scans of the selected apps in list order (missing while an app is still being scanned).
+    var selectedScans: [ScanResult] { selectedApps.compactMap { scans[$0.id] } }
 
     var visibleApps: [InstalledApp] {
         AppListArrangement.arrange(apps, query: searchText, sort: sort, excludingBundleIDs: Self.ownBundleIDs)
@@ -58,14 +72,16 @@ final class AppModel {
 
     #if DEBUG
     /// A model filled with fictional apps and history, for screenshots. Nothing is read from disk.
-    init(demoApps: [InstalledApp], selection: InstalledApp?, scan: ScanResult?,
+    init(demoApps: [InstalledApp], selection: [InstalledApp], scans: [ScanResult],
          history: [HistoryRecord], historyStatus: [UUID: RestoreStatus]) {
         isDemo = true
         hasFullDiskAccess = true
         apps = demoApps
-        self.selection = selection
-        self.scan = scan
-        checked = Set((scan?.leftovers ?? []).filter(\.selectedByDefault).map(\.id))
+        selectedApps = selection
+        for scan in scans {
+            self.scans[scan.app.url.path] = scan
+            checked.formUnion(scan.leftovers.filter(\.selectedByDefault).map(\.id))
+        }
         self.history = history
         self.historyStatus = historyStatus
     }
@@ -113,43 +129,63 @@ final class AppModel {
 
     // MARK: - Tarama
 
-    func select(_ newSelection: InstalledApp?) async {
-        // Kaldırma/geri yükleme sürerken seçim değişmez: sonuç ve plan hep aynı uygulamaya ait kalır.
+    func select(_ app: InstalledApp?) async {
+        await select(app.map { [$0.id] } ?? [], known: app.map { [$0] } ?? [])
+    }
+
+    /// Changes the selection. Scans of apps that stay selected are kept; deselected apps' scans are dropped
+    /// (and their running scans ignored); newly selected apps are scanned concurrently.
+    func select(_ ids: Set<InstalledApp.ID>, known: [InstalledApp] = []) async {
+        // Kaldırma/geri yükleme sürerken seçim değişmez: sonuç ve plan hep aynı uygulamalara ait kalır.
         guard !isWorking else { return }
-        guard newSelection != selection || (scan == nil && !isScanning) else { return }
-        selection = newSelection
-        lastOutcome = nil
-        scan = nil
-        checked = []
-        guard let app = newSelection else {
-            scanToken = UUID()   // sürmekte olan tarama sonucu yok sayılır
-            isScanning = false
-            return
+        var byID: [InstalledApp.ID: InstalledApp] = [:]
+        for app in apps + selectedApps + known { byID[app.id] = app }
+        let ordered = visibleApps.map(\.id) + apps.map(\.id) + selectedApps.map(\.id) + known.map(\.id)
+        var seen = Set<InstalledApp.ID>()
+        let newApps = ordered.compactMap { id -> InstalledApp? in
+            guard ids.contains(id), seen.insert(id).inserted else { return nil }
+            return byID[id]
         }
+        let needsScan = newApps.filter { scans[$0.id] == nil && scanTokens[$0.id] == nil }
+        guard Set(newApps.map(\.id)) != selection || !needsScan.isEmpty else { return }
+        selectedApps = newApps
+        lastOutcome = nil
+        batchOutcomes = nil
+        let keep = Set(newApps.map(\.id))
+        scans = scans.filter { keep.contains($0.key) }
+        scanTokens = scanTokens.filter { keep.contains($0.key) }   // sürmekte olan eski taramalar yok sayılır
+        let shownIDs = Set(scans.values.flatMap { $0.leftovers.map(\.id) })
+        checked = checked.intersection(shownIDs)
+        let tasks = needsScan.map { startScan($0) }
+        for task in tasks { await task.value }
+    }
+
+    private func startScan(_ app: InstalledApp) -> Task<Void, Never> {
         let token = UUID()
-        scanToken = token
-        isScanning = true
+        scanTokens[app.id] = token
         let env = environment
         let restricted = !hasFullDiskAccess
-        let result = await Task.detached {
-            let commands = ProcessCommandRunner()
-            let inspector = AppInspector(commands: commands)
-            let info = (try? inspector.inspect(app.info.url, includeTeamID: true)) ?? app.info
-            // Koruma listesi taramayla birlikte diskten okunur: arayüz listesinin yüklenmesine bağlı değildir.
-            var installed = InstalledApps(environment: env, inspector: inspector).infos()
-            let path = app.info.url.standardizedFileURL.path
-            if !installed.contains(where: { $0.url.standardizedFileURL.path == path }) { installed.append(app.info) }
-            let scanner = LeftoverScanner(
-                environment: env, installedApps: installed,
-                launchd: LaunchdScanner(environment: env),
-                receipts: ReceiptScanner(environment: env, provider: PkgutilReceiptProvider()),
-                commands: commands, restricted: restricted)
-            return scanner.scan(info)
-        }.value
-        guard scanToken == token else { return }
-        scan = result
-        checked = Set(result.leftovers.filter(\.selectedByDefault).map(\.id))
-        isScanning = false
+        return Task {
+            let result = await Task.detached {
+                let commands = ProcessCommandRunner()
+                let inspector = AppInspector(commands: commands)
+                let info = (try? inspector.inspect(app.info.url, includeTeamID: true)) ?? app.info
+                // Koruma listesi taramayla birlikte diskten okunur: arayüz listesinin yüklenmesine bağlı değildir.
+                var installed = InstalledApps(environment: env, inspector: inspector).infos()
+                let path = app.info.url.standardizedFileURL.path
+                if !installed.contains(where: { $0.url.standardizedFileURL.path == path }) { installed.append(app.info) }
+                let scanner = LeftoverScanner(
+                    environment: env, installedApps: installed,
+                    launchd: LaunchdScanner(environment: env),
+                    receipts: ReceiptScanner(environment: env, provider: PkgutilReceiptProvider()),
+                    commands: commands, restricted: restricted)
+                return scanner.scan(info)
+            }.value
+            guard scanTokens[app.id] == token else { return }
+            scanTokens[app.id] = nil
+            scans[app.id] = result
+            checked.formUnion(result.leftovers.filter(\.selectedByDefault).map(\.id))
+        }
     }
 
     /// Bırakılan ilk `.app` paketini seçer; listede yoksa listeye eklenir.
@@ -182,6 +218,10 @@ final class AppModel {
     }
 
     // MARK: - Kaldırma
+
+    func isRunning(_ app: AppInfo) -> Bool {
+        !AppTerminator.runningInstances(bundleID: app.bundleID).isEmpty
+    }
 
     func isRunning(_ plan: UninstallPlan) -> Bool {
         !AppTerminator.runningInstances(bundleID: plan.scan.app.bundleID).isEmpty
@@ -221,7 +261,60 @@ final class AppModel {
     }
 
     private func isShowing(_ app: AppInfo) -> Bool {
-        return selection?.info.url == app.url
+        return singleSelection?.info.url == app.url
+    }
+
+    /// Apps of the plan that are open now, in plan order.
+    func runningApps(in plan: BatchUninstallPlan) -> [AppInfo] {
+        plan.plans.map(\.scan.app).filter(isRunning)
+    }
+
+    /// Batch version of `uninstall(_:quitFirst:)`: one quit step for all running apps (if any fails to quit,
+    /// nothing is moved), then one `uninstall(batch:)` run (one record per app, one password prompt).
+    func uninstall(_ plan: BatchUninstallPlan, quitFirst: Bool) async {
+        guard !isWorking else { return }
+        isWorking = true
+        defer { isWorking = false }
+        if quitFirst {
+            var bundleIDs: [String] = []
+            for app in plan.plans.map(\.scan.app) where !bundleIDs.contains(app.bundleID) { bundleIDs.append(app.bundleID) }
+            let quits = bundleIDs.map { id in Task { await AppTerminator.quit(bundleID: id, timeout: 5) } }
+            var failedIDs = Set<String>()
+            for (id, quit) in zip(bundleIDs, quits) {
+                if await !quit.value { failedIDs.insert(id) }
+            }
+            let failed = plan.plans.map(\.scan.app).filter { failedIDs.contains($0.bundleID) }.map(\.name)
+            guard failed.isEmpty else {
+                // Hiçbir şey taşınmaz: kapanmayan uygulama(lar) adıyla bildirilir.
+                let names = ListFormatter.localizedString(byJoining: failed)
+                alertMessage = failed.count == 1
+                    ? String(localized: "Nothing was moved because \(names) couldn't be quit. Please quit the app and try again.")
+                    : String(localized: "Nothing was moved because \(names) couldn't be quit. Please quit these apps and try again.")
+                return
+            }
+        }
+        guard plan.isValid(for: selectedScans) else { return }
+        let jobs = plan.plans.map {
+            UninstallJob(scan: $0.scan, selected: $0.selected, icon: Self.iconData(for: $0.scan.app.url))
+        }
+        let env = environment, store = store
+        let result = await Task.detached {
+            let commands = ProcessCommandRunner()
+            let uninstaller = Uninstaller(
+                history: store, files: SystemFileMover(),
+                privileged: OsascriptPrivilegedExecutor(commands: commands), commands: commands,
+                environment: env, trashDirectory: env.home.appendingPathComponent(".Trash", isDirectory: true))
+            return Result { try uninstaller.uninstall(batch: jobs) }
+        }.value
+        switch result {
+        case .success(let outcomes):
+            // A job left with no items (all claimed by an earlier app) has no saved record: not shown.
+            if plan.isValid(for: selectedScans) { batchOutcomes = outcomes.filter { !$0.record.items.isEmpty } }
+            reloadHistory()
+            reloadApps()
+        case .failure:
+            alertMessage = String(localized: "Couldn't write the history record; no files were moved.")
+        }
     }
 
     // MARK: - Geri yükleme
@@ -266,10 +359,13 @@ final class AppModel {
         if lastOutcome?.record.id == r.id { lastOutcome = nil }
         reloadHistory()
         reloadApps()
-        if let app = selection, FileManager.default.fileExists(atPath: app.info.url.path) {
-            scan = nil
-            await select(app)
-        }
+        // A batch result stays on screen (each row shows its own restore state); otherwise the shown apps are
+        // scanned again, since restored files may be their leftovers.
+        guard batchOutcomes == nil else { return }
+        let rescan = selectedApps.filter { FileManager.default.fileExists(atPath: $0.info.url.path) }
+        guard !rescan.isEmpty else { return }
+        for app in rescan { scans[app.id] = nil }
+        await select(selection)
     }
 
     func deleteRecord(_ r: HistoryRecord) {

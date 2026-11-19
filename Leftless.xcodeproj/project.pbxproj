@@ -16,6 +16,7 @@
 		3869DC80BD72CAC4172F52E2 /* LeftoverScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB498A3EF72DE013863B74D /* LeftoverScannerTests.swift */; };
 		39EBF8DC93D185500B2540BF /* LeftlessCore in Frameworks */ = {isa = PBXBuildFile; productRef = 14333BC8776F6465869BEBEA /* LeftlessCore */; };
 		4258A966DE21D3574FE259EC /* ScanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 452A29380F5065D9D094CED9 /* ScanDetailView.swift */; };
+		4B4D296F326FAF18ACFE3F5A /* BatchDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174BEFD518CD952C4E19C3D2 /* BatchDetailView.swift */; };
 		5BD2F23C44E82F705DB4A8BC /* Fixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16629EF476AAC20BF9F466C /* Fixtures.swift */; };
 		6E69EAB1AFF0F2E46A7A622A /* Screenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CAFCD41D3E5EBB87C04FBE5 /* Screenshots.swift */; };
 		713A74BD3968C979115BD624 /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC134C96C9EF5D24AEC91700 /* PresentationTests.swift */; };
@@ -45,6 +46,7 @@
 		0F14DCD72E89BE0908E99E7B /* ReceiptScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptScannerTests.swift; sourceTree = "<group>"; };
 		116E59E7F4A6F520DAE2EED0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		14FE338E8B6FFB2792FB4F4A /* AppInspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInspectorTests.swift; sourceTree = "<group>"; };
+		174BEFD518CD952C4E19C3D2 /* BatchDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchDetailView.swift; sourceTree = "<group>"; };
 		452A29380F5065D9D094CED9 /* ScanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDetailView.swift; sourceTree = "<group>"; };
 		4C7711F47F435BDB690948B3 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		576EC41B059E20852C2D8CCC /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
@@ -170,6 +172,7 @@
 			isa = PBXGroup;
 			children = (
 				B5CF0DD98C2B25CA4DD8400A /* AppListView.swift */,
+				174BEFD518CD952C4E19C3D2 /* BatchDetailView.swift */,
 				BEA9DFBB1F025636B0512658 /* HistoryView.swift */,
 				D29FED4CBAD0CA1DEB474D5A /* LeftoverListView.swift */,
 				CC75783F56DC8897AE3D8B51 /* OnboardingView.swift */,
@@ -318,6 +321,7 @@
 				2F019E03B04593C88950031E /* AppListView.swift in Sources */,
 				80336BFF40A289FAD5FBFA43 /* AppModel.swift in Sources */,
 				DC7AF2EC9A3E3320AFBD8C67 /* AppTerminator.swift in Sources */,
+				4B4D296F326FAF18ACFE3F5A /* BatchDetailView.swift in Sources */,
 				0A3E7E70D00E18A2E1421BC9 /* FullDiskAccess.swift in Sources */,
 				EDA298F9EE06FDD53163AFD8 /* HistoryView.swift in Sources */,
 				2377D38714AA71D4C6C4968A /* LeftlessApp.swift in Sources */,
