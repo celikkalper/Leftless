@@ -48,7 +48,9 @@ public struct LeftoverScanner: Sendable {
             ("HTTPStorages", .httpStorages), ("WebKit", .webKit), ("Cookies", .cookies),
             ("Containers", .container), ("Group Containers", .groupContainer),
             ("Application Scripts", .applicationScripts),
-            ("Internet Plug-Ins", .plugin), ("Audio/Plug-Ins", .plugin), ("PreferencePanes", .plugin),
+            ("Internet Plug-Ins", .plugin), ("PreferencePanes", .plugin),
+            ("Audio/Plug-Ins/Components", .plugin), ("Audio/Plug-Ins/HAL", .plugin),
+            ("Audio/Plug-Ins/VST", .plugin), ("Audio/Plug-Ins/VST3", .plugin), ("Audio/Plug-Ins/MAS", .plugin),
             ("QuickLook", .plugin), ("Services", .plugin), ("Screen Savers", .plugin),
         ]
         for (name, kind) in both {
@@ -108,31 +110,28 @@ public struct LeftoverScanner: Sendable {
         let others = installedApps.filter { $0.bundleID.lowercased() != app.bundleID.lowercased() }
         let level = Self.matchLevel(entryName, keys: keys)
 
-        if level == .certain {
-            // Başka bir yüklü uygulamanın bundle ID'sine certain eşleşiyorsa o uygulamanındır.
-            if others.contains(where: { Self.matchesBundleID(entryName, other: $0) }) { return nil }
-            return (.certain, nil)
+        // Başka bir yüklü uygulamanın girdisi mi? Yalnızca o kimlik, taranan uygulamanınkinden
+        // daha spesifikse (iç içe kimlikler: Chrome / Chrome.canary) atlanır.
+        let ownMatch = Self.matchesBundleID(entryName, other: app)
+        for other in others where Self.matchesBundleID(entryName, other: other) {
+            if ownMatch && app.bundleID.count >= other.bundleID.count { continue }
+            return nil
         }
-        if others.contains(where: { Self.matchesBundleID(entryName, other: $0) }) { return nil }
 
         let sibling = others
             .filter { Self.sharesVendor($0, with: app, keys: keys) }
             .min { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         let note = sibling.map { "\($0.name) da kullanıyor olabilir" }
 
-        switch level {
-        case .vendor:
+        // Üretici klasörü (ör. "Microsoft", "Spotify"): kardeş uygulama varsa ortaktır.
+        if let note, let vendor = Self.vendorName(keys), Self.stripped(entryName) == vendor {
             return (.probable, note)
-        case .name:
-            return (.probable, nil)
-        case .certain:
-            return (.certain, nil)
-        case nil:
-            // Üretici klasörü (ör. "Microsoft"): yalnızca başka bir kardeş uygulama yüklüyse listelenir.
-            if let note, let vendor = Self.vendorName(keys), Self.stripped(entryName) == vendor {
-                return (.probable, note)
-            }
-            return nil
+        }
+        switch level {
+        case .certain: return (.certain, nil)
+        case .vendor: return (.probable, note)
+        case .name: return (.probable, nil)
+        case nil: return nil
         }
     }
 
@@ -187,13 +186,16 @@ public struct LeftoverScanner: Sendable {
         for name in candidates {
             if hasBundlePrefix(name, bundleID) { raise(.certain) }
             if let team, name.hasPrefix(team + ".") {
-                if name.contains(bundleID) || appNames.contains(where: { name.contains($0) }) { raise(.certain) }
+                let rest = String(name.dropFirst(team.count + 1))
+                if hasBundlePrefix(rest, bundleID) || appNames.contains(where: { containsAsWords(rest, $0) }) { raise(.certain) }
                 else { raise(.vendor) }
             }
             if appNames.contains(name) { raise(.certain) }
             if let vp = keys.vendorPrefix?.lowercased(), name.hasPrefix(vp) { raise(.vendor) }
-            if appNames.contains(where: { containsAsWords(name, $0) }) { raise(.name) }
         }
+        // Kelime eşleşmesi özgün harf durumuyla yapılır (ZoomAudioDevice -> zoom, audio, device).
+        for original in [entryName, (entryName as NSString).deletingPathExtension]
+        where appNames.contains(where: { containsAsWords(original, $0) }) { raise(.name) }
         return best
     }
 
@@ -202,8 +204,8 @@ public struct LeftoverScanner: Sendable {
         let name = stripped(entryName)
         let appNames = keys.names.map { $0.lowercased() }
         if appNames.contains(name) || appNames.contains(entryName.lowercased()) { return .certain }
-        let raw = entryName.lowercased()
-        if appNames.contains(where: { containsAsWords(raw, $0) || containsAsWords(name, $0) }) { return .name }
+        let original = (entryName as NSString).deletingPathExtension
+        if appNames.contains(where: { containsAsWords(entryName, $0) || containsAsWords(original, $0) }) { return .name }
         return nil
     }
 
@@ -225,7 +227,10 @@ public struct LeftoverScanner: Sendable {
         let raw = entryName.lowercased()
         for name in [raw, stripped(entryName)] {
             if hasBundlePrefix(name, bundleID) { return true }
-            if let team = other.teamID?.lowercased(), name.hasPrefix(team + "."), name.contains(bundleID) { return true }
+            // <herhangi önek>.<bundleID>: Group Container (team ID) ve group./groups. türevleri.
+            for (i, ch) in name.enumerated() where ch == "." {
+                if hasBundlePrefix(String(name.dropFirst(i + 1)), bundleID) { return true }
+            }
         }
         return false
     }
@@ -252,7 +257,21 @@ public struct LeftoverScanner: Sendable {
         return false
     }
 
+    /// Harf/rakam dışı ayraçlarda ve küçük→büyük harf geçişlerinde böler; küçük harfe çevirir.
     private static func tokens(_ s: String) -> [String] {
-        s.lowercased().split(whereSeparator: { !$0.isLetter && !$0.isNumber }).map(String.init)
+        var words: [String] = [], current = ""
+        var prevLower = false
+        for ch in s {
+            guard ch.isLetter || ch.isNumber else {
+                if !current.isEmpty { words.append(current.lowercased()); current = "" }
+                prevLower = false
+                continue
+            }
+            if ch.isUppercase && prevLower, !current.isEmpty { words.append(current.lowercased()); current = "" }
+            current.append(ch)
+            prevLower = ch.isLowercase
+        }
+        if !current.isEmpty { words.append(current.lowercased()) }
+        return words
     }
 }

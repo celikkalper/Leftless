@@ -49,3 +49,11 @@ import Foundation
     #expect(!ProtectedPaths.isProtected(URL(fileURLWithPath: "/tmp/x"), root: r))
     #expect(!ProtectedPaths.isProtected(URL(fileURLWithPath: "/etc/hosts"), root: r))
 }
+
+@Test func appleDerivedContainersAreProtected() {
+    let r = URL(fileURLWithPath: "/")
+    for n in ["group.com.apple.notes", "ABCDE12345.groups.com.apple.podcasts", "Group.COM.Apple.Notes"] {
+        #expect(ProtectedPaths.isProtected(URL(fileURLWithPath: "/Users/a/Library/Group Containers/\(n)"), root: r), "\(n)")
+    }
+    #expect(!ProtectedPaths.isProtected(URL(fileURLWithPath: "/Users/a/Library/Caches/com.applesauce.app"), root: r))
+}

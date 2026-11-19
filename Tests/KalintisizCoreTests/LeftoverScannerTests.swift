@@ -184,3 +184,48 @@ private func find(_ r: ScanResult, _ suffix: String) -> Leftover? {
     let dup = AppInfo(url: URL(fileURLWithPath: "/A/Zed.app"), bundleID: "dev.zed.Zed", name: "Zedit", executableName: "zedit")
     #expect(MatchKeys(app: dup).names == ["Zedit"])
 }
+
+@Test func vendorFolderMatchingAppNameIsProbableWithSibling() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    let podcasts = AppInfo(url: URL(fileURLWithPath: "/nonexistent/Podcasts.app"),
+                           bundleID: "com.spotify.podcasts", name: "Spotify Podcasts")
+    try fs.touch("Users/tester/Library/Application Support/Spotify/x")
+    let r = scan(fs, app: spotify, installed: [spotify, podcasts])
+    let item = try #require(find(r, "Application Support/Spotify"))
+    #expect(item.confidence == .probable)
+    #expect(item.note == "Spotify Podcasts da kullanıyor olabilir")
+}
+
+@Test func siblingTeamPrefixedGroupContainerIsNotListed() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    let other = AppInfo(url: URL(fileURLWithPath: "/nonexistent/Other.app"), bundleID: "com.spotify.other", name: "Other")
+    try fs.touch("Users/tester/Library/Group Containers/ABCDE12345.com.spotify.other/x")
+    try fs.touch("Users/tester/Library/Group Containers/ABCDE12345.com.spotify.client/x")
+    let r = scan(fs, app: spotify, installed: [spotify, other])
+    #expect(find(r, "ABCDE12345.com.spotify.other") == nil)
+    #expect(find(r, "ABCDE12345.com.spotify.client")?.confidence == .certain)
+}
+
+@Test func nestedBundleIDsKeepOwnLeftovers() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    let chrome = AppInfo(url: URL(fileURLWithPath: "/nonexistent/Chrome.app"), bundleID: "com.google.Chrome", name: "Google Chrome")
+    let canary = AppInfo(url: URL(fileURLWithPath: "/nonexistent/Canary.app"), bundleID: "com.google.Chrome.canary", name: "Chrome Canary")
+    try fs.touch("Users/tester/Library/Caches/com.google.Chrome.canary/x")
+    try fs.touch("Users/tester/Library/Caches/com.google.Chrome/x")
+    let c = scan(fs, app: canary, installed: [chrome, canary])
+    #expect(find(c, "Caches/com.google.Chrome.canary")?.confidence == .certain)
+    #expect(find(c, "Caches/com.google.Chrome") == nil)
+    let g = scan(fs, app: chrome, installed: [chrome, canary])
+    #expect(find(g, "Caches/com.google.Chrome.canary") == nil)
+    #expect(find(g, "Caches/com.google.Chrome")?.confidence == .certain)
+}
+
+@Test func audioPluginSubfoldersAreScanned() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    let zoom = AppInfo(url: URL(fileURLWithPath: "/nonexistent/zoom.us.app"), bundleID: "us.zoom.xos", name: "zoom.us")
+    try fs.touch("Library/Audio/Plug-Ins/HAL/ZoomAudioDevice.driver/x")
+    let r = scan(fs, app: AppInfo(url: zoom.url, bundleID: zoom.bundleID, name: "Zoom"))
+    let item = try #require(find(r, "Plug-Ins/HAL/ZoomAudioDevice.driver"))
+    #expect(item.kind == .plugin)
+    #expect(item.requiresAdmin)
+}

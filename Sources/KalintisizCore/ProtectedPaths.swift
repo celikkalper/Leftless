@@ -22,7 +22,8 @@ public enum ProtectedPaths {
         // /var, /etc, /tmp aslında /private altındadır.
         if privateAliases.contains(where: { isWithin(relative, $0) }) { relative = "/private" + relative }
 
-        if let last = relative.split(separator: "/").last, last.hasPrefix("com.apple.") { return true }
+        // com.apple.* ile başlayanlar ve group.com.apple.* / <TEAM>.groups.com.apple.* gibi türevler.
+        if let last = relative.split(separator: "/").last, last.contains("com.apple.") { return true }
         if allowedExceptions.contains(where: { isWithin(relative, $0) }) { return false }
         return protectedPrefixes.contains { isWithin(relative, $0) }
     }
