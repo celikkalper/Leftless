@@ -291,11 +291,12 @@ public struct OrphanPlan: Identifiable, Sendable {
         summary.confirmationText(appName: "", formattedSize: formattedSize)
     }
 
-    /// The single uninstall job (one "Orphaned leftovers" history record) for this plan.
-    public func job(home: URL) -> UninstallJob {
+    /// The single uninstall job (one "Orphaned leftovers" history record) for this plan; `selected`
+    /// narrows the planned items (e.g. to those still orphaned right before moving).
+    public func job(home: URL, selected: [Leftover]? = nil) -> UninstallJob {
         let app = AppInfo(url: home.appendingPathComponent("Library", isDirectory: true),
                           bundleID: Self.bundleID, name: L("Orphaned leftovers"))
-        return UninstallJob(scan: ScanResult(app: app, leftovers: items), selected: selected, icon: nil,
+        return UninstallJob(scan: ScanResult(app: app, leftovers: items), selected: selected ?? self.selected, icon: nil,
                             operation: .orphans)
     }
 }

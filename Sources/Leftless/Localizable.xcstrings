@@ -1743,6 +1743,130 @@
         }
       }
     },
+    "%lld items were skipped because they now belong to an app on this Mac." : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Objekt wurde übersprungen, da es jetzt zu einer App auf diesem Mac gehört."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Objekte wurden übersprungen, da sie jetzt zu einer App auf diesem Mac gehören."
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld item was skipped because it now belongs to an app on this Mac."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld items were skipped because they now belong to an app on this Mac."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se ha omitido %lld ítem porque ahora pertenece a una app de este Mac."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se han omitido %lld ítems porque ahora pertenecen a una app de este Mac."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld élément a été ignoré, car il appartient désormais à une app de ce Mac."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld éléments ont été ignorés, car ils appartiennent désormais à une app de ce Mac."
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld 項目は現在このMac上のアプリのものであるため、スキップされました。"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld item foi ignorado porque agora pertence a um app deste Mac."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld itens foram ignorados porque agora pertencem a um app deste Mac."
+                }
+              }
+            }
+          }
+        },
+        "tr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld öğe artık bu Mac'teki bir uygulamaya ait olduğu için atlandı."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld öğe artık bu Mac'teki bir uygulamaya ait olduğu için atlandı."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld items were skipped." : {
       "localizations" : {
         "de" : {
@@ -3971,6 +4095,86 @@
         }
       }
     },
+    "Nothing was moved. Scan again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es wurde nichts bewegt. Bitte erneut suchen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha trasladado nada. Vuelve a buscar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rien n'a été déplacé. Lancez une nouvelle recherche."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "何も移動されませんでした。もう一度スキャンしてください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nada foi movido. Verifique novamente."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiçbir şey taşınmadı. Yeniden tarayın."
+          }
+        }
+      }
+    },
+    "Nothing was moved: the selected items now belong to apps on this Mac. Scan again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es wurde nichts bewegt: Die ausgewählten Objekte gehören jetzt zu Apps auf diesem Mac. Bitte erneut suchen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha trasladado nada: los ítems seleccionados ahora pertenecen a apps de este Mac. Vuelve a buscar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rien n'a été déplacé : les éléments sélectionnés appartiennent désormais à des apps de ce Mac. Lancez une nouvelle recherche."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "何も移動されませんでした。選択した項目は現在このMac上のアプリのものです。もう一度スキャンしてください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nada foi movido: os itens selecionados agora pertencem a apps deste Mac. Verifique novamente."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiçbir şey taşınmadı: seçili öğeler artık bu Mac'teki uygulamalara ait. Yeniden tarayın."
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "de" : {
@@ -5463,6 +5667,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adım %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "The list changed. Scan again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Liste hat sich geändert. Bitte erneut suchen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La lista ha cambiado. Vuelve a buscar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La liste a changé. Lancez une nouvelle recherche."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リストが変更されました。もう一度スキャンしてください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A lista mudou. Verifique novamente."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liste değişti. Yeniden tarayın."
           }
         }
       }

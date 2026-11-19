@@ -409,6 +409,7 @@ import Foundation
         #expect(job.scan.app.url.path == "/Users/me/Library")
         #expect(job.scan.app.bundleID == "leftless.orphans")
         #expect(job.scan.app.name == "Orphaned leftovers")
+        #expect(plan.job(home: URL(fileURLWithPath: "/Users/me"), selected: []).selected.isEmpty)
     }
 
     @Test func historyTitleFollowsOperation() {

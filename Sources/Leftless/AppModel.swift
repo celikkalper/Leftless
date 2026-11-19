@@ -107,6 +107,8 @@ final class AppModel {
             let list = await Task.detached {
                 InstalledApps(environment: env, inspector: AppInspector(commands: ProcessCommandRunner())).list()
             }.value
+            // The first load isn't a change (the orphan scan reads installed apps itself).
+            if !apps.isEmpty, Set(list.map(\.id)) != Set(apps.map(\.id)) { discardOrphanScan() }
             apps = list
             isLoadingApps = false
         }
@@ -208,6 +210,7 @@ final class AppModel {
     func handleDrop(_ urls: [URL]) {
         guard !isWorking, let url = urls.first(where: { $0.pathExtension == "app" }) else { return }
         tab = .apps   // a dropped app is always shown on the Apps tab, even if it is already selected
+        discardOrphanScan()   // the dropped app may own listed orphans
         let path = url.standardizedFileURL.path
         if let existing = apps.first(where: { $0.info.url.standardizedFileURL.path == path }) {
             Task { await select(existing) }
@@ -270,6 +273,7 @@ final class AppModel {
         case .success(let outcome):
             if isShowing(plan.scan.app) { lastOutcome = outcome }
             if !outcome.record.items.isEmpty { discardScans(of: [plan.scan.app]) }
+            discardOrphanScan()
             reloadHistory()
             reloadApps()
         case .failure:
@@ -337,6 +341,7 @@ final class AppModel {
             if plan.isValid(for: selectedScans), !shown.isEmpty { batchOutcomes = shown }
             // Outcomes come back in job order; apps that had something moved are scanned again when next shown.
             discardScans(of: zip(plan.plans, outcomes).filter { !$1.record.items.isEmpty }.map(\.0.scan.app))
+            discardOrphanScan()
             reloadHistory()
             reloadApps()
         case .failure:
@@ -367,31 +372,58 @@ final class AppModel {
         orphanChecked = []
     }
 
+    /// Drops the shown orphan scan (and a running one) when the set of apps may have changed: a listed item
+    /// could belong to an app that is installed again. The user has to scan again.
+    func discardOrphanScan() {
+        orphanScanToken = nil
+        orphanScan = nil
+        orphanChecked = []
+    }
+
     /// Moves the frozen plan's items to the Trash as one "Orphaned leftovers" record. Nothing is moved if the
-    /// scan on screen was replaced since confirmation. On success the scan is cleared (a rescan is needed).
+    /// scan on screen was replaced since confirmation. Right before moving, the installed apps are read again
+    /// and items that now belong to one are left alone. Afterwards the scan is cleared (a rescan is needed).
     func moveOrphans(_ plan: OrphanPlan) async {
         guard !isWorking else { return }
         isWorking = true
         defer { isWorking = false }
-        guard plan.isValid(for: orphanScan) else { return }
-        let job = plan.job(home: environment.home)
+        guard plan.isValid(for: orphanScan) else {
+            discardOrphanScan()
+            alertMessage = String(localized: "The list changed. Scan again.")
+            return
+        }
         let env = environment, store = store
-        let result = await Task.detached {
+        let planned = plan.selected
+        let (result, kept) = await Task.detached { () -> (Result<[UninstallOutcome], Error>?, [Leftover]) in
             let commands = ProcessCommandRunner()
+            let known = InstalledApps(environment: env, inspector: AppInspector(commands: commands))
+                .knownApps(commands: commands)
+            let kept = OrphanScanner(environment: env, knownApps: known).stillOrphaned(planned)
+            guard !kept.isEmpty else { return (nil, kept) }
+            let job = plan.job(home: env.home, selected: kept)
             let uninstaller = Uninstaller(
                 history: store, files: SystemFileMover(),
                 privileged: OsascriptPrivilegedExecutor(commands: commands), commands: commands,
                 environment: env, trashDirectory: env.home.appendingPathComponent(".Trash", isDirectory: true))
-            return Result { try uninstaller.uninstall(batch: [job]) }
+            return (Result { try uninstaller.uninstall(batch: [job]) }, kept)
         }.value
+        let skipped = planned.count - kept.count
         switch result {
-        case .success(let outcomes):
-            orphanScanToken = nil
-            orphanScan = nil
-            orphanChecked = []
-            if let outcome = outcomes.first, !outcome.record.items.isEmpty { orphanOutcome = outcome }
+        case nil:
+            discardOrphanScan()
+            alertMessage = String(localized: "Nothing was moved: the selected items now belong to apps on this Mac. Scan again.")
+        case .success(let outcomes)?:
+            discardOrphanScan()
+            if let outcome = outcomes.first, !outcome.record.items.isEmpty {
+                orphanOutcome = outcome
+                if skipped > 0 {
+                    alertMessage = String(localized: "\(skipped) items were skipped because they now belong to an app on this Mac.")
+                }
+            } else {
+                alertMessage = String(localized: "Nothing was moved. Scan again.")
+            }
             reloadHistory()
-        case .failure:
+        case .failure?:
             alertMessage = String(localized: "Couldn't write the history record; no files were moved.")
         }
     }
@@ -437,6 +469,7 @@ final class AppModel {
         isWorking = false   // yeniden tarama `select` ile yapılacağı için burada kapatılır
         if lastOutcome?.record.id == r.id { lastOutcome = nil }
         if orphanOutcome?.record.id == r.id { orphanOutcome = nil }
+        discardOrphanScan()   // a restored app (or restored files) can make listed items owned again
         reloadHistory()
         reloadApps()
         // A batch result stays on screen (each row shows its own restore state); otherwise the shown apps are

@@ -251,3 +251,33 @@ private func names(_ r: OrphanScanResult) -> Set<String> {
     let k = KnownApps(bundleIDs: [], names: ["Electron", "Helper", "App", "Foo", "Riot Client", "Sound-Wave 2"])
     #expect(k.names == ["riotclient", "soundwave2"])
 }
+
+@Test func stillOrphanedDropsItemsOfAppsInstalledSinceTheScan() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    try fs.touch(lib("Caches/com.vendor.soundwave/cache.db"))
+    try fs.touch(lib("Group Containers/ABCDE12345.com.vendor.soundwave.shared/x"))
+    try fs.touch(lib("Preferences/net.other.tool.plist"))
+    try writePlist(fs, lib("LaunchAgents/com.gone.sync.plist"), ["Label": "com.gone.sync"])
+    let items = scan(fs, known: []).groups.flatMap(\.items)
+    #expect(items.count == 4)
+
+    // Nothing changed: every item is still an orphan.
+    let same = OrphanScanner(environment: env(fs), knownApps: KnownApps(bundleIDs: []))
+    #expect(same.stillOrphaned(items).map(\.id) == items.map(\.id))
+
+    // SoundWave and the sync agent's app were restored: only the other tool's file is left.
+    let now = OrphanScanner(environment: env(fs),
+                            knownApps: KnownApps(bundleIDs: ["com.vendor.soundwave", "com.gone.sync"]))
+    #expect(now.stillOrphaned(items).map(\.url.lastPathComponent) == ["net.other.tool.plist"])
+}
+
+@Test func stillOrphanedDropsLaunchAgentWhoseProgramIsBack() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    try writePlist(fs, lib("LaunchAgents/com.acme.editor.agent.plist"),
+                   ["Label": "com.acme.editor.agent", "Program": "/Applications/Gone.app/Contents/MacOS/x"])
+    let items = scan(fs, known: []).groups.flatMap(\.items)
+    #expect(items.count == 1)
+    try fs.touch("Applications/Gone.app/Contents/MacOS/x")
+    let now = OrphanScanner(environment: env(fs), knownApps: KnownApps(bundleIDs: []))
+    #expect(now.stillOrphaned(items).isEmpty)
+}

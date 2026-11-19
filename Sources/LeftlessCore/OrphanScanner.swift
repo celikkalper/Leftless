@@ -114,20 +114,10 @@ public struct OrphanScanner: Sendable {
         var result: [(root: String, item: Leftover)] = []
         for file in entries(of: environment.homePath("Library/LaunchAgents")) where file.pathExtension == "plist" {
             guard !ProtectedPaths.isProtected(file, root: environment.root) else { continue }
-            let plist = (try? Data(contentsOf: file))
-                .flatMap { try? PropertyListSerialization.propertyList(from: $0, format: nil) } as? [String: Any]
-            let label = plist?["Label"] as? String
-            if let label, ProtectedPaths.isAppleBundleID(label) { continue }
-
-            let id = Self.identifier(file.lastPathComponent, groupContainer: false)
-            let orphan: Bool
-            switch plist.map(programState) ?? .unresolvable {
-            case .missing: orphan = true
-            case .present: orphan = false
-            case .unresolvable: orphan = id.map { !isOwned($0) } ?? false
-            }
+            let (orphan, label) = launchAgentState(file)
             guard orphan else { continue }
 
+            let id = Self.identifier(file.lastPathComponent, groupContainer: false)
             let root = id.map(Self.identifierRoot)
                 ?? label.flatMap { $0.isEmpty ? nil : Self.identifierRoot($0) }
                 ?? file.deletingPathExtension().lastPathComponent
@@ -136,6 +126,36 @@ public struct OrphanScanner: Sendable {
             result.append((root, item))
         }
         return result
+    }
+
+    /// Is this LaunchAgent plist an orphan (see `launchAgents()`), and its label.
+    private func launchAgentState(_ file: URL) -> (orphan: Bool, label: String?) {
+        let plist = (try? Data(contentsOf: file))
+            .flatMap { try? PropertyListSerialization.propertyList(from: $0, format: nil) } as? [String: Any]
+        let label = plist?["Label"] as? String
+        if let label, ProtectedPaths.isAppleBundleID(label) { return (false, label) }
+        let id = Self.identifier(file.lastPathComponent, groupContainer: false)
+        switch plist.map(programState) ?? .unresolvable {
+        case .missing: return (true, label)
+        case .present: return (false, label)
+        case .unresolvable: return (id.map { !isOwned($0) } ?? false, label)
+        }
+    }
+
+    // MARK: - Recheck
+
+    /// The given items (from an earlier scan) that are still orphans with this scanner's known apps, in order.
+    /// Used right before moving: an item whose app was installed or restored since the scan is dropped.
+    public func stillOrphaned(_ items: [Leftover]) -> [Leftover] {
+        items.filter(isStillOrphan)
+    }
+
+    private func isStillOrphan(_ item: Leftover) -> Bool {
+        guard !ProtectedPaths.isProtected(item.url, root: environment.root) else { return false }
+        if item.kind == .launchAgent { return launchAgentState(item.url).orphan }
+        guard let id = Self.identifier(item.url.lastPathComponent, groupContainer: item.kind == .groupContainer)
+        else { return false }
+        return !isOwned(id)
     }
 
     private enum ProgramState { case present, missing, unresolvable }
