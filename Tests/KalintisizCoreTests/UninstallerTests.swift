@@ -7,6 +7,7 @@ private final class FakeFiles: FileMoving, @unchecked Sendable {
     var existing = Set<String>()
     var trashCalls: [String] = []
     var failing = Set<String>()
+    var permissionDenied = Set<String>()
     var onFirstTrash: (() -> Void)?
     private var didFire = false
     let trashRoot = "/trash"
@@ -15,7 +16,10 @@ private final class FakeFiles: FileMoving, @unchecked Sendable {
         lock.lock(); defer { lock.unlock() }
         if !didFire { didFire = true; onFirstTrash?() }
         trashCalls.append(url.path)
-        if failing.contains(url.path) { throw CocoaError(.fileWriteNoPermission) }
+        if failing.contains(url.path) { throw CocoaError(.fileWriteUnknown) }
+        if permissionDenied.contains(url.path) {
+            throw CocoaError(.fileWriteUnknown, userInfo: [NSUnderlyingErrorKey: POSIXError(.EACCES)])
+        }
         existing.remove(url.path)
         let dest = uniqueTrashURL(for: url, trashDirectory: URL(fileURLWithPath: trashRoot)) { existing.contains($0.path) }
         existing.insert(dest.path)
@@ -238,5 +242,59 @@ private struct Rig {
         rig.files.failing.insert(user.url.path)
         _ = try rig.uninstaller().uninstall(rig.scan([user, admin]), selected: [user, admin], icon: nil)
         #expect(!rig.priv.calls[0].contains { $0.contains("pkgutil") })
+    }
+
+    @Test func permissionDeniedTrashFallsBackToPrivilegedMove() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let bundle = rig.leftover("/Applications/X.app", kind: .appBundle)
+        let prefs = rig.leftover("/Users/t/Library/Preferences/com.x.plist", kind: .preferences)
+        rig.files.permissionDenied.insert(bundle.url.path)
+        nonisolated(unsafe) var manifestTarget: String?
+        rig.priv.action = { cmds in
+            manifestTarget = (try? rig.store.all())?.first?.items.first?.trashPath
+            #expect(cmds.contains("[ ! -e '/trash/X.app' ] && /bin/mv -n '/Applications/X.app' '/trash/X.app'"))
+            rig.files.existing.remove(bundle.url.path)
+            rig.files.existing.insert("/trash/X.app")
+        }
+        let out = try rig.uninstaller().uninstall(rig.scan([bundle, prefs]), selected: [bundle, prefs], icon: nil)
+        #expect(rig.priv.calls.count == 1)
+        #expect(out.record.items[0].state == .trashed)
+        #expect(out.record.items[0].requiresAdmin)
+        #expect(out.record.items[0].trashPath == "/trash/X.app")
+        #expect(manifestTarget == "/trash/X.app")
+        #expect(out.record.items[1].state == .trashed)
+        #expect(out.failures.isEmpty)
+    }
+
+    @Test func nonPermissionTrashErrorDoesNotEscalate() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let a = rig.leftover("/u/a")
+        rig.files.failing.insert(a.url.path)
+        let out = try rig.uninstaller().uninstall(rig.scan([a]), selected: [a], icon: nil)
+        #expect(rig.priv.calls.isEmpty)
+        #expect(out.record.items[0].state == .failed)
+        #expect(!out.record.items[0].requiresAdmin)
+    }
+
+    @Test func skipsPrivilegedBatchWhenRetargetedManifestCannotBeSaved() throws {
+        let rig = Rig()
+        let dir = rig.tmp.appendingPathComponent("h")
+        let fm = FileManager.default
+        defer {
+            try? fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: dir.path)
+            try? fm.removeItem(at: rig.tmp)
+        }
+        let user = rig.leftover("/u/a")
+        let admin = rig.leftover("/Library/b", admin: true)
+        // İlk manifest yazıldıktan sonra kayıt klasörü salt okunur olur: ikinci kayıt başarısız.
+        rig.files.onFirstTrash = { try? fm.setAttributes([.posixPermissions: 0o555], ofItemAtPath: dir.path) }
+        let out = try rig.uninstaller().uninstall(rig.scan([user, admin]), selected: [user, admin], icon: nil)
+        #expect(rig.priv.calls.isEmpty)
+        #expect(out.record.items[0].state == .trashed)
+        #expect(out.record.items[1].state == .failed)
+        #expect(out.record.items[1].error == "Kayıt güncellenemedi")
+        #expect(out.failures.count == 1)
     }
 }

@@ -69,6 +69,9 @@ public struct Uninstaller: Sendable {
                 let trashed = try files.trash(URL(fileURLWithPath: items[index].originalPath))
                 items[index].state = .trashed
                 items[index].trashPath = trashed.path
+            } catch where Self.isPermissionError(error) {
+                // Ör. root:wheel 755 paket: yönetici taşımasına aktarılır (hedef aşağıda seçilip kaydedilir).
+                items[index].requiresAdmin = true
             } catch {
                 items[index].state = .failed
                 items[index].error = error.localizedDescription
@@ -86,12 +89,21 @@ public struct Uninstaller: Sendable {
             retargeted.insert(target.path)
             items[index].trashPath = target.path
         }
+        var manifestSaved = true
         if !adminIndices.isEmpty {
             record.items = items
-            // Dosyalar zaten taşınmış olabilir; hedef güncellemesi kaydedilemese de devam edilir.
-            try? history.save(record)
+            do {
+                try history.save(record)
+            } catch {
+                // Root, diskteki manifestte olmayan hedeflere taşıma yapmamalı: yönetici adımı atlanır.
+                manifestSaved = false
+                for index in adminIndices {
+                    items[index].state = .failed
+                    items[index].error = "Kayıt güncellenemedi"
+                }
+            }
         }
-        for index in adminIndices {
+        for index in adminIndices where manifestSaved {
             guard let target = items[index].trashPath else { continue }
             let src = ShellQuoting.quote(items[index].originalPath), dst = ShellQuoting.quote(target)
             adminCommands.append("[ ! -e \(dst) ] && /bin/mv -n \(src) \(dst)")
@@ -99,7 +111,7 @@ public struct Uninstaller: Sendable {
         adminCommands += receiptsToForget(result: result, selected: selected, items: items)
             .map { "/usr/sbin/pkgutil --forget \(ShellQuoting.quote($0))" }
 
-        if !adminCommands.isEmpty {
+        if manifestSaved, !adminCommands.isEmpty {
             var privilegedError: String?
             do {
                 try privileged.run(adminCommands)
@@ -127,6 +139,17 @@ public struct Uninstaller: Sendable {
         // Dosyalar zaten taşındı; kayıt güncellenemese de sonuç döndürülür (ilk manifest diskte).
         try? history.save(record)
         return UninstallOutcome(record: record, failures: items.filter { $0.state == .failed })
+    }
+
+    /// Yazma izni hatası mı (Cocoa NSFileWriteNoPermission ya da altta yatan POSIX EACCES/EPERM)?
+    static func isPermissionError(_ error: Error) -> Bool {
+        let ns = error as NSError
+        if ns.domain == NSCocoaErrorDomain, ns.code == NSFileWriteNoPermissionError || ns.code == NSFileReadNoPermissionError {
+            return true
+        }
+        if ns.domain == NSPOSIXErrorDomain, ns.code == Int(EACCES) || ns.code == Int(EPERM) { return true }
+        if let underlying = ns.userInfo[NSUnderlyingErrorKey] as? Error { return isPermissionError(underlying) }
+        return false
     }
 
     private static func isLaunchd(_ kind: LeftoverKind) -> Bool {

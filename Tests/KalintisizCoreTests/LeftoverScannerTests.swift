@@ -229,3 +229,73 @@ private func find(_ r: ScanResult, _ suffix: String) -> Leftover? {
     #expect(item.kind == .plugin)
     #expect(item.requiresAdmin)
 }
+
+@Test func readOnlyBundleInWritableParentRequiresAdmin() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    let bundle = try fs.makeApp(name: "Locked", bundleID: "com.locked.app")
+    let support = try fs.touch("Users/tester/Library/Application Support/Locked/x").deletingLastPathComponent()
+    let fm = FileManager.default
+    try fm.setAttributes([.posixPermissions: 0o555], ofItemAtPath: bundle.path)
+    try fm.setAttributes([.posixPermissions: 0o555], ofItemAtPath: support.path)
+    defer {
+        try? fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: bundle.path)
+        try? fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: support.path)
+    }
+    let app = AppInfo(url: bundle, bundleID: "com.locked.app", name: "Locked")
+    let r = scan(fs, app: app)
+    let item = try #require(r.leftovers.first { $0.kind == .appBundle })
+    #expect(item.requiresAdmin)
+    #expect(find(r, "Application Support/Locked")?.requiresAdmin == true)
+    // Yazılabilir paket yönetici gerektirmez.
+    try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: bundle.path)
+    #expect(scan(fs, app: app).leftovers.first { $0.kind == .appBundle }?.requiresAdmin == false)
+}
+
+@Test func genericExecutableNamesAreIgnored() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    let code = AppInfo(url: URL(fileURLWithPath: "/nonexistent/Visual Studio Code.app"),
+                       bundleID: "com.microsoft.VSCode", name: "Visual Studio Code", executableName: "Electron")
+    try fs.touch("Users/tester/Library/Application Support/Electron/x")
+    try fs.touch("Users/tester/Library/Caches/Electron/x")
+    try fs.touch("Users/tester/Library/Caches/com.microsoft.VSCode/x")
+    let r = scan(fs, app: code)
+    #expect(find(r, "Application Support/Electron") == nil)
+    #expect(find(r, "Caches/Electron") == nil)
+    #expect(find(r, "Caches/com.microsoft.VSCode")?.confidence == .certain)
+    #expect(!MatchKeys(app: AppInfo(url: code.url, bundleID: "a.b.c", name: "Updater", executableName: "Helper"))
+        .names.contains { ["updater", "helper"].contains($0.lowercased()) })
+}
+
+@Test func executableOnlyMatchesAreCappedAtProbable() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    let app = AppInfo(url: URL(fileURLWithPath: "/nonexistent/Foo Studio.app"),
+                      bundleID: "com.foo.studio", name: "Foo Studio", executableName: "FooEngine")
+    try fs.touch("Users/tester/Library/Application Support/FooEngine/x")
+    try fs.touch("Users/tester/Library/Application Support/Foo Studio/x")
+    let r = scan(fs, app: app)
+    #expect(find(r, "Application Support/FooEngine")?.confidence == .probable)
+    #expect(find(r, "Application Support/Foo Studio")?.confidence == .certain)
+    // Yürütülebilir ad uygulama adıyla aynıysa (harf farkı dahil) certain kalır.
+    let same = AppInfo(url: app.url, bundleID: "com.foo.studio", name: "Fooengine", executableName: "FooEngine")
+    #expect(find(scan(fs, app: same), "Application Support/FooEngine")?.confidence == .certain)
+}
+
+@Test func restrictedScanSkipsPersonalFoldersAndContainers() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    try fs.touch("Users/tester/Documents/Spotify/a")
+    try fs.touch("Users/tester/Music/Spotify/a")
+    try fs.touch("Users/tester/Library/Containers/com.spotify.client/x")
+    try fs.touch("Users/tester/Library/Group Containers/ABCDE12345.com.spotify.client/x")
+    try fs.touch("Users/tester/Library/Caches/com.spotify.client/x")
+    let r = LeftoverScanner(environment: makeEnv(fs), installedApps: [spotify], restricted: true).scan(spotify)
+    #expect(find(r, "Documents/Spotify") == nil)
+    #expect(find(r, "Music/Spotify") == nil)
+    #expect(find(r, "Containers/com.spotify.client") == nil)
+    #expect(find(r, "ABCDE12345.com.spotify.client") == nil)
+    #expect(find(r, "Caches/com.spotify.client") != nil)
+    #expect(r.skippedLocations.count == 2)
+    #expect(r.skippedLocations[0].contains("Belgeler"))
+    let full = scan(fs, app: spotify)
+    #expect(full.skippedLocations.isEmpty)
+    #expect(find(full, "Containers/com.spotify.client") != nil)
+}

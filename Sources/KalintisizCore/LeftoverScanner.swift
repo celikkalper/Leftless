@@ -5,9 +5,14 @@ public struct MatchKeys: Sendable {
     public var bundleID: String
     /// Bundle ID'nin ilk iki bileşeni + "." (yalnızca ≥3 bileşen varsa), ör. `com.spotify.`.
     public var vendorPrefix: String?
-    /// Uygulama adı ve yürütülebilir ad; 4 karakterden kısalar atılır.
+    /// Uygulama adı ve yürütülebilir ad; 4 karakterden kısalar ve genel adlar (`genericNames`) atılır.
     public var names: [String]
+    /// `names` içinde yalnızca yürütülebilir addan gelenler (küçük harf); bunlarla eşleşme en çok probable olur.
+    public var executableOnlyNames: Set<String>
     public var teamID: String?
+
+    /// Birçok uygulamanın paylaştığı yürütülebilir/uygulama adları: eşleşmede hiç kullanılmaz.
+    static let genericNames: Set<String> = ["electron", "helper", "launcher", "main", "app", "run", "updater"]
 
     public init(app: AppInfo) {
         bundleID = app.bundleID
@@ -16,8 +21,10 @@ public struct MatchKeys: Sendable {
         vendorPrefix = parts.count >= 3 ? parts[0] + "." + parts[1] + "." : nil
         var seen = Set<String>()
         names = [app.name, app.executableName ?? ""].filter { name in
-            name.count >= 4 && seen.insert(name.lowercased()).inserted
+            name.count >= 4 && !Self.genericNames.contains(name.lowercased()) && seen.insert(name.lowercased()).inserted
         }
+        let appName = app.name.lowercased()
+        executableOnlyNames = Set(names.map { $0.lowercased() }.filter { $0 != appName })
     }
 }
 
@@ -27,10 +34,14 @@ public struct LeftoverScanner: Sendable {
     private let launchd: LaunchdScanner?
     private let receipts: ReceiptScanner?
     private let commands: CommandRunning?
+    private let restricted: Bool
 
+    /// `restricted`: Tam Disk Erişimi yokken sistem izin pencerelerini tetikleyen yerler
+    /// (kişisel klasörler, konteynerler) aranmaz; `ScanResult.skippedLocations` bunları listeler.
     public init(environment: ScanEnvironment, installedApps: [AppInfo], launchd: LaunchdScanner? = nil,
-                receipts: ReceiptScanner? = nil, commands: CommandRunning? = nil) {
+                receipts: ReceiptScanner? = nil, commands: CommandRunning? = nil, restricted: Bool = false) {
         self.environment = environment
+        self.restricted = restricted
         self.installedApps = installedApps
         self.launchd = launchd
         self.receipts = receipts
@@ -78,10 +89,8 @@ public struct LeftoverScanner: Sendable {
 
         // Uygulamanın kendisi
         if FileManager.default.fileExists(atPath: app.url.path) {
-            let parent = app.url.deletingLastPathComponent().path
             found.append(Leftover(url: app.url, kind: .appBundle, confidence: .certain,
-                                  size: directorySize(app.url),
-                                  requiresAdmin: !FileManager.default.isWritableFile(atPath: parent)))
+                                  size: directorySize(app.url), requiresAdmin: Self.needsAdmin(app.url)))
         }
 
         func consider(_ entry: URL, kind: LeftoverKind, admin: Bool) {
@@ -89,10 +98,14 @@ public struct LeftoverScanner: Sendable {
                   let (confidence, note) = Self.evaluate(entry.lastPathComponent, app: app, keys: keys,
                                                          installedApps: installedApps) else { return }
             found.append(Leftover(url: entry, kind: kind, confidence: confidence,
-                                  size: directorySize(entry), requiresAdmin: admin, note: note))
+                                  size: directorySize(entry), requiresAdmin: admin || Self.needsAdmin(entry), note: note))
         }
 
+        var skipped: [String] = []
+        if restricted { skipped = [Self.personalFoldersDisplayName, Self.containersDisplayName] }
+
         for loc in Self.locations {
+            if restricted, !loc.system, loc.kind == .container || loc.kind == .groupContainer { continue }
             let dir = loc.system ? environment.path("/Library/\(loc.name)")
                                  : environment.homePath("Library/\(loc.name)")
             for entry in entries(of: dir) { consider(entry, kind: loc.kind, admin: loc.system) }
@@ -101,12 +114,12 @@ public struct LeftoverScanner: Sendable {
             for entry in entries(of: cache) { consider(entry, kind: .caches, admin: false) }
         }
 
-        for folder in Self.personalFolders {
+        for folder in Self.personalFolders where !restricted {
             for entry in entries(of: environment.homePath(folder)) {
                 guard !ProtectedPaths.isProtected(entry, root: root),
                       Self.nameMatch(entry.lastPathComponent, keys: keys) != nil else { continue }
                 found.append(Leftover(url: entry, kind: .personalFolder, confidence: .probable,
-                                      size: directorySize(entry)))
+                                      size: directorySize(entry), requiresAdmin: Self.needsAdmin(entry)))
             }
         }
 
@@ -116,7 +129,22 @@ public struct LeftoverScanner: Sendable {
             leftovers = Self.deduplicated(leftovers + receipts.scan(app, keys: keys, installedApps: installedApps,
                                                                     excluding: leftovers.map(\.url)))
         }
-        return ScanResult(app: app, leftovers: leftovers, systemExtensions: systemExtensions(for: keys))
+        return ScanResult(app: app, leftovers: leftovers, systemExtensions: systemExtensions(for: keys),
+                          skippedLocations: skipped)
+    }
+
+    static let personalFoldersDisplayName = "Belgeler, Masaüstü, İndirilenler, Müzik, Filmler, Resimler"
+    static let containersDisplayName = "Uygulama kapsayıcıları (Containers, Group Containers)"
+
+    /// Taşımak için üst klasöre yazma izni gerekir; bir klasörü başka bir üst klasöre taşımak ise
+    /// klasörün kendisine de yazma izni ister (ör. root:wheel 755 App Store paketleri).
+    static func needsAdmin(_ url: URL) -> Bool {
+        let fm = FileManager.default
+        if !fm.isWritableFile(atPath: url.deletingLastPathComponent().path) { return true }
+        var isDir: ObjCBool = false
+        let isRealDir = fm.fileExists(atPath: url.path, isDirectory: &isDir) && isDir.boolValue
+            && (try? url.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) != true
+        return isRealDir && !fm.isWritableFile(atPath: url.path)
     }
 
     /// `systemextensionsctl list` çıktısında bundle ID / team ID geçen satırlar.
@@ -198,6 +226,7 @@ public struct LeftoverScanner: Sendable {
         let bundleID = keys.bundleID.lowercased()
         let team = keys.teamID?.lowercased()
         let appNames = keys.names.map { $0.lowercased() }
+        let strongNames = appNames.filter { !keys.executableOnlyNames.contains($0) }
 
         var best: MatchLevel?
         func raise(_ level: MatchLevel) {
@@ -212,10 +241,11 @@ public struct LeftoverScanner: Sendable {
             if hasBundlePrefix(name, bundleID) { raise(.certain) }
             if let team, name.hasPrefix(team + ".") {
                 let rest = String(name.dropFirst(team.count + 1))
-                if hasBundlePrefix(rest, bundleID) || appNames.contains(where: { containsAsWords(rest, $0) }) { raise(.certain) }
+                if hasBundlePrefix(rest, bundleID) || strongNames.contains(where: { containsAsWords(rest, $0) }) { raise(.certain) }
                 else { raise(.vendor) }
             }
-            if appNames.contains(name) { raise(.certain) }
+            // Yalnızca yürütülebilir adla (uygulama adından farklıysa) tam eşleşme en çok probable olur.
+            if strongNames.contains(name) { raise(.certain) } else if appNames.contains(name) { raise(.name) }
             if let vp = keys.vendorPrefix?.lowercased(), name.hasPrefix(vp) { raise(.vendor) }
         }
         // Kelime eşleşmesi özgün harf durumuyla yapılır (ZoomAudioDevice -> zoom, audio, device).

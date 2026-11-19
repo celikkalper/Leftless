@@ -21,19 +21,25 @@ public struct InstalledApps: Sendable {
     }
 
     public func list() -> [InstalledApp] {
-        let dirs = [environment.path("/Applications"), environment.homePath("Applications")]
-        var apps: [InstalledApp] = []
-        for dir in dirs {
-            for appURL in appBundles(in: dir, depth: 1) {
-                guard let info = try? inspector.inspect(appURL, includeTeamID: false),
-                      !ProtectedPaths.isAppleBundleID(info.bundleID) else { continue }
-                apps.append(InstalledApp(info: info, bundleSize: directorySize(appURL)))
-            }
-        }
+        let apps = infos().map { InstalledApp(info: $0, bundleSize: directorySize($0.url)) }
         return apps.sorted {
             let c = $0.info.name.localizedCaseInsensitiveCompare($1.info.name)
             return c == .orderedSame ? $0.id < $1.id : c == .orderedAscending
         }
+    }
+
+    /// Yüklü uygulamaların kimlik bilgileri; boyut hesaplanmaz (tarama sırasında hızlı koruma listesi için).
+    public func infos() -> [AppInfo] {
+        let dirs = [environment.path("/Applications"), environment.homePath("Applications")]
+        var result: [AppInfo] = []
+        for dir in dirs {
+            for appURL in appBundles(in: dir, depth: 1) {
+                guard let info = try? inspector.inspect(appURL, includeTeamID: false),
+                      !ProtectedPaths.isAppleBundleID(info.bundleID) else { continue }
+                result.append(info)
+            }
+        }
+        return result
     }
 
     /// `dir` içindeki .app paketleri; `depth` kadar alt klasöre iner (.app içine inmez).

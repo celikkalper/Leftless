@@ -87,11 +87,15 @@ public struct ScanResult: Sendable {
     public var app: AppInfo
     public var leftovers: [Leftover]
     public var systemExtensions: [String]
+    /// Kısıtlı taramada (Tam Disk Erişimi yok) aranmayan yerlerin görünen adları.
+    public var skippedLocations: [String]
 
-    public init(app: AppInfo, leftovers: [Leftover], systemExtensions: [String] = []) {
+    public init(app: AppInfo, leftovers: [Leftover], systemExtensions: [String] = [],
+                skippedLocations: [String] = []) {
         self.app = app
         self.leftovers = leftovers
         self.systemExtensions = systemExtensions
+        self.skippedLocations = skippedLocations
     }
 
     public var totalSize: Int64 { leftovers.reduce(0) { $0 + $1.size } }

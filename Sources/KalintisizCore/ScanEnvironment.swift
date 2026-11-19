@@ -27,19 +27,30 @@ public struct ProcessCommandRunner: CommandRunning {
         process.standardOutput = out
         process.standardError = err
         try process.run()
-        // Boru dolup kilitlenmesin diye süreç bitmeden okunur.
-        var outData = Data(), errData = Data()
+        // Boru dolup kilitlenmesin diye süreç bitmeden okunur: stderr arka planda, stdout bu iş parçacığında.
+        let errBox = DataBox()
         let group = DispatchGroup()
         group.enter()
-        DispatchQueue.global().async { outData = out.fileHandleForReading.readDataToEndOfFile(); group.leave() }
-        group.enter()
-        DispatchQueue.global().async { errData = err.fileHandleForReading.readDataToEndOfFile(); group.leave() }
+        DispatchQueue.global().async {
+            errBox.set(err.fileHandleForReading.readDataToEndOfFile())
+            group.leave()
+        }
+        let outData = out.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
         group.wait()
+        let errData = errBox.get()
         return CommandOutput(status: process.terminationStatus,
                              stdout: String(decoding: outData, as: UTF8.self),
                              stderr: String(decoding: errData, as: UTF8.self))
     }
+}
+
+/// Arka plan okumasının sonucunu kilitle korunan biçimde taşır.
+private final class DataBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var data = Data()
+    func set(_ value: Data) { lock.lock(); data = value; lock.unlock() }
+    func get() -> Data { lock.lock(); defer { lock.unlock() }; return data }
 }
 
 /// Kök/home soyutlaması: testler sahte kök kullanır, canlı ortamda kök "/" olur.
