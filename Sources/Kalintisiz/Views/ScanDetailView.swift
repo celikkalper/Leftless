@@ -49,7 +49,8 @@ struct ScanDetailView: View {
 
     private func proceed(with plan: UninstallPlan) {
         if model.isRunning(plan) {
-            quitPlan = plan
+            // Onay penceresi kapanırken yeni pencere açılmaz: bir sonraki çalışma döngüsünde gösterilir.
+            Task { @MainActor in quitPlan = plan }
         } else {
             Task { await model.uninstall(plan, quitFirst: false) }
         }
@@ -126,7 +127,15 @@ struct ScanDetailView: View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .accessibilityHidden(true)
-            Text("Tam Disk Erişimi yok; bazı kalıntılar görünmeyebilir")
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Tam Disk Erişimi yok; bazı kalıntılar görünmeyebilir")
+                if let skipped = model.scan?.skippedLocations, !skipped.isEmpty {
+                    Text("Aranmayan yerler: \(skipped.joined(separator: "; "))")
+                        .font(.caption)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .accessibilityElement(children: .combine)
             Spacer()
             Button("İzin Ver") { model.onboardingSkipped = false }
                 .accessibilityLabel("Tam Disk Erişimi izni ver")

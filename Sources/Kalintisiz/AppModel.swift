@@ -95,15 +95,20 @@ final class AppModel {
         scanToken = token
         isScanning = true
         let env = environment
-        let installed = apps.map(\.info)
+        let restricted = !hasFullDiskAccess
         let result = await Task.detached {
             let commands = ProcessCommandRunner()
-            let info = (try? AppInspector(commands: commands).inspect(app.info.url, includeTeamID: true)) ?? app.info
+            let inspector = AppInspector(commands: commands)
+            let info = (try? inspector.inspect(app.info.url, includeTeamID: true)) ?? app.info
+            // Koruma listesi taramayla birlikte diskten okunur: arayüz listesinin yüklenmesine bağlı değildir.
+            var installed = InstalledApps(environment: env, inspector: inspector).infos()
+            let path = app.info.url.standardizedFileURL.path
+            if !installed.contains(where: { $0.url.standardizedFileURL.path == path }) { installed.append(app.info) }
             let scanner = LeftoverScanner(
                 environment: env, installedApps: installed,
                 launchd: LaunchdScanner(environment: env),
                 receipts: ReceiptScanner(environment: env, provider: PkgutilReceiptProvider()),
-                commands: commands)
+                commands: commands, restricted: restricted)
             return scanner.scan(info)
         }.value
         guard scanToken == token else { return }
