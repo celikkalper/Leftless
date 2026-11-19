@@ -1,0 +1,258 @@
+import Foundation
+
+/// Bir uygulamayı Library klasörlerindeki girdilerle eşleştirmek için anahtarlar.
+public struct MatchKeys: Sendable {
+    public var bundleID: String
+    /// Bundle ID'nin ilk iki bileşeni + "." (yalnızca ≥3 bileşen varsa), ör. `com.spotify.`.
+    public var vendorPrefix: String?
+    /// Uygulama adı ve yürütülebilir ad; 4 karakterden kısalar atılır.
+    public var names: [String]
+    public var teamID: String?
+
+    public init(app: AppInfo) {
+        bundleID = app.bundleID
+        teamID = app.teamID
+        let parts = app.bundleID.split(separator: ".", omittingEmptySubsequences: false)
+        vendorPrefix = parts.count >= 3 ? parts[0] + "." + parts[1] + "." : nil
+        var seen = Set<String>()
+        names = [app.name, app.executableName ?? ""].filter { name in
+            name.count >= 4 && seen.insert(name.lowercased()).inserted
+        }
+    }
+}
+
+public struct LeftoverScanner: Sendable {
+    private let environment: ScanEnvironment
+    private let installedApps: [AppInfo]
+
+    public init(environment: ScanEnvironment, installedApps: [AppInfo]) {
+        self.environment = environment
+        self.installedApps = installedApps
+    }
+
+    // MARK: - Tarama
+
+    private struct Location {
+        var name: String
+        var kind: LeftoverKind
+        var system: Bool   // /Library altı mı (requiresAdmin)
+        var user: Bool     // ~/Library altında da aranır mı
+    }
+
+    private static let locations: [Location] = {
+        var l: [Location] = []
+        let both: [(String, LeftoverKind)] = [
+            ("Application Support", .applicationSupport), ("Caches", .caches),
+            ("Preferences", .preferences), ("Preferences/ByHost", .preferences),
+            ("Logs", .logs), ("Saved Application State", .savedState),
+            ("HTTPStorages", .httpStorages), ("WebKit", .webKit), ("Cookies", .cookies),
+            ("Containers", .container), ("Group Containers", .groupContainer),
+            ("Application Scripts", .applicationScripts),
+            ("Internet Plug-Ins", .plugin), ("Audio/Plug-Ins", .plugin), ("PreferencePanes", .plugin),
+            ("QuickLook", .plugin), ("Services", .plugin), ("Screen Savers", .plugin),
+        ]
+        for (name, kind) in both {
+            l.append(Location(name: name, kind: kind, system: false, user: true))
+            l.append(Location(name: name, kind: kind, system: true, user: false))
+        }
+        l.append(Location(name: "PrivilegedHelperTools", kind: .privilegedHelper, system: true, user: false))
+        l.append(Location(name: "Extensions", kind: .kernelExtension, system: true, user: false))
+        return l
+    }()
+
+    private static let personalFolders = ["Documents", "Desktop", "Downloads", "Music", "Movies", "Pictures"]
+
+    public func scan(_ app: AppInfo) -> ScanResult {
+        let keys = MatchKeys(app: app)
+        let root = environment.root
+        var found: [Leftover] = []
+
+        // Uygulamanın kendisi
+        if FileManager.default.fileExists(atPath: app.url.path) {
+            let parent = app.url.deletingLastPathComponent().path
+            found.append(Leftover(url: app.url, kind: .appBundle, confidence: .certain,
+                                  size: directorySize(app.url),
+                                  requiresAdmin: !FileManager.default.isWritableFile(atPath: parent)))
+        }
+
+        func consider(_ entry: URL, kind: LeftoverKind, admin: Bool) {
+            guard !ProtectedPaths.isProtected(entry, root: root),
+                  let (confidence, note) = evaluate(entry.lastPathComponent, app: app, keys: keys) else { return }
+            found.append(Leftover(url: entry, kind: kind, confidence: confidence,
+                                  size: directorySize(entry), requiresAdmin: admin, note: note))
+        }
+
+        for loc in Self.locations {
+            let dir = loc.system ? environment.path("/Library/\(loc.name)")
+                                 : environment.homePath("Library/\(loc.name)")
+            for entry in entries(of: dir) { consider(entry, kind: loc.kind, admin: loc.system) }
+        }
+        if let cache = environment.userCacheDir {
+            for entry in entries(of: cache) { consider(entry, kind: .caches, admin: false) }
+        }
+
+        for folder in Self.personalFolders {
+            for entry in entries(of: environment.homePath(folder)) {
+                guard !ProtectedPaths.isProtected(entry, root: root),
+                      Self.nameMatch(entry.lastPathComponent, keys: keys) != nil else { continue }
+                found.append(Leftover(url: entry, kind: .personalFolder, confidence: .probable,
+                                      size: directorySize(entry)))
+            }
+        }
+
+        return ScanResult(app: app, leftovers: Self.deduplicated(found), systemExtensions: [])
+    }
+
+    /// Bir girdinin güvenini ve (varsa) notunu hesaplar; listelenmemeli ise nil.
+    private func evaluate(_ entryName: String, app: AppInfo, keys: MatchKeys) -> (Confidence, String?)? {
+        let others = installedApps.filter { $0.bundleID.lowercased() != app.bundleID.lowercased() }
+        let level = Self.matchLevel(entryName, keys: keys)
+
+        if level == .certain {
+            // Başka bir yüklü uygulamanın bundle ID'sine certain eşleşiyorsa o uygulamanındır.
+            if others.contains(where: { Self.matchesBundleID(entryName, other: $0) }) { return nil }
+            return (.certain, nil)
+        }
+        if others.contains(where: { Self.matchesBundleID(entryName, other: $0) }) { return nil }
+
+        let sibling = others
+            .filter { Self.sharesVendor($0, with: app, keys: keys) }
+            .min { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        let note = sibling.map { "\($0.name) da kullanıyor olabilir" }
+
+        switch level {
+        case .vendor:
+            return (.probable, note)
+        case .name:
+            return (.probable, nil)
+        case .certain:
+            return (.certain, nil)
+        case nil:
+            // Üretici klasörü (ör. "Microsoft"): yalnızca başka bir kardeş uygulama yüklüyse listelenir.
+            if let note, let vendor = Self.vendorName(keys), Self.stripped(entryName) == vendor {
+                return (.probable, note)
+            }
+            return nil
+        }
+    }
+
+    private func entries(of dir: URL) -> [URL] {
+        (try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil, options: [])) ?? []
+    }
+
+    /// Aynı URL iki kez çıkarsa yüksek güven kalır; sıra: certain önce, büyük boyut önce.
+    private static func deduplicated(_ items: [Leftover]) -> [Leftover] {
+        var byPath: [String: Leftover] = [:]
+        for item in items {
+            let key = item.url.standardizedFileURL.path
+            if let existing = byPath[key], !(item.confidence == .certain && existing.confidence == .probable) { continue }
+            byPath[key] = item
+        }
+        return byPath.values.sorted {
+            if $0.confidence != $1.confidence { return $0.confidence == .certain }
+            if $0.size != $1.size { return $0.size > $1.size }
+            return $0.url.path < $1.url.path
+        }
+    }
+
+    // MARK: - Eşleşme
+
+    enum MatchLevel { case certain, vendor, name }
+
+    /// `classify`: certain / probable / nil.
+    static func classify(_ entryName: String, keys: MatchKeys) -> Confidence? {
+        switch matchLevel(entryName, keys: keys) {
+        case .certain: .certain
+        case .vendor, .name: .probable
+        case nil: nil
+        }
+    }
+
+    static func matchLevel(_ entryName: String, keys: MatchKeys) -> MatchLevel? {
+        let raw = entryName.lowercased()
+        let candidates = raw == stripped(entryName) ? [raw] : [raw, stripped(entryName)]
+        let bundleID = keys.bundleID.lowercased()
+        let team = keys.teamID?.lowercased()
+        let appNames = keys.names.map { $0.lowercased() }
+
+        var best: MatchLevel?
+        func raise(_ level: MatchLevel) {
+            switch (best, level) {
+            case (.certain, _): break
+            case (_, .certain): best = .certain
+            case (.vendor, _): break
+            default: best = level
+            }
+        }
+        for name in candidates {
+            if hasBundlePrefix(name, bundleID) { raise(.certain) }
+            if let team, name.hasPrefix(team + ".") {
+                if name.contains(bundleID) || appNames.contains(where: { name.contains($0) }) { raise(.certain) }
+                else { raise(.vendor) }
+            }
+            if appNames.contains(name) { raise(.certain) }
+            if let vp = keys.vendorPrefix?.lowercased(), name.hasPrefix(vp) { raise(.vendor) }
+            if appNames.contains(where: { containsAsWords(name, $0) }) { raise(.name) }
+        }
+        return best
+    }
+
+    /// Yalnızca isim eşleşmesi (kişisel klasörler için): tam eşitlik ya da ayrı kelime.
+    static func nameMatch(_ entryName: String, keys: MatchKeys) -> MatchLevel? {
+        let name = stripped(entryName)
+        let appNames = keys.names.map { $0.lowercased() }
+        if appNames.contains(name) || appNames.contains(entryName.lowercased()) { return .certain }
+        let raw = entryName.lowercased()
+        if appNames.contains(where: { containsAsWords(raw, $0) || containsAsWords(name, $0) }) { return .name }
+        return nil
+    }
+
+    /// Küçük harf, uzantısız ad.
+    private static func stripped(_ entryName: String) -> String {
+        (entryName as NSString).deletingPathExtension.lowercased()
+    }
+
+    private static func hasBundlePrefix(_ name: String, _ bundleID: String) -> Bool {
+        if name == bundleID { return true }
+        guard name.hasPrefix(bundleID) else { return false }
+        let next = name[name.index(name.startIndex, offsetBy: bundleID.count)]
+        return next == "." || next == "-" || next == "_"
+    }
+
+    /// Girdi, başka bir uygulamanın bundle ID'sine certain düzeyinde mi ait?
+    private static func matchesBundleID(_ entryName: String, other: AppInfo) -> Bool {
+        let bundleID = other.bundleID.lowercased()
+        let raw = entryName.lowercased()
+        for name in [raw, stripped(entryName)] {
+            if hasBundlePrefix(name, bundleID) { return true }
+            if let team = other.teamID?.lowercased(), name.hasPrefix(team + "."), name.contains(bundleID) { return true }
+        }
+        return false
+    }
+
+    private static func sharesVendor(_ other: AppInfo, with app: AppInfo, keys: MatchKeys) -> Bool {
+        if let vp = keys.vendorPrefix?.lowercased(), other.bundleID.lowercased().hasPrefix(vp) { return true }
+        if let team = keys.teamID, let otherTeam = other.teamID, team.lowercased() == otherTeam.lowercased() { return true }
+        return false
+    }
+
+    /// `com.microsoft.` → `microsoft`.
+    private static func vendorName(_ keys: MatchKeys) -> String? {
+        guard let vp = keys.vendorPrefix else { return nil }
+        return vp.lowercased().split(separator: ".").dropFirst().first.map(String.init)
+    }
+
+    /// `name` içindeki kelimeler (harf/rakam dışı ayraçlarla), `phrase` kelimelerini ardışık olarak içeriyor mu.
+    private static func containsAsWords(_ name: String, _ phrase: String) -> Bool {
+        let words = tokens(name), target = tokens(phrase)
+        guard !target.isEmpty, words.count >= target.count else { return false }
+        for start in 0...(words.count - target.count) where Array(words[start..<start + target.count]) == target {
+            return true
+        }
+        return false
+    }
+
+    private static func tokens(_ s: String) -> [String] {
+        s.lowercased().split(whereSeparator: { !$0.isLetter && !$0.isNumber }).map(String.init)
+    }
+}

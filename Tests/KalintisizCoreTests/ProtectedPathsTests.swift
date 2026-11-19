@@ -28,3 +28,24 @@ import Foundation
     #expect(ProtectedPaths.isProtected(sys, root: fake.root))
     #expect(!ProtectedPaths.isProtected(ok, root: fake.root))
 }
+
+@Test func protectionIsCaseInsensitive() {
+    let r = URL(fileURLWithPath: "/")
+    for p in ["/system/Library/x", "/SYSTEM/library", "/Library/APPLE/foo", "/USR/lib/x", "/Bin/ls",
+              "/Users/a/Library/Preferences/COM.APPLE.finder.plist"] {
+        #expect(ProtectedPaths.isProtected(URL(fileURLWithPath: p), root: r), "\(p)")
+    }
+    #expect(!ProtectedPaths.isProtected(URL(fileURLWithPath: "/USR/LOCAL/bin/x"), root: r))
+    #expect(ProtectedPaths.isAppleBundleID("com.apple.Safari"))
+}
+
+@Test func varEtcTmpAreTreatedAsPrivate() {
+    let r = URL(fileURLWithPath: "/")
+    #expect(ProtectedPaths.isProtected(URL(fileURLWithPath: "/var/db/receipts/a.plist"), root: r))
+    #expect(ProtectedPaths.isProtected(URL(fileURLWithPath: "/VAR/DB/x"), root: r))
+    #expect(ProtectedPaths.isProtected(URL(fileURLWithPath: "/private/var/db"), root: r))
+    #expect(!ProtectedPaths.isProtected(URL(fileURLWithPath: "/var/folders/ab/C/com.spotify.client"), root: r))
+    #expect(!ProtectedPaths.isProtected(URL(fileURLWithPath: "/var/database/x"), root: r))
+    #expect(!ProtectedPaths.isProtected(URL(fileURLWithPath: "/tmp/x"), root: r))
+    #expect(!ProtectedPaths.isProtected(URL(fileURLWithPath: "/etc/hosts"), root: r))
+}

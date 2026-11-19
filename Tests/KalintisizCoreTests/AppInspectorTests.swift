@@ -75,3 +75,13 @@ final class FakeRunner: CommandRunning, @unchecked Sendable {
     #expect(env.path("/Library/X").path == "/tmp/r/Library/X")
     #expect(env.homePath("Library/Caches").path == "/tmp/r/Users/t/Library/Caches")
 }
+
+@Test func inspectSkipsCodesignWhenTeamIDNotRequested() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    let app = try fs.makeApp(name: "Signed", bundleID: "com.example.signed")
+    let runner = FakeRunner(output: CommandOutput(status: 0, stdout: "", stderr: "TeamIdentifier=ABCDE12345\n"))
+    let info = try AppInspector(commands: runner).inspect(app, includeTeamID: false)
+    #expect(runner.calls.isEmpty)
+    #expect(info.teamID == nil)
+    #expect(info.bundleID == "com.example.signed")
+}

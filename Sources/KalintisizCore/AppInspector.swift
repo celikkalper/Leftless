@@ -11,7 +11,8 @@ public struct AppInspector: Sendable {
         self.commands = commands
     }
 
-    public func inspect(_ appURL: URL) throws -> AppInfo {
+    /// `includeTeamID: false` codesign çağrısını atlar (liste görünümü için hızlı yol).
+    public func inspect(_ appURL: URL, includeTeamID: Bool = true) throws -> AppInfo {
         guard appURL.pathExtension == "app" else { throw AppInspectorError.notAnAppBundle }
         let plistURL = appURL.appendingPathComponent("Contents/Info.plist")
         guard let data = try? Data(contentsOf: plistURL),
@@ -26,7 +27,7 @@ public struct AppInspector: Sendable {
         return AppInfo(url: appURL, bundleID: bundleID, name: name,
                        executableName: plist["CFBundleExecutable"] as? String,
                        version: plist["CFBundleShortVersionString"] as? String,
-                       teamID: teamID(of: appURL))
+                       teamID: includeTeamID ? teamID(of: appURL) : nil)
     }
 
     private func teamID(of appURL: URL) -> String? {

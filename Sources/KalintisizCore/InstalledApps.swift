@@ -25,7 +25,7 @@ public struct InstalledApps: Sendable {
         var apps: [InstalledApp] = []
         for dir in dirs {
             for appURL in appBundles(in: dir, depth: 1) {
-                guard let info = try? inspector.inspect(appURL),
+                guard let info = try? inspector.inspect(appURL, includeTeamID: false),
                       !ProtectedPaths.isAppleBundleID(info.bundleID) else { continue }
                 apps.append(InstalledApp(info: info, bundleSize: directorySize(appURL)))
             }
