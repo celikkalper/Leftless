@@ -8,6 +8,14 @@ struct UninstallResultView: View {
 
     private var trashed: [HistoryItem] { outcome.record.items.filter { $0.state == .trashed } }
 
+    private var title: Text {
+        let size = AppModel.formatSize(trashed.reduce(0) { $0 + $1.size })
+        if outcome.record.operation == .orphans {
+            return Text("Orphaned leftovers moved to the Trash — \(trashed.count) items, \(size)")
+        }
+        return Text("\(outcome.record.appName) uninstalled — \(trashed.count) items, \(size)")
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 10) {
@@ -15,8 +23,7 @@ struct UninstallResultView: View {
                     .font(.largeTitle)
                     .foregroundStyle(outcome.failures.isEmpty ? .green : .orange)
                     .accessibilityHidden(true)
-                Text("\(outcome.record.appName) uninstalled — \(trashed.count) items, \(AppModel.formatSize(trashed.reduce(0) { $0 + $1.size }))")
-                    .font(.title2.bold())
+                title.font(.title2.bold())
             }
             HStack {
                 Button("Undo") {

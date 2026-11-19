@@ -230,3 +230,83 @@ public enum Presentation {
         return item.failure == nil ? item.error : nil
     }
 }
+
+// MARK: - Orphaned leftovers
+
+/// Select All / Deselect All over the shown orphan groups (other checked ids are left alone).
+public enum OrphanSelection {
+    public static func allIDs(_ groups: [OrphanGroup]) -> Set<UUID> {
+        Set(groups.flatMap(\.items).map(\.id))
+    }
+
+    /// `false` when there is nothing to select.
+    public static func isAllSelected(_ groups: [OrphanGroup], checked: Set<UUID>) -> Bool {
+        let all = allIDs(groups)
+        return !all.isEmpty && all.isSubset(of: checked)
+    }
+
+    public static func selectingAll(_ groups: [OrphanGroup], checked: Set<UUID>) -> Set<UUID> {
+        checked.union(allIDs(groups))
+    }
+
+    public static func deselectingAll(_ groups: [OrphanGroup], checked: Set<UUID>) -> Set<UUID> {
+        checked.subtracting(allIDs(groups))
+    }
+}
+
+/// Orphan move plan frozen at confirmation: the checked items of one particular scan.
+/// After a rescan (new scan identity) it is no longer valid and nothing may be moved with it.
+public struct OrphanPlan: Identifiable, Sendable {
+    /// Bundle ID of the pseudo app the orphans job is recorded under.
+    public static let bundleID = "leftless.orphans"
+
+    public let id = UUID()
+    public let scanID: UUID
+    /// Every item of the frozen scan, in scan order.
+    public let items: [Leftover]
+    /// Checked items, in scan order.
+    public let selected: [Leftover]
+    public let summary: UninstallSummary
+
+    /// `nil` when none of the scan's items is checked.
+    public init?(scan: OrphanScanResult, checked: Set<UUID>) {
+        let items = scan.groups.flatMap(\.items)
+        let selected = items.filter { checked.contains($0.id) }
+        guard !selected.isEmpty else { return nil }
+        self.scanID = scan.id
+        self.items = items
+        self.selected = selected
+        self.summary = UninstallSummary(leftovers: items, checked: checked)
+    }
+
+    /// Is the plan still about the scan on screen? Same scan, and every planned item still listed.
+    public func isValid(for current: OrphanScanResult?) -> Bool {
+        guard let current, current.id == scanID else { return false }
+        let ids = OrphanSelection.allIDs(current.groups)
+        return selected.allSatisfy { ids.contains($0.id) }
+    }
+
+    /// E.g. "12 items will be moved to the Trash (85 MB). You can undo this from History."
+    public func confirmationText(formattedSize: String) -> String {
+        summary.confirmationText(appName: "", formattedSize: formattedSize)
+    }
+
+    /// The single uninstall job (one "Orphaned leftovers" history record) for this plan.
+    public func job(home: URL) -> UninstallJob {
+        let app = AppInfo(url: home.appendingPathComponent("Library", isDirectory: true),
+                          bundleID: Self.bundleID, name: L("Orphaned leftovers"))
+        return UninstallJob(scan: ScanResult(app: app, leftovers: items), selected: selected, icon: nil,
+                            operation: .orphans)
+    }
+}
+
+extension Presentation {
+    /// Title of a history row: the app name, "SoundWave — Reset", or "Orphaned leftovers".
+    public static func historyTitle(_ record: HistoryRecord) -> String {
+        switch record.operation {
+        case .uninstall: record.appName
+        case .reset: L("\(record.appName) — Reset")
+        case .orphans: L("Orphaned leftovers")
+        }
+    }
+}

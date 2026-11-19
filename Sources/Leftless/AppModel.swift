@@ -3,7 +3,7 @@ import LeftlessCore
 import Observation
 
 enum MainTab: Hashable {
-    case apps, history
+    case apps, leftovers, history
 }
 
 struct PendingRestore: Identifiable {
@@ -38,6 +38,14 @@ final class AppModel {
     var hasFullDiskAccess = FullDiskAccess.isGranted()
     var onboardingSkipped = false
     var searchText = ""
+    /// Last orphaned-leftovers scan; cleared after its items were moved, so they can't be shown again.
+    private(set) var orphanScan: OrphanScanResult?
+    /// Checked orphan items (kept apart from `checked`, which follows the selected apps).
+    var orphanChecked: Set<UUID> = []
+    /// Result of the last orphans move (shown on the Leftovers tab until the next scan).
+    var orphanOutcome: UninstallOutcome?
+    /// Orphan scan in progress; a result whose token no longer matches is ignored.
+    private var orphanScanToken: UUID?
     var sort: AppListSort = .name
 
     private let environment = ScanEnvironment.live()
@@ -51,6 +59,7 @@ final class AppModel {
     /// Scan shown by the single-app detail.
     var scan: ScanResult? { singleSelection.flatMap { scans[$0.id] } }
     var isScanning: Bool { !scanTokens.isEmpty }
+    var isScanningOrphans: Bool { orphanScanToken != nil }
     /// Scans of the selected apps in list order (missing while an app is still being scanned).
     var selectedScans: [ScanResult] { selectedApps.compactMap { scans[$0.id] } }
 
@@ -73,8 +82,9 @@ final class AppModel {
     #if DEBUG
     /// A model filled with fictional apps and history, for screenshots. Nothing is read from disk.
     init(demoApps: [InstalledApp], selection: [InstalledApp], scans: [ScanResult],
-         history: [HistoryRecord], historyStatus: [UUID: RestoreStatus]) {
+         history: [HistoryRecord], historyStatus: [UUID: RestoreStatus], orphans: OrphanScanResult? = nil) {
         isDemo = true
+        orphanScan = orphans
         hasFullDiskAccess = true
         apps = demoApps
         selectedApps = selection
@@ -334,6 +344,58 @@ final class AppModel {
         }
     }
 
+    // MARK: - Orphaned leftovers
+
+    /// Scans the Library for items of apps that are no longer on this Mac. Nothing is checked afterwards.
+    /// The known-app list (Spotlight query) and the scan run off the main actor.
+    func scanOrphans() async {
+        guard !isWorking, !isDemo, orphanScanToken == nil else { return }
+        let token = UUID()
+        orphanScanToken = token
+        orphanOutcome = nil
+        let env = environment
+        let restricted = !hasFullDiskAccess
+        let result = await Task.detached {
+            let commands = ProcessCommandRunner()
+            let known = InstalledApps(environment: env, inspector: AppInspector(commands: commands))
+                .knownApps(commands: commands)
+            return OrphanScanner(environment: env, knownApps: known, restricted: restricted).scan()
+        }.value
+        guard orphanScanToken == token else { return }
+        orphanScanToken = nil
+        orphanScan = result
+        orphanChecked = []
+    }
+
+    /// Moves the frozen plan's items to the Trash as one "Orphaned leftovers" record. Nothing is moved if the
+    /// scan on screen was replaced since confirmation. On success the scan is cleared (a rescan is needed).
+    func moveOrphans(_ plan: OrphanPlan) async {
+        guard !isWorking else { return }
+        isWorking = true
+        defer { isWorking = false }
+        guard plan.isValid(for: orphanScan) else { return }
+        let job = plan.job(home: environment.home)
+        let env = environment, store = store
+        let result = await Task.detached {
+            let commands = ProcessCommandRunner()
+            let uninstaller = Uninstaller(
+                history: store, files: SystemFileMover(),
+                privileged: OsascriptPrivilegedExecutor(commands: commands), commands: commands,
+                environment: env, trashDirectory: env.home.appendingPathComponent(".Trash", isDirectory: true))
+            return Result { try uninstaller.uninstall(batch: [job]) }
+        }.value
+        switch result {
+        case .success(let outcomes):
+            orphanScanToken = nil
+            orphanScan = nil
+            orphanChecked = []
+            if let outcome = outcomes.first, !outcome.record.items.isEmpty { orphanOutcome = outcome }
+            reloadHistory()
+        case .failure:
+            alertMessage = String(localized: "Couldn't write the history record; no files were moved.")
+        }
+    }
+
     // MARK: - Geri yükleme
 
     /// Çakışma varsa önce kullanıcıya sorulur (`pendingRestore`); yoksa hemen geri yükler.
@@ -374,6 +436,7 @@ final class AppModel {
         restoreSummary = lines.joined(separator: "\n")
         isWorking = false   // yeniden tarama `select` ile yapılacağı için burada kapatılır
         if lastOutcome?.record.id == r.id { lastOutcome = nil }
+        if orphanOutcome?.record.id == r.id { orphanOutcome = nil }
         reloadHistory()
         reloadApps()
         // A batch result stays on screen (each row shows its own restore state); otherwise the shown apps are

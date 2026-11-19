@@ -89,6 +89,8 @@ struct ContentView: View {
             } detail: {
                 detail
             }
+        case .leftovers:
+            OrphansView(model: model)
         case .history:
             HistoryView(model: model)
         }
@@ -110,7 +112,7 @@ struct ContentView: View {
     }
 }
 
-/// Segmented Apps / History switch in the toolbar; disabled while an uninstall or restore is running.
+/// Segmented Apps / Leftovers / History switch in the toolbar; disabled while an uninstall or restore is running.
 private struct TabPicker: View {
     @Bindable var model: AppModel
 
@@ -122,16 +124,17 @@ private struct TabPicker: View {
     var body: some View {
         Picker("View", selection: Binding(get: { model.tab }, set: { model.switchTab($0) })) {
             Text("Apps").tag(MainTab.apps)
+            Text("Leftovers").tag(MainTab.leftovers)
             Text(historyTitle).tag(MainTab.history)
         }
         .pickerStyle(.segmented)
         .labelsHidden()
-        .frame(minWidth: 200)
+        .frame(minWidth: 300)
         .disabled(model.isWorking)
     }
 }
 
-/// View menu items with ⌘1 / ⌘2.
+/// View menu items with ⌘1 / ⌘2 / ⌘3.
 struct TabCommands: Commands {
     let model: AppModel
 
@@ -140,8 +143,11 @@ struct TabCommands: Commands {
             Button("Apps") { model.switchTab(.apps) }
                 .keyboardShortcut("1")
                 .disabled(model.isWorking || model.showsOnboarding)
-            Button("History") { model.switchTab(.history) }
+            Button("Leftovers") { model.switchTab(.leftovers) }
                 .keyboardShortcut("2")
+                .disabled(model.isWorking || model.showsOnboarding)
+            Button("History") { model.switchTab(.history) }
+                .keyboardShortcut("3")
                 .disabled(model.isWorking || model.showsOnboarding)
         }
     }

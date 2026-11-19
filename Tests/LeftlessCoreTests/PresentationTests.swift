@@ -333,3 +333,90 @@ import Foundation
         #expect(LeftoverKind.allCases.allSatisfy { !$0.displayName.isEmpty })
     }
 }
+
+// MARK: - Orphaned leftovers
+
+@Suite struct OrphanPresentationTests {
+    func item(_ path: String, size: Int64, kind: LeftoverKind = .caches) -> Leftover {
+        Leftover(url: URL(fileURLWithPath: path), kind: kind, confidence: .probable, size: size)
+    }
+
+    func scan() -> OrphanScanResult {
+        OrphanScanResult(groups: [
+            OrphanGroup(id: "com.old.big", displayName: "Big", items: [
+                item("/u/Library/Caches/com.old.big", size: 300),
+                item("/u/Library/Preferences/com.old.big.plist", size: 2, kind: .preferences),
+            ]),
+            OrphanGroup(id: "net.gone.small", displayName: "Small", items: [
+                item("/u/Library/Logs/net.gone.small", size: 10, kind: .logs),
+            ]),
+        ])
+    }
+
+    @Test func eachScanHasItsOwnIdentity() {
+        #expect(scan().id != scan().id)
+    }
+
+    @Test func selectAllAndDeselectAllCoverEveryItem() {
+        let s = scan()
+        let all = Set(s.groups.flatMap(\.items).map(\.id))
+        let other = UUID()
+        #expect(OrphanSelection.allIDs(s.groups) == all)
+        #expect(!OrphanSelection.isAllSelected(s.groups, checked: [other]))
+        let selected = OrphanSelection.selectingAll(s.groups, checked: [other])
+        #expect(selected == all.union([other]))
+        #expect(OrphanSelection.isAllSelected(s.groups, checked: selected))
+        #expect(OrphanSelection.deselectingAll(s.groups, checked: selected) == [other])
+        #expect(!OrphanSelection.isAllSelected([], checked: []))
+    }
+
+    @Test func planFreezesCheckedItemsInScanOrder() throws {
+        let s = scan()
+        let items = s.groups.flatMap(\.items)
+        let plan = try #require(OrphanPlan(scan: s, checked: [items[2].id, items[0].id]))
+        #expect(plan.scanID == s.id)
+        #expect(plan.selected.map(\.id) == [items[0].id, items[2].id])
+        #expect(plan.summary.totalCount == 2)
+        #expect(plan.summary.totalSize == 310)
+        #expect(plan.confirmationText(formattedSize: "310 bytes")
+                == "2 items will be moved to the Trash (310 bytes). You can undo this from History.")
+    }
+
+    @Test func planIsNilWhenNothingChecked() {
+        #expect(OrphanPlan(scan: scan(), checked: [UUID()]) == nil)
+    }
+
+    @Test func planIsValidOnlyForTheSameScan() throws {
+        let s = scan()
+        let plan = try #require(OrphanPlan(scan: s, checked: [s.groups[0].items[0].id]))
+        #expect(plan.isValid(for: s))
+        #expect(!plan.isValid(for: nil))
+        #expect(!plan.isValid(for: scan()))   // rescanned
+        var changed = s
+        changed.groups.removeFirst()
+        #expect(!plan.isValid(for: changed))
+    }
+
+    @Test func planBuildsOneOrphansJob() throws {
+        let s = scan()
+        let items = s.groups.flatMap(\.items)
+        let plan = try #require(OrphanPlan(scan: s, checked: [items[1].id]))
+        let job = plan.job(home: URL(fileURLWithPath: "/Users/me"))
+        #expect(job.operation == .orphans)
+        #expect(job.icon == nil)
+        #expect(job.selected.map(\.id) == [items[1].id])
+        #expect(job.scan.leftovers.map(\.id) == items.map(\.id))
+        #expect(job.scan.app.url.path == "/Users/me/Library")
+        #expect(job.scan.app.bundleID == "leftless.orphans")
+        #expect(job.scan.app.name == "Orphaned leftovers")
+    }
+
+    @Test func historyTitleFollowsOperation() {
+        func record(_ op: HistoryOperation) -> HistoryRecord {
+            HistoryRecord(appName: "SoundWave", bundleID: "com.example.soundwave", items: [], operation: op)
+        }
+        #expect(Presentation.historyTitle(record(.uninstall)) == "SoundWave")
+        #expect(Presentation.historyTitle(record(.reset)) == "SoundWave — Reset")
+        #expect(Presentation.historyTitle(record(.orphans)) == "Orphaned leftovers")
+    }
+}

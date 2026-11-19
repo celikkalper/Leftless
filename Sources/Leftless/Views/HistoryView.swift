@@ -56,10 +56,12 @@ private struct HistoryRow: View {
         HStack(spacing: 10) {
             icon
                 .resizable()
+                .scaledToFit()
+                .foregroundStyle(.secondary)
                 .frame(width: 32, height: 32)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(record.appName) — \(record.items.count) items — \(record.date.formatted(Self.dayMonth))")
+                Text("\(title) — \(record.items.count) items — \(record.date.formatted(Self.dayMonth))")
                 Text(AppModel.formatSize(record.totalSize))
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -74,12 +76,15 @@ private struct HistoryRow: View {
                 .accessibilityLabel("Status: \(badge.0)")
             Button("Restore", action: onRestore)
                 .disabled(!canRestore || isWorking)
-                .accessibilityLabel("Restore \(record.appName)")
+                .accessibilityLabel("Restore \(title)")
         }
         .padding(.vertical, 2)
     }
 
+    private var title: String { Presentation.historyTitle(record) }
+
     private var icon: Image {
+        if record.operation == .orphans { return Image(systemName: "questionmark.folder") }
         if let data = record.icon, let image = NSImage(data: data) {
             return Image(nsImage: image)
         }

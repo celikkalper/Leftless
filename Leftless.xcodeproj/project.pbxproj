@@ -13,6 +13,7 @@
 		18937D936F7862270F5B3B42 /* LaunchdScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59BC287D9A4413B1414E673D /* LaunchdScannerTests.swift */; };
 		2377D38714AA71D4C6C4968A /* LeftlessApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69A89CDA3D5B77A9AEE026F8 /* LeftlessApp.swift */; };
 		2F019E03B04593C88950031E /* AppListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CF0DD98C2B25CA4DD8400A /* AppListView.swift */; };
+		2FB64985394E2F6DCEC8FA08 /* OrphansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE509B73C01743954326AE42 /* OrphansView.swift */; };
 		3869DC80BD72CAC4172F52E2 /* LeftoverScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB498A3EF72DE013863B74D /* LeftoverScannerTests.swift */; };
 		39EBF8DC93D185500B2540BF /* LeftlessCore in Frameworks */ = {isa = PBXBuildFile; productRef = 14333BC8776F6465869BEBEA /* LeftlessCore */; };
 		4258A966DE21D3574FE259EC /* ScanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 452A29380F5065D9D094CED9 /* ScanDetailView.swift */; };
@@ -66,6 +67,7 @@
 		AC134C96C9EF5D24AEC91700 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
 		B5A239AE492C93BE8F0B59D3 /* AppTerminator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTerminator.swift; sourceTree = "<group>"; };
 		B5CF0DD98C2B25CA4DD8400A /* AppListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListView.swift; sourceTree = "<group>"; };
+		BE509B73C01743954326AE42 /* OrphansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrphansView.swift; sourceTree = "<group>"; };
 		BEA9DFBB1F025636B0512658 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		CC75783F56DC8897AE3D8B51 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		D29FED4CBAD0CA1DEB474D5A /* LeftoverListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftoverListView.swift; sourceTree = "<group>"; };
@@ -179,6 +181,7 @@
 				BEA9DFBB1F025636B0512658 /* HistoryView.swift */,
 				D29FED4CBAD0CA1DEB474D5A /* LeftoverListView.swift */,
 				CC75783F56DC8897AE3D8B51 /* OnboardingView.swift */,
+				BE509B73C01743954326AE42 /* OrphansView.swift */,
 				452A29380F5065D9D094CED9 /* ScanDetailView.swift */,
 				789AA953BDE6C31C1FEC6653 /* UninstallResultView.swift */,
 			);
@@ -331,6 +334,7 @@
 				2377D38714AA71D4C6C4968A /* LeftlessApp.swift in Sources */,
 				0587DB8BF0514549AFE8B401 /* LeftoverListView.swift in Sources */,
 				A4A632EEF909FAF208DAC562 /* OnboardingView.swift in Sources */,
+				2FB64985394E2F6DCEC8FA08 /* OrphansView.swift in Sources */,
 				4258A966DE21D3574FE259EC /* ScanDetailView.swift in Sources */,
 				6E69EAB1AFF0F2E46A7A622A /* Screenshots.swift in Sources */,
 				8BAC9ED4C894E0DB53CBFB8A /* UninstallResultView.swift in Sources */,

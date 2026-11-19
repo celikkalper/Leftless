@@ -68,9 +68,11 @@ struct LeftoverGroupRows: View {
     }
 }
 
-private struct LeftoverRow: View {
+struct LeftoverRow: View {
     let item: Leftover
     @Binding var isOn: Bool
+    /// Orphan lists show the item's place (kind) instead of a "possible" badge on every row.
+    var showsKind = false
 
     var body: some View {
         HStack(spacing: 8) {
@@ -85,7 +87,7 @@ private struct LeftoverRow: View {
             VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: 6) {
                     Text(item.url.lastPathComponent).lineLimit(1).truncationMode(.middle)
-                    if item.confidence == .probable {
+                    if item.confidence == .probable, !showsKind {
                         Text("possible")
                             .font(.caption2.weight(.medium))
                             .padding(.horizontal, 5)
@@ -100,7 +102,9 @@ private struct LeftoverRow: View {
                             .accessibilityLabel("Requires administrator permission")
                     }
                 }
-                if let note = item.note {
+                if showsKind {
+                    Text(item.kind.displayName).font(.caption).foregroundStyle(.secondary)
+                } else if let note = item.note {
                     Text(note).font(.caption).foregroundStyle(.secondary)
                 }
             }

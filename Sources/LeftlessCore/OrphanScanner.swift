@@ -16,13 +16,16 @@ public struct OrphanGroup: Identifiable, Sendable {
     }
 }
 
-public struct OrphanScanResult: Sendable {
+public struct OrphanScanResult: Identifiable, Sendable {
+    /// Identity of this scan: a frozen plan is valid only for the scan it was made from.
+    public let id: UUID
     /// Toplam boyuta göre büyükten küçüğe.
     public var groups: [OrphanGroup]
     /// Kısıtlı taramada (Tam Disk Erişimi yok) aranmayan yerlerin görünen adları.
     public var skippedLocations: [String]
 
-    public init(groups: [OrphanGroup], skippedLocations: [String] = []) {
+    public init(id: UUID = UUID(), groups: [OrphanGroup], skippedLocations: [String] = []) {
+        self.id = id
         self.groups = groups
         self.skippedLocations = skippedLocations
     }

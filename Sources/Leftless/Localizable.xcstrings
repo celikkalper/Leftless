@@ -2709,6 +2709,206 @@
         }
       }
     },
+    "Deselect All" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auswahl aufheben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deseleccionar todo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout désélectionner"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての選択を解除"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desmarcar Tudo"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tüm Seçimleri Kaldır"
+          }
+        }
+      }
+    },
+    "Everything Leftless checked in your Library belongs to an app on this Mac." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles, was Leftless in deiner Library geprüft hat, gehört zu einer App auf diesem Mac."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo lo que Leftless ha revisado en tu Biblioteca pertenece a una app de este Mac."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout ce que Leftless a vérifié dans votre Bibliothèque appartient à une app de ce Mac."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless がライブラリで確認した項目は、すべてこのMac上のアプリのものです。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tudo o que o Leftless verificou na sua Biblioteca pertence a um app deste Mac."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless'in Kitaplık klasörünüzde incelediği her şey bu Mac'teki bir uygulamaya ait."
+          }
+        }
+      }
+    },
+    "Files of apps on external drives or in folders Spotlight doesn't index may also be listed here. Check before removing them." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auch Dateien von Apps auf externen Laufwerken oder in Ordnern, die Spotlight nicht indiziert, können hier erscheinen. Prüfe sie vor dem Entfernen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "También pueden aparecer aquí archivos de apps en discos externos o en carpetas que Spotlight no indexa. Revísalos antes de eliminarlos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les fichiers d'apps situées sur des disques externes ou dans des dossiers non indexés par Spotlight peuvent aussi apparaître ici. Vérifiez avant de les supprimer."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外部ドライブ上のアプリや、Spotlight が索引付けしないフォルダ内のアプリのファイルもここに表示されることがあります。削除する前に確認してください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquivos de apps em discos externos ou em pastas que o Spotlight não indexa também podem aparecer aqui. Verifique antes de removê-los."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harici disklerdeki ya da Spotlight'ın dizinlemediği klasörlerdeki uygulamaların dosyaları da burada listelenebilir. Kaldırmadan önce kontrol edin."
+          }
+        }
+      }
+    },
+    "Files of apps that are no longer on this Mac" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateien von Apps, die nicht mehr auf diesem Mac sind"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivos de apps que ya no están en este Mac"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichiers d'apps qui ne sont plus sur ce Mac"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このMacにもう存在しないアプリのファイル"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquivos de apps que não estão mais neste Mac"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artık bu Mac'te olmayan uygulamaların dosyaları"
+          }
+        }
+      }
+    },
+    "Find Orphaned Leftovers" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwaiste Rückstände finden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar restos huérfanos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trouver les fichiers restants orphelins"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "孤立した残留ファイルを探す"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encontrar Resíduos Órfãos"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sahipsiz Kalıntıları Bul"
+          }
+        }
+      }
+    },
     "Full Disk Access Required" : {
       "localizations" : {
         "de" : {
@@ -3119,6 +3319,86 @@
         }
       }
     },
+    "Leftless looks in your Library for files left behind by apps that are no longer on this Mac. Nothing is selected or moved until you choose." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless sucht in deiner Library nach Dateien von Apps, die nicht mehr auf diesem Mac sind. Nichts wird ausgewählt oder bewegt, bevor du es entscheidest."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless busca en tu Biblioteca archivos que dejaron apps que ya no están en este Mac. No se selecciona ni se traslada nada hasta que tú lo decidas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless recherche dans votre Bibliothèque les fichiers laissés par des apps qui ne sont plus sur ce Mac. Rien n'est sélectionné ni déplacé sans votre choix."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless は、このMacにもう存在しないアプリが残したファイルをライブラリから探します。選択するまで何も選択・移動されません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Leftless procura na sua Biblioteca arquivos deixados por apps que não estão mais neste Mac. Nada é selecionado nem movido até você escolher."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless, Kitaplık klasörünüzde artık bu Mac'te olmayan uygulamalardan kalan dosyaları arar. Siz seçmedikçe hiçbir şey seçilmez veya taşınmaz."
+          }
+        }
+      }
+    },
+    "Leftovers" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rückstände"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichiers restants"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "残留ファイル"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resíduos"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalıntılar"
+          }
+        }
+      }
+    },
     "Loading apps" : {
       "localizations" : {
         "de" : {
@@ -3195,6 +3475,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kalıntılar aranıyor…"
+          }
+        }
+      }
+    },
+    "Looking for orphaned leftovers…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suche nach verwaisten Rückständen …"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando restos huérfanos…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche des fichiers restants orphelins…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "孤立した残留ファイルを検索中…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procurando resíduos órfãos…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sahipsiz kalıntılar aranıyor…"
           }
         }
       }
@@ -3435,6 +3755,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Geçmiş boş"
+          }
+        }
+      }
+    },
+    "No Orphaned Leftovers Found" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine verwaisten Rückstände gefunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han encontrado restos huérfanos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun fichier restant orphelin trouvé"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "孤立した残留ファイルは見つかりませんでした"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum Resíduo Órfão Encontrado"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sahipsiz Kalıntı Bulunamadı"
           }
         }
       }
@@ -3727,6 +4087,170 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sistem Ayarları'nı Aç"
+          }
+        }
+      }
+    },
+    "Orphaned Leftovers" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwaiste Rückstände"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restos huérfanos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichiers restants orphelins"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "孤立した残留ファイル"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resíduos Órfãos"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sahipsiz Kalıntılar"
+          }
+        }
+      }
+    },
+    "Orphaned leftovers moved to the Trash — %lld items, %@" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Verwaiste Rückstände in den Papierkorb gelegt – %lld Objekt, %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Verwaiste Rückstände in den Papierkorb gelegt – %lld Objekte, %@"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Orphaned leftovers moved to the Trash — %lld item, %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Orphaned leftovers moved to the Trash — %lld items, %@"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Restos huérfanos trasladados a la Papelera — %lld ítem, %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Restos huérfanos trasladados a la Papelera — %lld ítems, %@"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fichiers restants orphelins placés dans la corbeille — %lld élément, %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fichiers restants orphelins placés dans la corbeille — %lld éléments, %@"
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "孤立した残留ファイルをゴミ箱に入れました — %lld 項目、%@"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Resíduos órfãos movidos para o Lixo — %lld item, %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Resíduos órfãos movidos para o Lixo — %lld itens, %@"
+                }
+              }
+            }
+          }
+        },
+        "tr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Sahipsiz kalıntılar Çöp Sepeti'ne taşındı — %lld öğe, %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Sahipsiz kalıntılar Çöp Sepeti'ne taşındı — %lld öğe, %@"
+                }
+              }
+            }
           }
         }
       }
@@ -4257,6 +4781,86 @@
         }
       }
     },
+    "Scan" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキャン"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificar"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tara"
+          }
+        }
+      }
+    },
+    "Scan Again" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut suchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a buscar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher à nouveau"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再スキャン"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificar Novamente"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yeniden Tara"
+          }
+        }
+      }
+    },
     "Search" : {
       "localizations" : {
         "de" : {
@@ -4293,6 +4897,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ara"
+          }
+        }
+      }
+    },
+    "Select All" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle auswählen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar todo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout sélectionner"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてを選択"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecionar Tudo"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tümünü Seç"
           }
         }
       }

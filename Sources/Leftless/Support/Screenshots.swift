@@ -4,7 +4,7 @@ import LeftlessCore
 import SwiftUI
 
 /// Renders README screenshots from fictional demo data (Debug builds only):
-/// `Leftless --screenshots <output-dir>` writes apps.png, apps-dark.png and history.png, then quits.
+/// `Leftless --screenshots <output-dir>` writes apps.png, apps-dark.png, leftovers.png and history.png, then quits.
 /// Nothing is read from the real disk or history, so no personal data ends up in the images.
 @MainActor
 enum Screenshots {
@@ -15,6 +15,7 @@ enum Screenshots {
         Task { @MainActor in
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             let shots: [(String, MainTab, Bool, CGFloat)] = [("apps", .apps, false, 660), ("apps-dark", .apps, true, 660),
+                                                             ("leftovers", .leftovers, false, 640),
                                                              ("history", .history, false, 330)]
             for (name, tab, dark, height) in shots {
                 let model = DemoData.model()
@@ -149,17 +150,43 @@ enum DemoData {
                                  date: Date().addingTimeInterval(-ago * day), icon: pngData(icons[name]),
                                  items: items)
         }
-        let history = [
+        // Fictional orphaned leftovers (apps no longer installed); nothing is checked, as after a real scan.
+        func orphan(_ path: String, _ kind: LeftoverKind, _ size: Int64) -> Leftover {
+            item("\(home)/Library/\(path)", kind, size, .probable)
+        }
+        let orphans = OrphanScanResult(groups: [
+            OrphanGroup(id: "com.oldvendor.photomagic", displayName: "Photomagic", items: [
+                orphan("Application Support/com.oldvendor.photomagic", .applicationSupport, 412 * mb),
+                orphan("Caches/com.oldvendor.photomagic", .caches, 88 * mb),
+                orphan("Preferences/com.oldvendor.photomagic.plist", .preferences, 6_000),
+                orphan("Saved Application State/com.oldvendor.photomagic.savedState", .savedState, 20_000)
+            ]),
+            OrphanGroup(id: "net.example.retrotunes", displayName: "Retrotunes", items: [
+                orphan("Caches/net.example.retrotunes", .caches, 143 * mb),
+                orphan("HTTPStorages/net.example.retrotunes", .httpStorages, 1 * mb),
+                orphan("Preferences/net.example.retrotunes.plist", .preferences, 3_000)
+            ]),
+            OrphanGroup(id: "io.sample.clipkeeper", displayName: "Clipkeeper", items: [
+                orphan("Logs/io.sample.clipkeeper", .logs, 5 * mb),
+                orphan("LaunchAgents/io.sample.clipkeeper.agent.plist", .launchAgent, 1_000)
+            ])
+        ])
+
+        var history = [
             record("Tasky", "com.example.tasky.old", count: 9, ago: 0.1),
             record("Weatherly", "com.example.weatherly.old", count: 6, ago: 3),
             record("Streamline", "com.example.streamline.old", count: 11, ago: 12),
             record("GameHub", "com.example.gamehub", count: 14, ago: 40)
         ]
+        var swept = record("Orphaned leftovers", OrphanPlan.bundleID, count: 5, ago: 7)
+        swept.operation = .orphans
+        history.insert(swept, at: 2)
         let status: [UUID: RestoreStatus] = [
-            history[0].id: .restorable, history[1].id: .partial(missing: 1),
-            history[2].id: .restored, history[3].id: .unrecoverable
+            history[0].id: .restorable, history[1].id: .partial(missing: 1), history[2].id: .restorable,
+            history[3].id: .restored, history[4].id: .unrecoverable
         ]
-        return AppModel(demoApps: apps, selection: [selected], scans: [scan], history: history, historyStatus: status)
+        return AppModel(demoApps: apps, selection: [selected], scans: [scan], history: history, historyStatus: status,
+                        orphans: orphans)
     }
 }
 #endif
