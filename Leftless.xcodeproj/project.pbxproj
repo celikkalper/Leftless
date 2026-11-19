@@ -21,6 +21,7 @@
 		7B89675DBCC58F75F760FA1A /* HistoryMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D546551AA91B8C1685E46AB /* HistoryMigrationTests.swift */; };
 		80336BFF40A289FAD5FBFA43 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EF25EC56A1C43CBF3B3C8E /* AppModel.swift */; };
 		8BAC9ED4C894E0DB53CBFB8A /* UninstallResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 789AA953BDE6C31C1FEC6653 /* UninstallResultView.swift */; };
+		998E889C773A5793972B5CA1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 116E59E7F4A6F520DAE2EED0 /* Assets.xcassets */; };
 		9D6DF1417D4F7646304BF3A6 /* ReceiptScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F14DCD72E89BE0908E99E7B /* ReceiptScannerTests.swift */; };
 		A4A632EEF909FAF208DAC562 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC75783F56DC8897AE3D8B51 /* OnboardingView.swift */; };
 		A924B122D59B09F47FDD3390 /* HistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8113A337C27CC7047D2294A5 /* HistoryStoreTests.swift */; };
@@ -41,7 +42,7 @@
 		061B3E8AF8554EE8D5EFF4AD /* ProtectedPathsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtectedPathsTests.swift; sourceTree = "<group>"; };
 		0D546551AA91B8C1685E46AB /* HistoryMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryMigrationTests.swift; sourceTree = "<group>"; };
 		0F14DCD72E89BE0908E99E7B /* ReceiptScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptScannerTests.swift; sourceTree = "<group>"; };
-		13666F95E5A37977E015C4C5 /* macos-apps */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "macos-apps"; path = .; sourceTree = SOURCE_ROOT; };
+		116E59E7F4A6F520DAE2EED0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		14FE338E8B6FFB2792FB4F4A /* AppInspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInspectorTests.swift; sourceTree = "<group>"; };
 		452A29380F5065D9D094CED9 /* ScanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDetailView.swift; sourceTree = "<group>"; };
 		4C7711F47F435BDB690948B3 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -52,6 +53,7 @@
 		76EAF236E677BD1F7C29AFDC /* LeftlessCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeftlessCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		789AA953BDE6C31C1FEC6653 /* UninstallResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UninstallResultView.swift; sourceTree = "<group>"; };
 		789D494A0D4FDCED12983FA7 /* RestorerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestorerTests.swift; sourceTree = "<group>"; };
+		80FC17B92F9006FDC7B8070C /* Leftless */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Leftless; path = .; sourceTree = SOURCE_ROOT; };
 		8113A337C27CC7047D2294A5 /* HistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreTests.swift; sourceTree = "<group>"; };
 		8AD15482B5D7A34A6DA8521E /* Leftless.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Leftless.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FB498A3EF72DE013863B74D /* LeftoverScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftoverScannerTests.swift; sourceTree = "<group>"; };
@@ -134,7 +136,7 @@
 		234040A81EAA407BF537537F /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				13666F95E5A37977E015C4C5 /* macos-apps */,
+				80FC17B92F9006FDC7B8070C /* Leftless */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -142,6 +144,7 @@
 		5FCE45B92C607A9A9FF6FB1D /* App */ = {
 			isa = PBXGroup;
 			children = (
+				116E59E7F4A6F520DAE2EED0 /* Assets.xcassets */,
 				576EC41B059E20852C2D8CCC /* InfoPlist.xcstrings */,
 			);
 			path = App;
@@ -275,6 +278,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				998E889C773A5793972B5CA1 /* Assets.xcassets in Resources */,
 				FC8EAC39C87AE57B2752D852 /* InfoPlist.xcstrings in Resources */,
 				AC039EECA331F43E9A971B2F /* Localizable.xcstrings in Resources */,
 			);

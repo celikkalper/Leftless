@@ -22,6 +22,8 @@ targets:
       - Sources/Leftless
       - path: App/InfoPlist.xcstrings
         buildPhase: resources
+      - path: App/Assets.xcassets
+        buildPhase: resources
     dependencies:
       - package: LeftlessCore
         product: LeftlessCore
@@ -36,6 +38,7 @@ targets:
         CODE_SIGN_IDENTITY: "-"
         ENABLE_HARDENED_RUNTIME: NO
         GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
   LeftlessCoreTests:
     type: bundle.unit-test
     platform: macOS
