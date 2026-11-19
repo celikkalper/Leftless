@@ -24,10 +24,17 @@ public struct MatchKeys: Sendable {
 public struct LeftoverScanner: Sendable {
     private let environment: ScanEnvironment
     private let installedApps: [AppInfo]
+    private let launchd: LaunchdScanner?
+    private let receipts: ReceiptScanner?
+    private let commands: CommandRunning?
 
-    public init(environment: ScanEnvironment, installedApps: [AppInfo]) {
+    public init(environment: ScanEnvironment, installedApps: [AppInfo], launchd: LaunchdScanner? = nil,
+                receipts: ReceiptScanner? = nil, commands: CommandRunning? = nil) {
         self.environment = environment
         self.installedApps = installedApps
+        self.launchd = launchd
+        self.receipts = receipts
+        self.commands = commands
     }
 
     // MARK: - Tarama
@@ -79,7 +86,8 @@ public struct LeftoverScanner: Sendable {
 
         func consider(_ entry: URL, kind: LeftoverKind, admin: Bool) {
             guard !ProtectedPaths.isProtected(entry, root: root),
-                  let (confidence, note) = evaluate(entry.lastPathComponent, app: app, keys: keys) else { return }
+                  let (confidence, note) = Self.evaluate(entry.lastPathComponent, app: app, keys: keys,
+                                                         installedApps: installedApps) else { return }
             found.append(Leftover(url: entry, kind: kind, confidence: confidence,
                                   size: directorySize(entry), requiresAdmin: admin, note: note))
         }
@@ -102,11 +110,28 @@ public struct LeftoverScanner: Sendable {
             }
         }
 
-        return ScanResult(app: app, leftovers: Self.deduplicated(found), systemExtensions: [])
+        if let launchd { found += launchd.scan(app, keys: keys, installedApps: installedApps) }
+        var leftovers = Self.deduplicated(found)
+        if let receipts {
+            leftovers = Self.deduplicated(leftovers + receipts.scan(app, keys: keys, installedApps: installedApps,
+                                                                    excluding: leftovers.map(\.url)))
+        }
+        return ScanResult(app: app, leftovers: leftovers, systemExtensions: systemExtensions(for: keys))
+    }
+
+    /// `systemextensionsctl list` çıktısında bundle ID / team ID geçen satırlar.
+    private func systemExtensions(for keys: MatchKeys) -> [String] {
+        guard let commands,
+              let out = try? commands.run("/usr/bin/systemextensionsctl", ["list"]), out.status == 0 else { return [] }
+        let needles = [keys.bundleID, keys.teamID].compactMap { $0 }.filter { !$0.isEmpty }.map { $0.lowercased() }
+        return out.stdout.split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { line in !line.isEmpty && needles.contains { line.lowercased().contains($0) } }
     }
 
     /// Bir girdinin güvenini ve (varsa) notunu hesaplar; listelenmemeli ise nil.
-    private func evaluate(_ entryName: String, app: AppInfo, keys: MatchKeys) -> (Confidence, String?)? {
+    static func evaluate(_ entryName: String, app: AppInfo, keys: MatchKeys,
+                         installedApps: [AppInfo]) -> (Confidence, String?)? {
         let others = installedApps.filter { $0.bundleID.lowercased() != app.bundleID.lowercased() }
         let level = Self.matchLevel(entryName, keys: keys)
 
