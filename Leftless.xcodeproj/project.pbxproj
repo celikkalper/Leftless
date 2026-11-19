@@ -1,0 +1,542 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0587DB8BF0514549AFE8B401 /* LeftoverListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29FED4CBAD0CA1DEB474D5A /* LeftoverListView.swift */; };
+		0A3E7E70D00E18A2E1421BC9 /* FullDiskAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2C1E75397B5F5708B761E2D /* FullDiskAccess.swift */; };
+		157968E2483CF2635C266D52 /* FileOpsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E959C2A1831D78F1B9444D4C /* FileOpsTests.swift */; };
+		18937D936F7862270F5B3B42 /* LaunchdScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59BC287D9A4413B1414E673D /* LaunchdScannerTests.swift */; };
+		2377D38714AA71D4C6C4968A /* LeftlessApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69A89CDA3D5B77A9AEE026F8 /* LeftlessApp.swift */; };
+		2F019E03B04593C88950031E /* AppListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CF0DD98C2B25CA4DD8400A /* AppListView.swift */; };
+		3869DC80BD72CAC4172F52E2 /* LeftoverScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB498A3EF72DE013863B74D /* LeftoverScannerTests.swift */; };
+		39EBF8DC93D185500B2540BF /* LeftlessCore in Frameworks */ = {isa = PBXBuildFile; productRef = 14333BC8776F6465869BEBEA /* LeftlessCore */; };
+		4258A966DE21D3574FE259EC /* ScanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 452A29380F5065D9D094CED9 /* ScanDetailView.swift */; };
+		5BD2F23C44E82F705DB4A8BC /* Fixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16629EF476AAC20BF9F466C /* Fixtures.swift */; };
+		713A74BD3968C979115BD624 /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC134C96C9EF5D24AEC91700 /* PresentationTests.swift */; };
+		7B89675DBCC58F75F760FA1A /* HistoryMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D546551AA91B8C1685E46AB /* HistoryMigrationTests.swift */; };
+		80336BFF40A289FAD5FBFA43 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EF25EC56A1C43CBF3B3C8E /* AppModel.swift */; };
+		8BAC9ED4C894E0DB53CBFB8A /* UninstallResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 789AA953BDE6C31C1FEC6653 /* UninstallResultView.swift */; };
+		9D6DF1417D4F7646304BF3A6 /* ReceiptScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F14DCD72E89BE0908E99E7B /* ReceiptScannerTests.swift */; };
+		A4A632EEF909FAF208DAC562 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC75783F56DC8897AE3D8B51 /* OnboardingView.swift */; };
+		A924B122D59B09F47FDD3390 /* HistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8113A337C27CC7047D2294A5 /* HistoryStoreTests.swift */; };
+		AEA7F5CB856A3FB9B79055E2 /* LeftlessCore in Frameworks */ = {isa = PBXBuildFile; productRef = 68A6B1416CBDB8EBD31EF400 /* LeftlessCore */; };
+		B8C27FFFBBF916A4F2C58C35 /* ProtectedPathsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 061B3E8AF8554EE8D5EFF4AD /* ProtectedPathsTests.swift */; };
+		C58DC566BA0ECF134CEBFCCB /* RestorerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 789D494A0D4FDCED12983FA7 /* RestorerTests.swift */; };
+		D228B431FCB83A41A3B063E1 /* UninstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C0D7911E4AB96D6540E262 /* UninstallerTests.swift */; };
+		D87517FC28477C079FAB3798 /* AppInspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14FE338E8B6FFB2792FB4F4A /* AppInspectorTests.swift */; };
+		DC7AF2EC9A3E3320AFBD8C67 /* AppTerminator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A239AE492C93BE8F0B59D3 /* AppTerminator.swift */; };
+		ECFA1E88064CDAD1E29D3B71 /* EndToEndTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66C11FED791D8FD17F0D0F23 /* EndToEndTests.swift */; };
+		EDA298F9EE06FDD53163AFD8 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEA9DFBB1F025636B0512658 /* HistoryView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		061B3E8AF8554EE8D5EFF4AD /* ProtectedPathsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtectedPathsTests.swift; sourceTree = "<group>"; };
+		0D546551AA91B8C1685E46AB /* HistoryMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryMigrationTests.swift; sourceTree = "<group>"; };
+		0F14DCD72E89BE0908E99E7B /* ReceiptScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptScannerTests.swift; sourceTree = "<group>"; };
+		13666F95E5A37977E015C4C5 /* macos-apps */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "macos-apps"; path = .; sourceTree = SOURCE_ROOT; };
+		14FE338E8B6FFB2792FB4F4A /* AppInspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInspectorTests.swift; sourceTree = "<group>"; };
+		452A29380F5065D9D094CED9 /* ScanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDetailView.swift; sourceTree = "<group>"; };
+		59BC287D9A4413B1414E673D /* LaunchdScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchdScannerTests.swift; sourceTree = "<group>"; };
+		66C11FED791D8FD17F0D0F23 /* EndToEndTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndToEndTests.swift; sourceTree = "<group>"; };
+		69A89CDA3D5B77A9AEE026F8 /* LeftlessApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftlessApp.swift; sourceTree = "<group>"; };
+		76EAF236E677BD1F7C29AFDC /* LeftlessCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeftlessCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		789AA953BDE6C31C1FEC6653 /* UninstallResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UninstallResultView.swift; sourceTree = "<group>"; };
+		789D494A0D4FDCED12983FA7 /* RestorerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestorerTests.swift; sourceTree = "<group>"; };
+		8113A337C27CC7047D2294A5 /* HistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreTests.swift; sourceTree = "<group>"; };
+		8AD15482B5D7A34A6DA8521E /* Leftless.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Leftless.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9FB498A3EF72DE013863B74D /* LeftoverScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftoverScannerTests.swift; sourceTree = "<group>"; };
+		AC134C96C9EF5D24AEC91700 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
+		B5A239AE492C93BE8F0B59D3 /* AppTerminator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTerminator.swift; sourceTree = "<group>"; };
+		B5CF0DD98C2B25CA4DD8400A /* AppListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListView.swift; sourceTree = "<group>"; };
+		BEA9DFBB1F025636B0512658 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		CC75783F56DC8897AE3D8B51 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		D29FED4CBAD0CA1DEB474D5A /* LeftoverListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftoverListView.swift; sourceTree = "<group>"; };
+		D3EF25EC56A1C43CBF3B3C8E /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		E16629EF476AAC20BF9F466C /* Fixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fixtures.swift; sourceTree = "<group>"; };
+		E7C0D7911E4AB96D6540E262 /* UninstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UninstallerTests.swift; sourceTree = "<group>"; };
+		E959C2A1831D78F1B9444D4C /* FileOpsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOpsTests.swift; sourceTree = "<group>"; };
+		F2C1E75397B5F5708B761E2D /* FullDiskAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullDiskAccess.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8AC08EFCA7E417FDC561E270 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AEA7F5CB856A3FB9B79055E2 /* LeftlessCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E7B82F3235C7CC4529585F42 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				39EBF8DC93D185500B2540BF /* LeftlessCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		05E1481412CFB6BE0DB86E9D = {
+			isa = PBXGroup;
+			children = (
+				7CA3148131F17F3C0E431ECB /* Leftless */,
+				18FF273D6482898C03D4AC61 /* LeftlessCoreTests */,
+				234040A81EAA407BF537537F /* Packages */,
+				F69A01D8EDBE8E2652475999 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0E13E983DCCCD4096F633CD9 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				B5A239AE492C93BE8F0B59D3 /* AppTerminator.swift */,
+				F2C1E75397B5F5708B761E2D /* FullDiskAccess.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		18FF273D6482898C03D4AC61 /* LeftlessCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				14FE338E8B6FFB2792FB4F4A /* AppInspectorTests.swift */,
+				66C11FED791D8FD17F0D0F23 /* EndToEndTests.swift */,
+				E959C2A1831D78F1B9444D4C /* FileOpsTests.swift */,
+				E16629EF476AAC20BF9F466C /* Fixtures.swift */,
+				0D546551AA91B8C1685E46AB /* HistoryMigrationTests.swift */,
+				8113A337C27CC7047D2294A5 /* HistoryStoreTests.swift */,
+				59BC287D9A4413B1414E673D /* LaunchdScannerTests.swift */,
+				9FB498A3EF72DE013863B74D /* LeftoverScannerTests.swift */,
+				AC134C96C9EF5D24AEC91700 /* PresentationTests.swift */,
+				061B3E8AF8554EE8D5EFF4AD /* ProtectedPathsTests.swift */,
+				0F14DCD72E89BE0908E99E7B /* ReceiptScannerTests.swift */,
+				789D494A0D4FDCED12983FA7 /* RestorerTests.swift */,
+				E7C0D7911E4AB96D6540E262 /* UninstallerTests.swift */,
+			);
+			name = LeftlessCoreTests;
+			path = Tests/LeftlessCoreTests;
+			sourceTree = "<group>";
+		};
+		234040A81EAA407BF537537F /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				13666F95E5A37977E015C4C5 /* macos-apps */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		7CA3148131F17F3C0E431ECB /* Leftless */ = {
+			isa = PBXGroup;
+			children = (
+				D3EF25EC56A1C43CBF3B3C8E /* AppModel.swift */,
+				69A89CDA3D5B77A9AEE026F8 /* LeftlessApp.swift */,
+				0E13E983DCCCD4096F633CD9 /* Support */,
+				A8A0476B34347C8CBF620467 /* Views */,
+			);
+			name = Leftless;
+			path = Sources/Leftless;
+			sourceTree = "<group>";
+		};
+		A8A0476B34347C8CBF620467 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B5CF0DD98C2B25CA4DD8400A /* AppListView.swift */,
+				BEA9DFBB1F025636B0512658 /* HistoryView.swift */,
+				D29FED4CBAD0CA1DEB474D5A /* LeftoverListView.swift */,
+				CC75783F56DC8897AE3D8B51 /* OnboardingView.swift */,
+				452A29380F5065D9D094CED9 /* ScanDetailView.swift */,
+				789AA953BDE6C31C1FEC6653 /* UninstallResultView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F69A01D8EDBE8E2652475999 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8AD15482B5D7A34A6DA8521E /* Leftless.app */,
+				76EAF236E677BD1F7C29AFDC /* LeftlessCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BF368BB73B9469039D4349EE /* LeftlessCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F8FB285CBAC8621192A966B9 /* Build configuration list for PBXNativeTarget "LeftlessCoreTests" */;
+			buildPhases = (
+				41F9FA44DF0765AE936D8800 /* Sources */,
+				E7B82F3235C7CC4529585F42 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LeftlessCoreTests;
+			packageProductDependencies = (
+				14333BC8776F6465869BEBEA /* LeftlessCore */,
+			);
+			productName = LeftlessCoreTests;
+			productReference = 76EAF236E677BD1F7C29AFDC /* LeftlessCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		EA92A582ED5865E8B91425AA /* Leftless */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1AE707260FDEAFD0FA634414 /* Build configuration list for PBXNativeTarget "Leftless" */;
+			buildPhases = (
+				7417D668F1881A5C8B1B452C /* Sources */,
+				8AC08EFCA7E417FDC561E270 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Leftless;
+			packageProductDependencies = (
+				68A6B1416CBDB8EBD31EF400 /* LeftlessCore */,
+			);
+			productName = Leftless;
+			productReference = 8AD15482B5D7A34A6DA8521E /* Leftless.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		18616A659E96C27117F32549 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					BF368BB73B9469039D4349EE = {
+						ProvisioningStyle = Manual;
+					};
+					EA92A582ED5865E8B91425AA = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = F96DDE30F1EDF8B55F18DC84 /* Build configuration list for PBXProject "Leftless" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 05E1481412CFB6BE0DB86E9D;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				54C3DD1D5B9F3AC349FC684A /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F69A01D8EDBE8E2652475999 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EA92A582ED5865E8B91425AA /* Leftless */,
+				BF368BB73B9469039D4349EE /* LeftlessCoreTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		41F9FA44DF0765AE936D8800 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D87517FC28477C079FAB3798 /* AppInspectorTests.swift in Sources */,
+				ECFA1E88064CDAD1E29D3B71 /* EndToEndTests.swift in Sources */,
+				157968E2483CF2635C266D52 /* FileOpsTests.swift in Sources */,
+				5BD2F23C44E82F705DB4A8BC /* Fixtures.swift in Sources */,
+				7B89675DBCC58F75F760FA1A /* HistoryMigrationTests.swift in Sources */,
+				A924B122D59B09F47FDD3390 /* HistoryStoreTests.swift in Sources */,
+				18937D936F7862270F5B3B42 /* LaunchdScannerTests.swift in Sources */,
+				3869DC80BD72CAC4172F52E2 /* LeftoverScannerTests.swift in Sources */,
+				713A74BD3968C979115BD624 /* PresentationTests.swift in Sources */,
+				B8C27FFFBBF916A4F2C58C35 /* ProtectedPathsTests.swift in Sources */,
+				9D6DF1417D4F7646304BF3A6 /* ReceiptScannerTests.swift in Sources */,
+				C58DC566BA0ECF134CEBFCCB /* RestorerTests.swift in Sources */,
+				D228B431FCB83A41A3B063E1 /* UninstallerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7417D668F1881A5C8B1B452C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2F019E03B04593C88950031E /* AppListView.swift in Sources */,
+				80336BFF40A289FAD5FBFA43 /* AppModel.swift in Sources */,
+				DC7AF2EC9A3E3320AFBD8C67 /* AppTerminator.swift in Sources */,
+				0A3E7E70D00E18A2E1421BC9 /* FullDiskAccess.swift in Sources */,
+				EDA298F9EE06FDD53163AFD8 /* HistoryView.swift in Sources */,
+				2377D38714AA71D4C6C4968A /* LeftlessApp.swift in Sources */,
+				0587DB8BF0514549AFE8B401 /* LeftoverListView.swift in Sources */,
+				A4A632EEF909FAF208DAC562 /* OnboardingView.swift in Sources */,
+				4258A966DE21D3574FE259EC /* ScanDetailView.swift in Sources */,
+				8BAC9ED4C894E0DB53CBFB8A /* UninstallResultView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		44097CA0AC8D07C7916BBAC1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		6C0039FA5A4E228D907B7FD9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.leftless.LeftlessCoreTests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		6E320281FA765E03CA28CF9F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.leftless.LeftlessCoreTests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		84C128A92108D5605E6263B8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/Leftless.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.leftless.app;
+				PRODUCT_NAME = Leftless;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C96A76AF8821E9999B158445 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/Leftless.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.leftless.app;
+				PRODUCT_NAME = Leftless;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F695732425B5F32BA778C4F9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1AE707260FDEAFD0FA634414 /* Build configuration list for PBXNativeTarget "Leftless" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84C128A92108D5605E6263B8 /* Debug */,
+				C96A76AF8821E9999B158445 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F8FB285CBAC8621192A966B9 /* Build configuration list for PBXNativeTarget "LeftlessCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6E320281FA765E03CA28CF9F /* Debug */,
+				6C0039FA5A4E228D907B7FD9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F96DDE30F1EDF8B55F18DC84 /* Build configuration list for PBXProject "Leftless" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				44097CA0AC8D07C7916BBAC1 /* Debug */,
+				F695732425B5F32BA778C4F9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		54C3DD1D5B9F3AC349FC684A /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		14333BC8776F6465869BEBEA /* LeftlessCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LeftlessCore;
+		};
+		68A6B1416CBDB8EBD31EF400 /* LeftlessCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LeftlessCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 18616A659E96C27117F32549 /* Project object */;
+}

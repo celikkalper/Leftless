@@ -1,10 +1,10 @@
-name: Kalintisiz
+name: Leftless
 options:
-  bundleIdPrefix: com.kalintisiz
+  bundleIdPrefix: com.leftless
   deploymentTarget:
     macOS: "15.0"
 packages:
-  KalintisizCore:
+  LeftlessCore:
     path: .
 settings:
   base:
@@ -12,48 +12,48 @@ settings:
     MACOSX_DEPLOYMENT_TARGET: "15.0"
     ARCHS: $(ARCHS_STANDARD)
 targets:
-  Kalintisiz:
+  Leftless:
     type: application
     platform: macOS
     sources:
-      - Sources/Kalintisiz
+      - Sources/Leftless
     dependencies:
-      - package: KalintisizCore
-        product: KalintisizCore
+      - package: LeftlessCore
+        product: LeftlessCore
     settings:
       base:
         INFOPLIST_FILE: App/Info.plist
-        PRODUCT_BUNDLE_IDENTIFIER: com.kalintisiz.app
-        PRODUCT_NAME: Kalintisiz
-        CODE_SIGN_ENTITLEMENTS: App/Kalintisiz.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.leftless.app
+        PRODUCT_NAME: Leftless
+        CODE_SIGN_ENTITLEMENTS: App/Leftless.entitlements
         ENABLE_APP_SANDBOX: NO
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
         ENABLE_HARDENED_RUNTIME: NO
         GENERATE_INFOPLIST_FILE: NO
-  KalintisizCoreTests:
+  LeftlessCoreTests:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - Tests/KalintisizCoreTests
+      - Tests/LeftlessCoreTests
     dependencies:
-      - package: KalintisizCore
-        product: KalintisizCore
+      - package: LeftlessCore
+        product: LeftlessCore
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
 schemes:
-  Kalintisiz:
+  Leftless:
     build:
       targets:
-        Kalintisiz: all
-        KalintisizCoreTests: [test]
+        Leftless: all
+        LeftlessCoreTests: [test]
     run:
       config: Debug
-      executable: Kalintisiz
+      executable: Leftless
     test:
       config: Debug
       targets:
-        - KalintisizCoreTests
+        - LeftlessCoreTests

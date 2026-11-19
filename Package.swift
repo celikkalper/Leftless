@@ -2,15 +2,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "Kalintisiz",
+    name: "Leftless",
     platforms: [.macOS(.v15)],
     products: [
-        .library(name: "KalintisizCore", targets: ["KalintisizCore"]),
-        .executable(name: "Kalintisiz", targets: ["Kalintisiz"]),
+        .library(name: "LeftlessCore", targets: ["LeftlessCore"]),
+        .executable(name: "Leftless", targets: ["Leftless"]),
     ],
     targets: [
-        .target(name: "KalintisizCore"),
-        .executableTarget(name: "Kalintisiz", dependencies: ["KalintisizCore"]),
-        .testTarget(name: "KalintisizCoreTests", dependencies: ["KalintisizCore"]),
+        .target(name: "LeftlessCore"),
+        .executableTarget(name: "Leftless", dependencies: ["LeftlessCore"]),
+        .testTarget(name: "LeftlessCoreTests", dependencies: ["LeftlessCore"]),
     ]
 )

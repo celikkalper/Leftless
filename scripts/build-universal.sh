@@ -1,11 +1,11 @@
 #!/bin/bash
-# Universal (arm64 + x86_64) Kalıntısız.app üretir: build/Kalıntısız.app
+# Universal (arm64 + x86_64) Leftless.app üretir: build/Leftless.app
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-APP="build/Kalıntısız.app"
-BIN_NAME="Kalintisiz"
+APP="build/Leftless.app"
+BIN_NAME="Leftless"
 
 echo "==> arm64 derleniyor"
 swift build -c release --triple arm64-apple-macosx15.0
@@ -24,7 +24,7 @@ cp App/Info.plist "$APP/Contents/Info.plist"
 
 xattr -cr "$APP"
 echo "==> imzalanıyor (ad-hoc)"
-codesign --force --deep -s - --entitlements App/Kalintisiz.entitlements "$APP"
+codesign --force --deep -s - --entitlements App/Leftless.entitlements "$APP"
 
 lipo -info "$APP/Contents/MacOS/$BIN_NAME"
 codesign -v "$APP"

@@ -5,13 +5,13 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>tr</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.kalintisiz.app</string>
+	<string>com.leftless.app</string>
 	<key>CFBundleName</key>
-	<string>Kalıntısız</string>
+	<string>Leftless</string>
 	<key>CFBundleDisplayName</key>
-	<string>Kalıntısız</string>
+	<string>Leftless</string>
 	<key>CFBundleExecutable</key>
-	<string>Kalintisiz</string>
+	<string>Leftless</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
