@@ -88,6 +88,19 @@ import Foundation
         #expect(found.map(\.id) == [conflict.id])
     }
 
+    // MARK: - Geçmiş rozeti
+
+    @Test func historyBadgeCountsRestorableAndPartial() {
+        func record(_ name: String) -> HistoryRecord { HistoryRecord(appName: name, bundleID: "com.\(name)", items: []) }
+        let records = [record("a"), record("b"), record("c"), record("d")]
+        let statuses: [UUID: RestoreStatus] = [
+            records[0].id: .restorable, records[1].id: .partial(missing: 1),
+            records[2].id: .unrecoverable, records[3].id: .restored,
+        ]
+        #expect(Presentation.historyBadgeCount(records) { statuses[$0.id] ?? .unrecoverable } == 2)
+        #expect(Presentation.historyBadgeCount([]) { _ in .restorable } == 0)
+    }
+
     // MARK: - Uygulama listesi
 
     @Test func arrangeExcludesSelfFiltersAndSortsByName() {

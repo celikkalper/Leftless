@@ -5,7 +5,7 @@ import SwiftUI
 struct AppListView: View {
     @Bindable var model: AppModel
 
-    private var selection: Binding<Selection?> {
+    private var selection: Binding<InstalledApp?> {
         Binding(get: { model.selection }, set: { newValue in Task { await model.select(newValue) } })
     }
 
@@ -17,13 +17,8 @@ struct AppListView: View {
                         .accessibilityLabel("Loading apps")
                 }
                 ForEach(model.visibleApps) { app in
-                    AppRow(app: app).tag(Selection.app(app))
+                    AppRow(app: app).tag(app)
                 }
-            }
-            Section {
-                Label("History", systemImage: "clock.arrow.circlepath")
-                    .tag(Selection.history)
-                    .accessibilityLabel("History")
             }
         }
         .listStyle(.sidebar)

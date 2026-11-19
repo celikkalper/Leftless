@@ -414,7 +414,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scripts de Aplicativo"
+            "value" : "Scripts de aplicativo"
           }
         },
         "tr" : {
@@ -595,7 +595,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Konnte nicht bewegt werden"
+            "value" : "Konnte nicht verschoben werden"
           }
         },
         "es" : {
@@ -742,7 +742,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contêiner de Grupo"
+            "value" : "Contêiner de grupo"
           }
         },
         "tr" : {
@@ -824,7 +824,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arquivo de Instalação"
+            "value" : "Arquivo de instalação"
           }
         },
         "tr" : {
@@ -865,7 +865,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Extensão de Kernel"
+            "value" : "Extensão de kernel"
           }
         },
         "tr" : {
@@ -906,7 +906,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Agente de Inicialização"
+            "value" : "Agente de inicialização"
           }
         },
         "tr" : {
@@ -947,7 +947,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Daemon de Inicialização"
+            "value" : "Daemon de inicialização"
           }
         },
         "tr" : {
@@ -1111,7 +1111,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pasta Pessoal"
+            "value" : "Pasta pessoal"
           }
         },
         "tr" : {
@@ -1234,7 +1234,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Auxiliar Privilegiado"
+            "value" : "Auxiliar privilegiado"
           }
         },
         "tr" : {
@@ -1275,7 +1275,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estado Salvo"
+            "value" : "Estado salvo"
           }
         },
         "tr" : {
@@ -1292,7 +1292,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das Bewegen konnte nicht überprüft werden"
+            "value" : "Das Verschieben konnte nicht überprüft werden"
           }
         },
         "es" : {

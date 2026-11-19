@@ -2,9 +2,8 @@ import AppKit
 import LeftlessCore
 import Observation
 
-enum Selection: Hashable {
-    case app(InstalledApp)
-    case history
+enum MainTab: Hashable {
+    case apps, history
 }
 
 struct PendingRestore: Identifiable {
@@ -19,7 +18,8 @@ final class AppModel {
     static let ownBundleIDs: Set<String> = ["com.leftless.app", "com.kalintisiz.app"]
 
     var apps: [InstalledApp] = []
-    var selection: Selection?
+    var tab: MainTab = .apps
+    var selection: InstalledApp?
     var scan: ScanResult?
     var checked: Set<UUID> = []
     var isScanning = false
@@ -72,13 +72,25 @@ final class AppModel {
         historyStatus = Dictionary(uniqueKeysWithValues: history.map { ($0.id, store.status(of: $0)) })
     }
 
+    /// Switches the toolbar tab. The app selection and its scan are kept, so returning to Apps shows them again.
+    func switchTab(_ newTab: MainTab) {
+        guard !isWorking, newTab != tab else { return }
+        tab = newTab
+        if newTab == .history { reloadHistory() }
+    }
+
+    /// Number shown next to "History" in the toolbar: records that can still be restored.
+    var historyBadge: Int {
+        Presentation.historyBadgeCount(history) { historyStatus[$0.id] ?? .unrecoverable }
+    }
+
     func refreshFullDiskAccess() {
         hasFullDiskAccess = FullDiskAccess.isGranted()
     }
 
     // MARK: - Tarama
 
-    func select(_ newSelection: Selection?) async {
+    func select(_ newSelection: InstalledApp?) async {
         // Kaldırma/geri yükleme sürerken seçim değişmez: sonuç ve plan hep aynı uygulamaya ait kalır.
         guard !isWorking else { return }
         guard newSelection != selection || (scan == nil && !isScanning) else { return }
@@ -86,12 +98,12 @@ final class AppModel {
         lastOutcome = nil
         scan = nil
         checked = []
-        guard case .app(let app) = newSelection else {
+        guard let app = newSelection else {
             scanToken = UUID()   // sürmekte olan tarama sonucu yok sayılır
             isScanning = false
-            if newSelection == .history { reloadHistory() }
             return
         }
+        tab = .apps
         let token = UUID()
         scanToken = token
         isScanning = true
@@ -123,7 +135,7 @@ final class AppModel {
         guard !isWorking, let url = urls.first(where: { $0.pathExtension == "app" }) else { return }
         let path = url.standardizedFileURL.path
         if let existing = apps.first(where: { $0.info.url.standardizedFileURL.path == path }) {
-            Task { await select(.app(existing)) }
+            Task { await select(existing) }
             return
         }
         Task {
@@ -142,7 +154,7 @@ final class AppModel {
                 return
             }
             if !apps.contains(where: { $0.id == app.id }) { apps.append(app) }
-            await select(.app(app))
+            await select(app)
         }
     }
 
@@ -186,8 +198,7 @@ final class AppModel {
     }
 
     private func isShowing(_ app: AppInfo) -> Bool {
-        if case .app(let selected) = selection { return selected.info.url == app.url }
-        return false
+        return selection?.info.url == app.url
     }
 
     // MARK: - Geri yükleme
@@ -232,9 +243,9 @@ final class AppModel {
         if lastOutcome?.record.id == r.id { lastOutcome = nil }
         reloadHistory()
         reloadApps()
-        if case .app(let app) = selection, FileManager.default.fileExists(atPath: app.info.url.path) {
+        if let app = selection, FileManager.default.fileExists(atPath: app.info.url.path) {
             scan = nil
-            await select(.app(app))
+            await select(app)
         }
     }
 

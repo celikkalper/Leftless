@@ -1878,7 +1878,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Continuar sem Acesso Total ao Disco"
+            "value" : "Continuar sem acesso total ao disco"
           }
         },
         "tr" : {
@@ -1897,13 +1897,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Nicht bewegt (%lld)"
+                  "value" : "Nicht verschoben (%lld)"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Nicht bewegt (%lld)"
+                  "value" : "Nicht verschoben (%lld)"
                 }
               }
             }
@@ -2058,7 +2058,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Der Verlaufseintrag konnte nicht gesichert werden. Es wurden keine Dateien bewegt."
+            "value" : "Der Verlaufseintrag konnte nicht gesichert werden. Es wurden keine Dateien verschoben."
           }
         },
         "es" : {
@@ -2122,7 +2122,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apagar Registro"
+            "value" : "Apagar registro"
           }
         },
         "tr" : {
@@ -2162,7 +2162,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Acesso Total ao Disco Necessário"
+            "value" : "Acesso total ao disco Necessário"
           }
         },
         "tr" : {
@@ -2242,7 +2242,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permitir Acesso"
+            "value" : "Permitir acesso"
           }
         },
         "tr" : {
@@ -2282,7 +2282,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permitir Acesso Total ao Disco"
+            "value" : "Permitir acesso total ao disco"
           }
         },
         "tr" : {
@@ -2329,6 +2329,136 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Geçmiş"
+          }
+        }
+      }
+    },
+    "History (%lld)" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Verlauf (%lld)"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Verlauf (%lld)"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "History (%lld)"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "History (%lld)"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Historial (%lld)"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Historial (%lld)"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Historique (%lld)"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Historique (%lld)"
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "履歴 (%lld)"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "履歴 (%lld)"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Histórico (%lld)"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Histórico (%lld)"
+                }
+              }
+            }
+          }
+        },
+        "tr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Geçmiş (%lld)"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Geçmiş (%lld)"
+                }
+              }
+            }
           }
         }
       }
@@ -2498,7 +2628,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bewegen"
+            "value" : "Verschieben"
           }
         },
         "es" : {
@@ -2682,7 +2812,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sem Acesso Total ao Disco: alguns resíduos podem não aparecer"
+            "value" : "Sem acesso total ao disco: alguns resíduos podem não aparecer"
           }
         },
         "tr" : {
@@ -2722,7 +2852,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nenhum Histórico"
+            "value" : "Nenhum histórico"
           }
         },
         "tr" : {
@@ -2882,7 +3012,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abrir Acesso Total ao Disco nos Ajustes do Sistema"
+            "value" : "Abrir acesso total ao disco nos Ajustes do Sistema"
           }
         },
         "tr" : {
@@ -3008,7 +3138,7 @@
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kapat"
+            "value" : "Çık"
           }
         }
       }
@@ -3322,7 +3452,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restauração Concluída"
+            "value" : "Restauração concluída"
           }
         },
         "tr" : {
@@ -3482,7 +3612,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Selecione um App"
+            "value" : "Selecione um app"
           }
         },
         "tr" : {
@@ -3682,7 +3812,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ignorar por Enquanto"
+            "value" : "Ignorar por enquanto"
           }
         },
         "tr" : {
@@ -3698,7 +3828,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Manche Dateien, die Apps zurücklassen, liegen in geschützten Ordnern. Leftless kann sie nur mit Festplattenvollzugriff sehen. Ohne deine Zustimmung wird nichts bewegt."
+            "value" : "Manche Dateien, die Apps zurücklassen, liegen in geschützten Ordnern. Leftless kann sie nur mit Festplattenvollzugriff sehen. Ohne deine Zustimmung wird nichts verschoben."
           }
         },
         "es" : {
@@ -3722,7 +3852,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alguns arquivos deixados pelos apps ficam em pastas protegidas. O Leftless só consegue vê-los com Acesso Total ao Disco. Nada é movido sem a sua permissão."
+            "value" : "Alguns arquivos deixados pelos apps ficam em pastas protegidas. O Leftless só consegue vê-los com acesso total ao disco. Nada é movido sem a sua permissão."
           }
         },
         "tr" : {
@@ -3762,7 +3892,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ocorreu um Problema"
+            "value" : "Ocorreu um problema"
           }
         },
         "tr" : {
@@ -4215,6 +4345,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sürüm %@"
+          }
+        }
+      }
+    },
+    "View" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affichage"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visualização"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görünüm"
           }
         }
       }

@@ -42,6 +42,7 @@ struct LeftlessApp: App {
             ContentView(model: delegate.model)
                 .frame(minWidth: 760, minHeight: 480)
         }
+        .commands { TabCommands(model: delegate.model) }
     }
 }
 
@@ -53,12 +54,10 @@ struct ContentView: View {
             if !model.hasFullDiskAccess && !model.onboardingSkipped {
                 OnboardingView(model: model)
             } else {
-                NavigationSplitView {
-                    AppListView(model: model)
-                        .navigationSplitViewColumnWidth(min: 220, ideal: 260)
-                } detail: {
-                    detail
-                }
+                mainContent
+                    .toolbar {
+                        ToolbarItem(placement: .principal) { TabPicker(model: model) }
+                    }
             }
         }
         .dropDestination(for: URL.self) { urls, _ in
@@ -78,18 +77,67 @@ struct ContentView: View {
         }
     }
 
-    @ViewBuilder private var detail: some View {
-        switch model.selection {
-        case .app:
-            ScanDetailView(model: model)
+    @ViewBuilder private var mainContent: some View {
+        switch model.tab {
+        case .apps:
+            NavigationSplitView {
+                AppListView(model: model)
+                    .navigationSplitViewColumnWidth(min: 220, ideal: 260)
+            } detail: {
+                detail
+            }
         case .history:
             HistoryView(model: model)
+        }
+    }
+
+    @ViewBuilder private var detail: some View {
+        switch model.selection {
+        case .some:
+            ScanDetailView(model: model)
         case nil:
             ContentUnavailableView {
                 Label("Select an App", systemImage: "trash.square")
             } description: {
                 Text("Choose the app you want to uninstall from the list, or drag it into this window.")
             }
+        }
+    }
+}
+
+/// Segmented Apps / History switch in the toolbar; disabled while an uninstall or restore is running.
+private struct TabPicker: View {
+    @Bindable var model: AppModel
+
+    private var historyTitle: String {
+        let count = model.historyBadge
+        return count > 0 ? String(localized: "History (\(count))") : String(localized: "History")
+    }
+
+    var body: some View {
+        Picker("View", selection: Binding(get: { model.tab }, set: { model.switchTab($0) })) {
+            Text("Apps").tag(MainTab.apps)
+            Text(historyTitle).tag(MainTab.history)
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .frame(minWidth: 200)
+        .disabled(model.isWorking)
+    }
+}
+
+/// View menu items with ⌘1 / ⌘2.
+struct TabCommands: Commands {
+    let model: AppModel
+
+    var body: some Commands {
+        CommandGroup(after: .toolbar) {
+            Button("Apps") { model.switchTab(.apps) }
+                .keyboardShortcut("1")
+                .disabled(model.isWorking)
+            Button("History") { model.switchTab(.history) }
+                .keyboardShortcut("2")
+                .disabled(model.isWorking)
         }
     }
 }

@@ -122,6 +122,16 @@ extension HistoryItem {
 }
 
 public enum Presentation {
+    /// Number of history records that can still be (partly) restored; shown on the History tab.
+    public static func historyBadgeCount(_ records: [HistoryRecord], status: (HistoryRecord) -> RestoreStatus) -> Int {
+        records.filter {
+            switch status($0) {
+            case .restorable, .partial: true
+            case .unrecoverable, .restored: false
+            }
+        }.count
+    }
+
     /// Plain-language reason for a failed item: from the failure code, else legacy text unchanged, else a generic message.
     public static func friendlyFailureReason(_ item: HistoryItem) -> String {
         switch item.failure {

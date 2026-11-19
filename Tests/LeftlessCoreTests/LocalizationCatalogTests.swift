@@ -5,8 +5,8 @@ import Foundation
 /// so coverage is enforced here instead.
 @Suite struct LocalizationCatalogTests {
     static let languages = ["tr", "de", "fr", "es", "ja", "pt-BR"]
-    /// Languages whose count strings need distinct plural forms (Japanese uses `other` only).
-    static let pluralLanguages = ["tr", "de", "fr", "es", "pt-BR"]
+    /// Languages whose count strings need distinct plural forms (Japanese uses `other` only; English is the source).
+    static let pluralLanguages = ["en", "tr", "de", "fr", "es", "pt-BR"]
 
     static let repoRoot = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
