@@ -25,7 +25,7 @@ public struct LaunchdScanner: Sendable {
 
                 var confidence: Confidence?
                 var note: String?
-                if pointsIntoApp(plist, app: app, keys: keys) {
+                if pointsIntoApp(plist, app: app, keys: keys, installedApps: installedApps) {
                     confidence = .certain
                 } else if let r = LeftoverScanner.evaluate(file.lastPathComponent, app: app, keys: keys,
                                                            installedApps: installedApps) {
@@ -39,13 +39,18 @@ public struct LaunchdScanner: Sendable {
         return result
     }
 
-    private func pointsIntoApp(_ plist: [String: Any], app: AppInfo, keys: MatchKeys) -> Bool {
+    private func pointsIntoApp(_ plist: [String: Any], app: AppInfo, keys: MatchKeys, installedApps: [AppInfo]) -> Bool {
         let program = (plist["Program"] as? String) ?? (plist["ProgramArguments"] as? [String])?.first
         guard let program, !program.isEmpty else { return false }
         if program.hasPrefix(app.url.path + "/") { return true }
         let bundleID = keys.bundleID.lowercased()
-        guard !bundleID.isEmpty else { return false }
-        return (program as NSString).lastPathComponent.lowercased().contains(bundleID)
-            || program.lowercased().contains(bundleID)
+        let lowered = program.lowercased()
+        guard !bundleID.isEmpty, lowered.contains(bundleID) else { return false }
+        // Daha spesifik bir kimliğe sahip başka bir yüklü uygulama da eşleşiyorsa (Chrome / Chrome.canary) o ona aittir.
+        let moreSpecific = installedApps.contains {
+            let other = $0.bundleID.lowercased()
+            return other != bundleID && other.count > bundleID.count && lowered.contains(other)
+        }
+        return !moreSpecific
     }
 }

@@ -45,8 +45,7 @@ private func scan(_ fs: FakeSystem, _ packages: [String: [String]], excluding: [
     try fs.touch("usr/local/bin/spotify-cli")
     let found = scan(fs, ["com.spotify.client.cli": ["/usr/local/bin/spotify-cli"]])
     #expect(found.first?.confidence == .probable)
-    let inLib = try fs.touch("Library/Spotify/x")
-    _ = inLib
+    try fs.touch("Library/Spotify/x")
     let certain = scan(fs, ["com.spotify.client.cli": ["/Library/Spotify/x"]])
     #expect(certain.first?.confidence == .certain)
 }

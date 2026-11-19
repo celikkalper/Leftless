@@ -55,3 +55,37 @@ private func writePlist(_ fs: FakeSystem, _ relative: String, _ dict: [String: A
     let r = LeftoverScanner(environment: e, installedApps: [zoom], launchd: LaunchdScanner(environment: e)).scan(zoom)
     #expect(r.leftovers.filter { $0.kind == .launchAgent }.count == 1)
 }
+
+private let chrome = AppInfo(url: URL(fileURLWithPath: "/Applications/Google Chrome.app"),
+                             bundleID: "com.google.Chrome", name: "Google Chrome")
+private let canary = AppInfo(url: URL(fileURLWithPath: "/Applications/Google Chrome Canary.app"),
+                             bundleID: "com.google.Chrome.canary", name: "Google Chrome Canary")
+private let spotifyApp = AppInfo(url: URL(fileURLWithPath: "/Applications/Spotify.app"),
+                                 bundleID: "com.spotify.client", name: "Spotify")
+
+@Test func otherInstalledAppsAgentIsNotListed() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    try writePlist(fs, "Users/tester/Library/LaunchAgents/updater.plist",
+                   ["Label": "x", "ProgramArguments": ["/opt/com.google.Chrome.canary/updater"]])
+    let found = LaunchdScanner(environment: env(fs))
+        .scan(chrome, keys: MatchKeys(app: chrome), installedApps: [chrome, canary])
+    #expect(found.isEmpty)
+}
+
+@Test func fileNameWithBundleIDIsCertain() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    try writePlist(fs, "Users/tester/Library/LaunchAgents/com.spotify.client.helper.plist",
+                   ["Label": "x", "ProgramArguments": ["/opt/unrelated/tool"]])
+    let found = LaunchdScanner(environment: env(fs))
+        .scan(spotifyApp, keys: MatchKeys(app: spotifyApp), installedApps: [spotifyApp])
+    #expect(found.first?.confidence == .certain)
+}
+
+@Test func fileNameWithOnlyAppNameIsProbable() throws {
+    let fs = try FakeSystem(); defer { fs.cleanup() }
+    try writePlist(fs, "Users/tester/Library/LaunchAgents/Spotify Updater.plist",
+                   ["Label": "x", "ProgramArguments": ["/opt/unrelated/tool"]])
+    let found = LaunchdScanner(environment: env(fs))
+        .scan(spotifyApp, keys: MatchKeys(app: spotifyApp), installedApps: [spotifyApp])
+    #expect(found.first?.confidence == .probable)
+}
