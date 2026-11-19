@@ -134,7 +134,7 @@ private struct RRig {
         let out = rig.restorer().restore(rig.record([a])) { _ in .skip }
         #expect(rig.cmds.calls.isEmpty)
         #expect(out.failures.count == 1)
-        #expect(out.failures[0].error != nil)
+        #expect(out.failures[0].failure != nil)
         #expect(out.record.items[0].state == .trashed)
     }
 
@@ -198,7 +198,7 @@ private struct RRig {
         #expect(out.record.items[0].state == .restored)
         #expect(out.record.items[1].state == .trashed)
         #expect(out.failures.count == 1)
-        #expect(out.failures[0].error == "Yönetici izni verilmedi")
+        #expect(out.failures[0].failure == .adminDenied)
         #expect(out.restored == 1)
     }
 
@@ -208,10 +208,10 @@ private struct RRig {
         let a = rig.item("/Library/a", trash: "/Users/t/.Trash/a", admin: true)
         rig.priv.action = { _ in throw PrivilegedError.failed("mv: boom") }
         let out = rig.restorer().restore(rig.record([a])) { _ in .skip }
-        #expect(out.failures[0].error == "mv: boom")
+        #expect(out.failures[0].failure == .other("mv: boom"))
     }
 
-    @Test func missingTrashItemsAreReportedNotThrown() {
+    @Test func restorerMissingTrashRecordsNotFoundInTrash() {
         let rig = RRig()
         defer { try? FileManager.default.removeItem(at: rig.tmp) }
         let missing = rig.item("/Users/t/a", trash: "/Users/t/.Trash/a", trashExists: false)
@@ -227,7 +227,7 @@ private struct RRig {
         #expect(rig.cmds.calls.isEmpty)
         #expect(out.record.items.map(\.state) == [.trashed, .trashed, .failed, .pending, .restored])
         #expect(out.failures.count == 2)
-        #expect(out.failures.allSatisfy { $0.error != nil })
+        #expect(out.failures.allSatisfy { $0.failure == .notFoundInTrash && $0.error == nil })
     }
 
     @Test func joinedAdminBatchStopsAtFailureAndSkipsBootstrap() throws {

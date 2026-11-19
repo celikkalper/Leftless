@@ -4,6 +4,39 @@ public enum ItemState: String, Codable, Sendable {
     case pending, trashed, failed, restored
 }
 
+/// Why an item could not be moved or restored. Stored as a stable code, never as display text.
+public enum FailureReason: Codable, Hashable, Sendable {
+    case adminDenied, manifestUpdateFailed, notFoundInTrash, moveNotVerified
+    /// Raw system text (stderr / `localizedDescription`); shown only in help tooltips.
+    case other(String)
+
+    private enum CodingKeys: String, CodingKey { case code, detail }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        switch try c.decode(String.self, forKey: .code) {
+        case "adminDenied": self = .adminDenied
+        case "manifestUpdateFailed": self = .manifestUpdateFailed
+        case "notFoundInTrash": self = .notFoundInTrash
+        case "moveNotVerified": self = .moveNotVerified
+        default: self = .other(try c.decodeIfPresent(String.self, forKey: .detail) ?? "")
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .adminDenied: try c.encode("adminDenied", forKey: .code)
+        case .manifestUpdateFailed: try c.encode("manifestUpdateFailed", forKey: .code)
+        case .notFoundInTrash: try c.encode("notFoundInTrash", forKey: .code)
+        case .moveNotVerified: try c.encode("moveNotVerified", forKey: .code)
+        case .other(let text):
+            try c.encode("other", forKey: .code)
+            try c.encode(text, forKey: .detail)
+        }
+    }
+}
+
 public struct HistoryItem: Codable, Hashable, Identifiable, Sendable {
     public var id: UUID
     public var originalPath: String
@@ -15,12 +48,14 @@ public struct HistoryItem: Codable, Hashable, Identifiable, Sendable {
     public var launchdDomain: String?
     public var packageID: String?
     public var state: ItemState
+    public var failure: FailureReason?
+    /// Legacy free-text reason from records written before failure codes; decoded, displayed, never written.
     public var error: String?
 
     public init(id: UUID = UUID(), originalPath: String, trashPath: String? = nil, kind: LeftoverKind,
                 size: Int64, requiresAdmin: Bool = false, launchdLabel: String? = nil,
                 launchdDomain: String? = nil, packageID: String? = nil,
-                state: ItemState = .pending, error: String? = nil) {
+                state: ItemState = .pending, failure: FailureReason? = nil, error: String? = nil) {
         self.id = id
         self.originalPath = originalPath
         self.trashPath = trashPath
@@ -31,6 +66,7 @@ public struct HistoryItem: Codable, Hashable, Identifiable, Sendable {
         self.launchdDomain = launchdDomain
         self.packageID = packageID
         self.state = state
+        self.failure = failure
         self.error = error
     }
 }

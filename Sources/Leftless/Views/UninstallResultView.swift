@@ -33,9 +33,9 @@ struct UninstallResultView: View {
                 List(outcome.failures) { item in
                     VStack(alignment: .leading, spacing: 2) {
                         Text(URL(fileURLWithPath: item.originalPath).lastPathComponent)
-                        Text(item.friendlyFailureReason).font(.caption).foregroundStyle(.secondary)
+                        Text(Presentation.friendlyFailureReason(item)).font(.caption).foregroundStyle(.secondary)
                     }
-                    .help([item.originalPath, item.error].compactMap { $0 }.joined(separator: "\n"))
+                    .help([item.originalPath, Presentation.failureDetail(item)].compactMap { $0 }.joined(separator: "\n"))
                     .contextMenu {
                         Button("Finder'da Göster") {
                             NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: item.originalPath)])

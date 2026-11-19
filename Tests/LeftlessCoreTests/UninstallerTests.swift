@@ -153,7 +153,8 @@ private struct Rig {
         rig.files.failing.insert(a.url.path)
         let out = try rig.uninstaller().uninstall(rig.scan([a, b]), selected: [a, b], icon: Data([1, 2]))
         #expect(out.record.items[0].state == .failed)
-        #expect(out.record.items[0].error != nil)
+        #expect(out.record.items[0].failure != nil)
+        #expect(out.record.items[0].error == nil)
         #expect(out.record.items[1].state == .trashed)
         #expect(out.record.items[1].trashPath == "/trash/b")
         #expect(out.failures.count == 1)
@@ -162,14 +163,15 @@ private struct Rig {
         #expect(saved[0].items.map(\.state) == [.failed, .trashed])
     }
 
-    @Test func cancelledAdminMarksItemsFailed() throws {
+    @Test func uninstallCancelledAdminRecordsAdminDeniedCode() throws {
         let rig = Rig()
         defer { try? FileManager.default.removeItem(at: rig.tmp) }
         let a = rig.leftover("/Library/a", admin: true)
         rig.priv.action = { _ in throw PrivilegedError.cancelled }
         let out = try rig.uninstaller().uninstall(rig.scan([a]), selected: [a], icon: nil)
         #expect(out.record.items[0].state == .failed)
-        #expect(out.record.items[0].error == "Yönetici izni verilmedi")
+        #expect(out.record.items[0].failure == .adminDenied)
+        #expect(out.record.items[0].error == nil)
         #expect(out.failures.count == 1)
     }
 
@@ -186,7 +188,7 @@ private struct Rig {
         let out = try rig.uninstaller().uninstall(rig.scan([a, b]), selected: [a, b], icon: nil)
         #expect(out.record.items[0].state == .trashed)
         #expect(out.record.items[1].state == .failed)
-        #expect(out.record.items[1].error == "mv: boom")
+        #expect(out.record.items[1].failure == .other("mv: boom"))
         #expect(out.failures.count == 1)
     }
 
@@ -278,7 +280,7 @@ private struct Rig {
         #expect(!out.record.items[0].requiresAdmin)
     }
 
-    @Test func skipsPrivilegedBatchWhenRetargetedManifestCannotBeSaved() throws {
+    @Test func retargetSaveFailureRecordsManifestUpdateFailed() throws {
         let rig = Rig()
         let dir = rig.tmp.appendingPathComponent("h")
         let fm = FileManager.default
@@ -294,7 +296,8 @@ private struct Rig {
         #expect(rig.priv.calls.isEmpty)
         #expect(out.record.items[0].state == .trashed)
         #expect(out.record.items[1].state == .failed)
-        #expect(out.record.items[1].error == "Kayıt güncellenemedi")
+        #expect(out.record.items[1].failure == .manifestUpdateFailed)
+        #expect(out.record.items[1].error == nil)
         #expect(out.failures.count == 1)
     }
 }

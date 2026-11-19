@@ -24,7 +24,7 @@ import Foundation
         ]
         let groups = LeftoverGrouping.groups(items)
         #expect(groups.map(\.kind) == [.appBundle, .caches, .preferences])
-        #expect(groups.map(\.title) == ["Uygulama", "Önbellek", "Tercihler"])
+        #expect(groups.map(\.title) == ["App", "Caches", "Preferences"])
         #expect(groups[1].items.map(\.url.lastPathComponent) == ["a", "b"])
         #expect(groups[1].totalSize == 25)
         #expect(groups.map(\.items.count) == [1, 2, 1])
@@ -113,16 +113,17 @@ import Foundation
     @Test func confirmationTextCases() {
         let bundle = leftover("/Applications/Spotify.app", .appBundle, size: 100)
         let cache = leftover("/u/Library/Caches/s", .caches, size: 20)
-        let all = [bundle, cache]
-        #expect(UninstallSummary(leftovers: all, checked: [bundle.id, cache.id])
+        let cache2 = leftover("/u/Library/Caches/t", .caches, size: 20)
+        let all = [bundle, cache, cache2]
+        #expect(UninstallSummary(leftovers: all, checked: [bundle.id, cache.id, cache2.id])
             .confirmationText(appName: "Spotify", formattedSize: "412 MB")
-            == "Spotify ve 1 öğe Çöp Sepeti'ne taşınacak (412 MB). Geçmiş'ten geri alabilirsiniz.")
+            == "Spotify and 2 items will be moved to the Trash (412 MB). You can undo this from History.")
         #expect(UninstallSummary(leftovers: all, checked: [bundle.id])
             .confirmationText(appName: "Spotify", formattedSize: "1 KB")
-            == "Spotify Çöp Sepeti'ne taşınacak (1 KB). Geçmiş'ten geri alabilirsiniz.")
-        #expect(UninstallSummary(leftovers: all, checked: [cache.id])
+            == "Spotify will be moved to the Trash (1 KB). You can undo this from History.")
+        #expect(UninstallSummary(leftovers: all, checked: [cache.id, cache2.id])
             .confirmationText(appName: "Spotify", formattedSize: "2 KB")
-            == "1 öğe Çöp Sepeti'ne taşınacak (2 KB). Geçmiş'ten geri alabilirsiniz.")
+            == "2 items will be moved to the Trash (2 KB). You can undo this from History.")
     }
 
     // MARK: - Kaldırma planı
@@ -160,16 +161,46 @@ import Foundation
 
     @Test func historyItemLabelHidesPath() {
         let item = HistoryItem(originalPath: "/Users/u/Library/Preferences/com.foo.plist", kind: .preferences, size: 1)
-        #expect(item.displayLabel == "com.foo.plist (Tercihler)")
+        #expect(item.displayLabel == "com.foo.plist (Preferences)")
     }
 
     @Test func friendlyFailureReason() {
-        var item = HistoryItem(originalPath: "/a", kind: .caches, size: 1, state: .failed,
-                               error: "Yönetici izni verilmedi")
-        #expect(item.friendlyFailureReason == "Yönetici izni verilmedi")
-        item.error = "The file “a” couldn’t be moved because you don’t have permission."
-        #expect(item.friendlyFailureReason == "Taşınamadı")
-        item.error = nil
-        #expect(item.friendlyFailureReason == "Taşınamadı")
+        var item = HistoryItem(originalPath: "/a", kind: .caches, size: 1, state: .failed, failure: .adminDenied)
+        #expect(Presentation.friendlyFailureReason(item) == "Administrator permission was not granted")
+        item.failure = .other("The file “a” couldn’t be moved because you don’t have permission.")
+        #expect(Presentation.friendlyFailureReason(item) == "Couldn't be moved")
+        #expect(Presentation.failureDetail(item) == "The file “a” couldn’t be moved because you don’t have permission.")
+        item.failure = nil
+        #expect(Presentation.friendlyFailureReason(item) == "Couldn't be moved")
+    }
+
+    @Test func legacyRecordWithTurkishErrorDecodesAndDisplaysUnchanged() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","originalPath":"/a","kind":"caches","size":1,"requiresAdmin":false,
+         "state":"failed","error":"Yönetici izni verilmedi"}
+        """
+        let item = try JSONDecoder().decode(HistoryItem.self, from: Data(json.utf8))
+        #expect(item.failure == nil)
+        #expect(Presentation.friendlyFailureReason(item) == "Yönetici izni verilmedi")
+    }
+
+    @Test func failureReasonEncodingIsStable() throws {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        func json(_ r: FailureReason) throws -> String { String(decoding: try encoder.encode(r), as: UTF8.self) }
+        #expect(try json(.adminDenied) == #"{"code":"adminDenied"}"#)
+        #expect(try json(.manifestUpdateFailed) == #"{"code":"manifestUpdateFailed"}"#)
+        #expect(try json(.notFoundInTrash) == #"{"code":"notFoundInTrash"}"#)
+        #expect(try json(.moveNotVerified) == #"{"code":"moveNotVerified"}"#)
+        #expect(try json(.other("mv: boom")) == #"{"code":"other","detail":"mv: boom"}"#)
+        for r in [FailureReason.adminDenied, .other("x")] {
+            #expect(try JSONDecoder().decode(FailureReason.self, from: encoder.encode(r)) == r)
+        }
+    }
+
+    @Test func kindDisplayNamesAreEnglishSource() {
+        #expect(LeftoverKind.caches.displayName == "Caches")
+        #expect(LeftoverKind.launchDaemon.displayName == "Launch Daemon")
+        #expect(LeftoverKind.allCases.allSatisfy { !$0.displayName.isEmpty })
     }
 }

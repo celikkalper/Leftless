@@ -1,6 +1,6 @@
 import Foundation
 
-// Arayüzün kullandığı saf yardımcılar (test edilebilsin diye çekirdekte).
+// Pure helpers used by the UI (kept in the core so they can be tested).
 
 public struct LeftoverGroup: Identifiable, Sendable {
     public var kind: LeftoverKind
@@ -76,15 +76,17 @@ public enum AppListArrangement {
 }
 
 extension UninstallSummary {
-    /// Onay diyaloğu metni: "Spotify ve 13 öğe Çöp Sepeti'ne taşınacak (412 MB). Geçmiş'ten geri alabilirsiniz."
+    /// Confirmation dialog text, e.g. "Spotify and 13 items will be moved to the Trash (412 MB). You can undo this from History."
     public func confirmationText(appName: String, formattedSize: String) -> String {
         let what: String
         switch (includesApp, otherCount) {
         case (true, 0): what = appName
-        case (true, let n): what = "\(appName) ve \(n) öğe"
-        case (false, let n): what = "\(n) öğe"
+        case (true, let n):
+            let items = L("\(n) items")
+            what = L("\(appName) and \(items)")
+        case (false, let n): what = L("\(n) items")
         }
-        return "\(what) Çöp Sepeti'ne taşınacak (\(formattedSize)). Geçmiş'ten geri alabilirsiniz."
+        return L("\(what) will be moved to the Trash (\(formattedSize)). You can undo this from History.")
     }
 }
 
@@ -113,13 +115,28 @@ public struct UninstallPlan: Identifiable, Sendable {
 }
 
 extension HistoryItem {
-    /// Kullanıcıya gösterilen ad: dosya adı ve türü, tam yol olmadan. Ör. "foo.plist (Tercihler)".
+    /// User-facing name: file name and kind, without the full path. E.g. "foo.plist (Preferences)".
     public var displayLabel: String {
         "\(URL(fileURLWithPath: originalPath).lastPathComponent) (\(kind.displayName))"
     }
+}
 
-    /// Ham hata yerine sade bir neden.
-    public var friendlyFailureReason: String {
-        error == "Yönetici izni verilmedi" ? "Yönetici izni verilmedi" : "Taşınamadı"
+public enum Presentation {
+    /// Plain-language reason for a failed item: from the failure code, else legacy text unchanged, else a generic message.
+    public static func friendlyFailureReason(_ item: HistoryItem) -> String {
+        switch item.failure {
+        case .adminDenied: return L("Administrator permission was not granted")
+        case .manifestUpdateFailed: return L("Couldn't update the history record")
+        case .notFoundInTrash: return L("Not found in the Trash")
+        case .moveNotVerified: return L("The move couldn't be verified")
+        case .other: return L("Couldn't be moved")
+        case nil: return item.error ?? L("Couldn't be moved")
+        }
+    }
+
+    /// Raw technical text for tooltips: system text from `.other`, or the legacy error string.
+    public static func failureDetail(_ item: HistoryItem) -> String? {
+        if case .other(let text) = item.failure { return text }
+        return item.failure == nil ? item.error : nil
     }
 }

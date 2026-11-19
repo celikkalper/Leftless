@@ -56,10 +56,10 @@ private func find(_ r: ScanResult, _ suffix: String) -> Leftover? {
     let r = scan(fs, app: excel, installed: [excel, word])
     let vendor = try #require(find(r, "Application Support/Microsoft"))
     #expect(vendor.confidence == .probable)
-    #expect(vendor.note == "Microsoft Word da kullanıyor olabilir")
+    #expect(vendor.note == "Microsoft Word may also use this")
     let shared = try #require(find(r, "Caches/com.microsoft.shared"))
     #expect(shared.confidence == .probable)
-    #expect(shared.note == "Microsoft Word da kullanıyor olabilir")
+    #expect(shared.note == "Microsoft Word may also use this")
     #expect(find(r, "com.microsoft.Excel.plist")?.confidence == .certain)
     #expect(find(r, "com.microsoft.Word.plist") == nil)
 }
@@ -193,7 +193,7 @@ private func find(_ r: ScanResult, _ suffix: String) -> Leftover? {
     let r = scan(fs, app: spotify, installed: [spotify, podcasts])
     let item = try #require(find(r, "Application Support/Spotify"))
     #expect(item.confidence == .probable)
-    #expect(item.note == "Spotify Podcasts da kullanıyor olabilir")
+    #expect(item.note == "Spotify Podcasts may also use this")
 }
 
 @Test func siblingTeamPrefixedGroupContainerIsNotListed() throws {
@@ -294,7 +294,7 @@ private func find(_ r: ScanResult, _ suffix: String) -> Leftover? {
     #expect(find(r, "ABCDE12345.com.spotify.client") == nil)
     #expect(find(r, "Caches/com.spotify.client") != nil)
     #expect(r.skippedLocations.count == 2)
-    #expect(r.skippedLocations[0].contains("Belgeler"))
+    #expect(r.skippedLocations[0].contains("Documents"))
     let full = scan(fs, app: spotify)
     #expect(full.skippedLocations.isEmpty)
     #expect(find(full, "Containers/com.spotify.client") != nil)

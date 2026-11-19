@@ -1,0 +1,149 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ and %@": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "%@ may also use this": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "%@ will be moved to the Trash (%@). You can undo this from History.": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "%lld items": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld item"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld items"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Administrator permission was not granted": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "App": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "App containers (Containers, Group Containers)": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Application Scripts": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Application Support": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Caches": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Container": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Cookies": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Couldn't be moved": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Couldn't update the history record": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Documents, Desktop, Downloads, Music, Movies, Pictures": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Group Container": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "HTTP Storage": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Installer File": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Kernel Extension": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Launch Agent": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Launch Daemon": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Logs": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Not found in the Trash": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Other": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Personal Folder": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Plug-in": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Preferences": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Privileged Helper": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "Saved State": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "The move couldn't be verified": {
+      "extractionState": "manual",
+      "localizations": {}
+    },
+    "WebKit Data": {
+      "extractionState": "manual",
+      "localizations": {}
+    }
+  },
+  "version": "1.0"
+}

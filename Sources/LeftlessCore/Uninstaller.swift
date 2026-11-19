@@ -74,7 +74,7 @@ public struct Uninstaller: Sendable {
                 items[index].requiresAdmin = true
             } catch {
                 items[index].state = .failed
-                items[index].error = error.localizedDescription
+                items[index].failure = .other(error.localizedDescription)
             }
         }
 
@@ -99,7 +99,7 @@ public struct Uninstaller: Sendable {
                 manifestSaved = false
                 for index in adminIndices {
                     items[index].state = .failed
-                    items[index].error = "Kayıt güncellenemedi"
+                    items[index].failure = .manifestUpdateFailed
                 }
             }
         }
@@ -112,15 +112,15 @@ public struct Uninstaller: Sendable {
             .map { "/usr/sbin/pkgutil --forget \(ShellQuoting.quote($0))" }
 
         if manifestSaved, !adminCommands.isEmpty {
-            var privilegedError: String?
+            var privilegedError: FailureReason?
             do {
                 try privileged.run(adminCommands)
             } catch PrivilegedError.cancelled {
-                privilegedError = "Yönetici izni verilmedi"
+                privilegedError = .adminDenied
             } catch PrivilegedError.failed(let message) {
-                privilegedError = message
+                privilegedError = .other(message)
             } catch {
-                privilegedError = error.localizedDescription
+                privilegedError = .other(error.localizedDescription)
             }
             // Zincir (&&) yarıda kesilmiş olabilir: durum dosya sisteminden belirlenir.
             for index in adminIndices {
@@ -130,7 +130,7 @@ public struct Uninstaller: Sendable {
                     items[index].state = .trashed
                 } else {
                     items[index].state = .failed
-                    items[index].error = privilegedError ?? "Taşıma doğrulanamadı"
+                    items[index].failure = privilegedError ?? .moveNotVerified
                 }
             }
         }

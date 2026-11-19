@@ -31,26 +31,26 @@ public enum LeftoverKind: String, Codable, Sendable, CaseIterable {
 
     public var displayName: String {
         switch self {
-        case .appBundle: "Uygulama"
-        case .applicationSupport: "Uygulama Desteği"
-        case .caches: "Önbellek"
-        case .preferences: "Tercihler"
-        case .logs: "Günlükler"
-        case .savedState: "Kayıtlı Durum"
-        case .httpStorages: "HTTP Depolama"
-        case .webKit: "WebKit Verisi"
-        case .cookies: "Çerezler"
-        case .container: "Konteyner"
-        case .groupContainer: "Grup Konteyneri"
-        case .applicationScripts: "Uygulama Betikleri"
-        case .launchAgent: "Başlatma Aracısı"
-        case .launchDaemon: "Başlatma Servisi"
-        case .privilegedHelper: "Ayrıcalıklı Yardımcı"
-        case .kernelExtension: "Çekirdek Eklentisi"
-        case .plugin: "Eklenti"
-        case .packageFile: "Paket Dosyası"
-        case .personalFolder: "Kişisel Klasör"
-        case .other: "Diğer"
+        case .appBundle: L("App")
+        case .applicationSupport: L("Application Support")
+        case .caches: L("Caches")
+        case .preferences: L("Preferences")
+        case .logs: L("Logs")
+        case .savedState: L("Saved State")
+        case .httpStorages: L("HTTP Storage")
+        case .webKit: L("WebKit Data")
+        case .cookies: L("Cookies")
+        case .container: L("Container")
+        case .groupContainer: L("Group Container")
+        case .applicationScripts: L("Application Scripts")
+        case .launchAgent: L("Launch Agent")
+        case .launchDaemon: L("Launch Daemon")
+        case .privilegedHelper: L("Privileged Helper")
+        case .kernelExtension: L("Kernel Extension")
+        case .plugin: L("Plug-in")
+        case .packageFile: L("Installer File")
+        case .personalFolder: L("Personal Folder")
+        case .other: L("Other")
         }
     }
 }

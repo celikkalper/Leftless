@@ -133,8 +133,8 @@ public struct LeftoverScanner: Sendable {
                           skippedLocations: skipped)
     }
 
-    static let personalFoldersDisplayName = "Belgeler, Masaüstü, İndirilenler, Müzik, Filmler, Resimler"
-    static let containersDisplayName = "Uygulama kapsayıcıları (Containers, Group Containers)"
+    static var personalFoldersDisplayName: String { L("Documents, Desktop, Downloads, Music, Movies, Pictures") }
+    static var containersDisplayName: String { L("App containers (Containers, Group Containers)") }
 
     /// Taşımak için üst klasöre yazma izni gerekir; bir klasörü başka bir üst klasöre taşımak ise
     /// klasörün kendisine de yazma izni ister (ör. root:wheel 755 App Store paketleri).
@@ -174,7 +174,7 @@ public struct LeftoverScanner: Sendable {
         let sibling = others
             .filter { Self.sharesVendor($0, with: app, keys: keys) }
             .min { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        let note = sibling.map { "\($0.name) da kullanıyor olabilir" }
+        let note = sibling.map { L("\($0.name) may also use this") }
 
         // Üretici klasörü (ör. "Microsoft", "Spotify"): kardeş uygulama varsa ortaktır.
         if let note, let vendor = Self.vendorName(keys), Self.stripped(entryName) == vendor {
