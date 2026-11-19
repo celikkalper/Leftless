@@ -4,8 +4,9 @@ import SwiftUI
 
 struct ScanDetailView: View {
     @Bindable var model: AppModel
-    @State private var confirming = false
-    @State private var askingToQuit = false
+    /// Onay anında dondurulan plan; diyaloglar ve kaldırma yalnızca bunu kullanır.
+    @State private var confirmPlan: UninstallPlan?
+    @State private var quitPlan: UninstallPlan?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,6 +22,7 @@ struct ScanDetailView: View {
                     systemExtensionBox(scan.systemExtensions)
                 }
                 LeftoverListView(model: model, groups: LeftoverGrouping.groups(scan.leftovers))
+                    .disabled(model.isWorking)
                 Divider()
                 footer(scan)
             } else {
@@ -28,46 +30,33 @@ struct ScanDetailView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .alert("Çöp Sepeti'ne Taşı", isPresented: $confirming) {
-            Button("Taşı") { startUninstall() }
+        .alert("Çöp Sepeti'ne Taşı", isPresented: presence($confirmPlan), presenting: confirmPlan) { plan in
+            Button("Taşı") { proceed(with: plan) }
             Button("Vazgeç", role: .cancel) {}
-        } message: {
-            Text(confirmationMessage)
+        } message: { plan in
+            Text(plan.summary.confirmationText(appName: plan.scan.app.name,
+                                               formattedSize: AppModel.formatSize(plan.summary.totalSize)))
         }
-        .alert("\(appName) açık. Kapatılsın mı?", isPresented: $askingToQuit) {
-            Button("Kapat") {
-                Task {
-                    if await model.quitSelectedApp() {
-                        await model.uninstall()
-                    } else {
-                        model.alertMessage = "\(appName) kapatılamadı. Lütfen uygulamayı kapatıp yeniden deneyin."
-                    }
-                }
-            }
+        .alert(quitTitle, isPresented: presence($quitPlan), presenting: quitPlan) { plan in
+            Button("Kapat") { Task { await model.uninstall(plan, quitFirst: true) } }
             Button("Vazgeç", role: .cancel) {}
         }
     }
 
-    private var appName: String { model.scan?.app.name ?? "" }
-
-    private var confirmationMessage: String {
-        let s = model.summary
-        let size = AppModel.formatSize(s.totalSize)
-        let what: String
-        switch (s.includesApp, s.otherCount) {
-        case (true, 0): what = appName
-        case (true, let n): what = "\(appName) ve \(n) öğe"
-        case (false, let n): what = "\(n) öğe"
-        }
-        return "\(what) Çöp Sepeti'ne taşınacak (\(size)). Geçmiş'ten geri alabilirsiniz."
+    private var quitTitle: String {
+        "\(quitPlan?.scan.app.name ?? "") açık. Kapatılsın mı?"
     }
 
-    private func startUninstall() {
-        if model.isSelectedAppRunning {
-            askingToQuit = true
+    private func proceed(with plan: UninstallPlan) {
+        if model.isRunning(plan) {
+            quitPlan = plan
         } else {
-            Task { await model.uninstall() }
+            Task { await model.uninstall(plan, quitFirst: false) }
         }
+    }
+
+    private func presence(_ plan: Binding<UninstallPlan?>) -> Binding<Bool> {
+        Binding(get: { plan.wrappedValue != nil }, set: { if !$0 { plan.wrappedValue = nil } })
     }
 
     private func header(_ scan: ScanResult) -> some View {
@@ -102,16 +91,16 @@ struct ScanDetailView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Bu uygulamaya veya üreticisine ait bir sistem uzantısı bulundu; macOS bunu Sistem Ayarları > Genel > Giriş Öğeleri ve Uzantılar üzerinden kaldırır.")
                     .fixedSize(horizontal: false, vertical: true)
-                Text(extensions.joined(separator: ", "))
+                Text("\(extensions.count) uzantı")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .textSelection(.enabled)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
         .background(.blue.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
         .padding([.horizontal, .top])
+        .help(extensions.joined(separator: "\n"))
         .accessibilityElement(children: .combine)
     }
 
@@ -124,7 +113,7 @@ struct ScanDetailView: View {
                 ProgressView().controlSize(.small)
                     .accessibilityLabel("İşlem sürüyor")
             }
-            Button("Çöp Sepeti'ne Taşı") { confirming = true }
+            Button("Çöp Sepeti'ne Taşı") { confirmPlan = UninstallPlan(scan: scan, checked: model.checked) }
                 .buttonStyle(.borderedProminent)
                 .disabled(model.summary.isEmpty || model.isWorking)
                 .keyboardShortcut(.delete, modifiers: .command)

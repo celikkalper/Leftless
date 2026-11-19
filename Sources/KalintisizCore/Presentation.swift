@@ -74,3 +74,52 @@ public enum AppListArrangement {
         }
     }
 }
+
+extension UninstallSummary {
+    /// Onay diyaloğu metni: "Spotify ve 13 öğe Çöp Sepeti'ne taşınacak (412 MB). Geçmiş'ten geri alabilirsiniz."
+    public func confirmationText(appName: String, formattedSize: String) -> String {
+        let what: String
+        switch (includesApp, otherCount) {
+        case (true, 0): what = appName
+        case (true, let n): what = "\(appName) ve \(n) öğe"
+        case (false, let n): what = "\(n) öğe"
+        }
+        return "\(what) Çöp Sepeti'ne taşınacak (\(formattedSize)). Geçmiş'ten geri alabilirsiniz."
+    }
+}
+
+/// Onay anında dondurulan kaldırma planı: sonradan değişen seçim/tarama ona dokunamaz.
+public struct UninstallPlan: Identifiable, Sendable {
+    public let id = UUID()
+    public let scan: ScanResult
+    public let selected: [Leftover]
+    public let summary: UninstallSummary
+
+    /// Seçili öğe yoksa `nil`. `selected` taramadaki sırayı korur.
+    public init?(scan: ScanResult, checked: Set<UUID>) {
+        let selected = scan.leftovers.filter { checked.contains($0.id) }
+        guard !selected.isEmpty else { return nil }
+        self.scan = scan
+        self.selected = selected
+        self.summary = UninstallSummary(leftovers: scan.leftovers, checked: checked)
+    }
+
+    /// Plan hâlâ ekrandaki taramaya mı ait? (Aynı uygulama ve aynı tarama — öğe kimlikleri her taramada yenidir.)
+    public func isValid(for current: ScanResult?) -> Bool {
+        guard let current, current.app.url == scan.app.url else { return false }
+        let ids = Set(current.leftovers.map(\.id))
+        return selected.allSatisfy { ids.contains($0.id) }
+    }
+}
+
+extension HistoryItem {
+    /// Kullanıcıya gösterilen ad: dosya adı ve türü, tam yol olmadan. Ör. "foo.plist (Tercihler)".
+    public var displayLabel: String {
+        "\(URL(fileURLWithPath: originalPath).lastPathComponent) (\(kind.displayName))"
+    }
+
+    /// Ham hata yerine sade bir neden.
+    public var friendlyFailureReason: String {
+        error == "Yönetici izni verilmedi" ? "Yönetici izni verilmedi" : "Taşınamadı"
+    }
+}

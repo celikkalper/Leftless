@@ -78,12 +78,15 @@ final class AppModel {
     // MARK: - Tarama
 
     func select(_ newSelection: Selection?) async {
+        // Kaldırma/geri yükleme sürerken seçim değişmez: sonuç ve plan hep aynı uygulamaya ait kalır.
+        guard !isWorking else { return }
         guard newSelection != selection || (scan == nil && !isScanning) else { return }
         selection = newSelection
         lastOutcome = nil
         scan = nil
         checked = []
         guard case .app(let app) = newSelection else {
+            scanToken = UUID()   // sürmekte olan tarama sonucu yok sayılır
             isScanning = false
             if newSelection == .history { reloadHistory() }
             return
@@ -111,60 +114,74 @@ final class AppModel {
 
     /// Bırakılan ilk `.app` paketini seçer; listede yoksa listeye eklenir.
     func handleDrop(_ urls: [URL]) {
-        guard let url = urls.first(where: { $0.pathExtension == "app" }) else { return }
+        guard !isWorking, let url = urls.first(where: { $0.pathExtension == "app" }) else { return }
         let path = url.standardizedFileURL.path
         if let existing = apps.first(where: { $0.info.url.standardizedFileURL.path == path }) {
             Task { await select(.app(existing)) }
             return
         }
-        guard let info = try? AppInspector(commands: ProcessCommandRunner()).inspect(url, includeTeamID: false) else {
-            alertMessage = "Bu bir uygulama paketi gibi görünmüyor."
-            return
+        Task {
+            // İnceleme ve boyut hesabı dosya sistemi işi: ana aktörün dışında.
+            let inspected = await Task.detached { () -> InstalledApp? in
+                guard let info = try? AppInspector(commands: ProcessCommandRunner()).inspect(url, includeTeamID: false)
+                else { return nil }
+                return InstalledApp(info: info, bundleSize: directorySize(url))
+            }.value
+            guard let app = inspected else {
+                alertMessage = "Bu bir uygulama paketi gibi görünmüyor."
+                return
+            }
+            guard app.info.bundleID != Self.ownBundleID, !ProtectedPaths.isAppleBundleID(app.info.bundleID) else {
+                alertMessage = "Bu uygulama Kalıntısız ile kaldırılamaz."
+                return
+            }
+            if !apps.contains(where: { $0.id == app.id }) { apps.append(app) }
+            await select(.app(app))
         }
-        guard info.bundleID != Self.ownBundleID, !ProtectedPaths.isAppleBundleID(info.bundleID) else {
-            alertMessage = "Bu uygulama Kalıntısız ile kaldırılamaz."
-            return
-        }
-        let app = InstalledApp(info: info, bundleSize: directorySize(url))
-        apps.append(app)
-        Task { await select(.app(app)) }
     }
 
     // MARK: - Kaldırma
 
-    var isSelectedAppRunning: Bool {
-        guard let scan else { return false }
-        return !AppTerminator.runningInstances(bundleID: scan.app.bundleID).isEmpty
+    func isRunning(_ plan: UninstallPlan) -> Bool {
+        !AppTerminator.runningInstances(bundleID: plan.scan.app.bundleID).isEmpty
     }
 
-    func quitSelectedApp() async -> Bool {
-        guard let scan else { return true }
-        return await AppTerminator.quit(bundleID: scan.app.bundleID, timeout: 5)
-    }
-
-    func uninstall() async {
-        guard let scan, !checked.isEmpty, !isWorking else { return }
-        let selected = scan.leftovers.filter { checked.contains($0.id) }
-        let icon = Self.iconData(for: scan.app.url)
-        let env = environment, store = store
+    /// Onaylanan planı uygular. Kapatma dahil tüm süre boyunca `isWorking` açıktır (seçim kilitli);
+    /// plan artık ekrandaki taramaya ait değilse hiçbir şey taşınmaz.
+    func uninstall(_ plan: UninstallPlan, quitFirst: Bool) async {
+        guard !isWorking else { return }
         isWorking = true
         defer { isWorking = false }
+        if quitFirst {
+            guard await AppTerminator.quit(bundleID: plan.scan.app.bundleID, timeout: 5) else {
+                alertMessage = "\(plan.scan.app.name) kapatılamadı. Lütfen uygulamayı kapatıp yeniden deneyin."
+                return
+            }
+        }
+        guard isShowing(plan.scan.app), plan.isValid(for: scan) else { return }
+        let icon = Self.iconData(for: plan.scan.app.url)
+        let env = environment, store = store
         let result = await Task.detached {
             let commands = ProcessCommandRunner()
             let uninstaller = Uninstaller(
                 history: store, files: SystemFileMover(),
                 privileged: OsascriptPrivilegedExecutor(commands: commands), commands: commands,
                 environment: env, trashDirectory: env.home.appendingPathComponent(".Trash", isDirectory: true))
-            return Result { try uninstaller.uninstall(scan, selected: selected, icon: icon) }
+            return Result { try uninstaller.uninstall(plan.scan, selected: plan.selected, icon: icon) }
         }.value
         switch result {
         case .success(let outcome):
-            lastOutcome = outcome
+            if isShowing(plan.scan.app) { lastOutcome = outcome }
             reloadHistory()
             reloadApps()
         case .failure:
             alertMessage = "Geçmiş kaydı yazılamadı; hiçbir dosya taşınmadı."
         }
+    }
+
+    private func isShowing(_ app: AppInfo) -> Bool {
+        if case .app(let selected) = selection { return selected.info.url == app.url }
+        return false
     }
 
     // MARK: - Geri yükleme
@@ -190,7 +207,6 @@ final class AppModel {
         guard !isWorking else { return }
         let env = environment, store = store
         isWorking = true
-        defer { isWorking = false }
         let outcome = await Task.detached {
             let commands = ProcessCommandRunner()
             let restorer = Restorer(history: store, files: SystemFileMover(),
@@ -203,6 +219,7 @@ final class AppModel {
         if outcome.skipped > 0 { parts.append("\(outcome.skipped) öğe atlandı") }
         if !outcome.failures.isEmpty { parts.append("\(outcome.failures.count) öğe geri yüklenemedi") }
         restoreSummary = parts.joined(separator: ", ") + "."
+        isWorking = false   // yeniden tarama `select` ile yapılacağı için burada kapatılır
         if lastOutcome?.record.id == r.id { lastOutcome = nil }
         reloadHistory()
         reloadApps()

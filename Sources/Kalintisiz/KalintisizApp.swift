@@ -16,6 +16,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.handleDrop(urls)
     }
 
+    /// Atlanan izin sonradan verilirse sarı şerit kalksın diye her öne gelişte yeniden kontrol edilir.
+    func applicationDidBecomeActive(_ notification: Notification) {
+        model.refreshFullDiskAccess()
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 }
 

@@ -27,6 +27,7 @@ struct AppListView: View {
             }
         }
         .listStyle(.sidebar)
+        .disabled(model.isWorking)
         .searchable(text: $model.searchText, placement: .sidebar, prompt: "Ara")
         .toolbar {
             ToolbarItem {

@@ -106,4 +106,69 @@ import Foundation
         let spaced = AppListArrangement.arrange(apps, query: "  SPOT ", sort: .name, excludingBundleID: nil)
         #expect(spaced.map(\.info.name) == ["Spotify"])
     }
+
+    // MARK: - Onay metni
+
+    @Test func confirmationTextCases() {
+        let bundle = leftover("/Applications/Spotify.app", .appBundle, size: 100)
+        let cache = leftover("/u/Library/Caches/s", .caches, size: 20)
+        let all = [bundle, cache]
+        #expect(UninstallSummary(leftovers: all, checked: [bundle.id, cache.id])
+            .confirmationText(appName: "Spotify", formattedSize: "412 MB")
+            == "Spotify ve 1 öğe Çöp Sepeti'ne taşınacak (412 MB). Geçmiş'ten geri alabilirsiniz.")
+        #expect(UninstallSummary(leftovers: all, checked: [bundle.id])
+            .confirmationText(appName: "Spotify", formattedSize: "1 KB")
+            == "Spotify Çöp Sepeti'ne taşınacak (1 KB). Geçmiş'ten geri alabilirsiniz.")
+        #expect(UninstallSummary(leftovers: all, checked: [cache.id])
+            .confirmationText(appName: "Spotify", formattedSize: "2 KB")
+            == "1 öğe Çöp Sepeti'ne taşınacak (2 KB). Geçmiş'ten geri alabilirsiniz.")
+    }
+
+    // MARK: - Kaldırma planı
+
+    func scanResult(_ appPath: String, _ leftovers: [Leftover]) -> ScanResult {
+        ScanResult(app: AppInfo(url: URL(fileURLWithPath: appPath), bundleID: "com.test", name: "T"), leftovers: leftovers)
+    }
+
+    @Test func planFreezesCheckedItemsInScanOrder() throws {
+        let a = leftover("/Applications/T.app", .appBundle, size: 100)
+        let b = leftover("/u/Library/Caches/t", .caches, size: 5)
+        let c = leftover("/u/Library/Logs/t", .logs, size: 1)
+        let scan = scanResult("/Applications/T.app", [a, b, c])
+        let plan = try #require(UninstallPlan(scan: scan, checked: [c.id, a.id]))
+        #expect(plan.selected.map(\.id) == [a.id, c.id])
+        #expect(plan.summary.totalSize == 101)
+        #expect(UninstallPlan(scan: scan, checked: []) == nil)
+        #expect(UninstallPlan(scan: scan, checked: [UUID()]) == nil)
+    }
+
+    @Test func planIsInvalidForOtherAppOrNewScan() throws {
+        let a = leftover("/Applications/T.app", .appBundle, size: 100)
+        let scan = scanResult("/Applications/T.app", [a])
+        let plan = try #require(UninstallPlan(scan: scan, checked: [a.id]))
+        #expect(plan.isValid(for: scan))
+        #expect(!plan.isValid(for: nil))
+        let other = leftover("/Applications/B.app", .appBundle, size: 1)
+        #expect(!plan.isValid(for: scanResult("/Applications/B.app", [other])))
+        // Aynı uygulamanın yeniden taranması yeni kimlikler üretir: eski plan geçersiz.
+        let rescanned = leftover("/Applications/T.app", .appBundle, size: 100)
+        #expect(!plan.isValid(for: scanResult("/Applications/T.app", [rescanned])))
+    }
+
+    // MARK: - Geçmiş öğesi metinleri
+
+    @Test func historyItemLabelHidesPath() {
+        let item = HistoryItem(originalPath: "/Users/u/Library/Preferences/com.foo.plist", kind: .preferences, size: 1)
+        #expect(item.displayLabel == "com.foo.plist (Tercihler)")
+    }
+
+    @Test func friendlyFailureReason() {
+        var item = HistoryItem(originalPath: "/a", kind: .caches, size: 1, state: .failed,
+                               error: "Yönetici izni verilmedi")
+        #expect(item.friendlyFailureReason == "Yönetici izni verilmedi")
+        item.error = "The file “a” couldn’t be moved because you don’t have permission."
+        #expect(item.friendlyFailureReason == "Taşınamadı")
+        item.error = nil
+        #expect(item.friendlyFailureReason == "Taşınamadı")
+    }
 }

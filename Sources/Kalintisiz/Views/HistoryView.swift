@@ -96,27 +96,27 @@ extension View {
 private struct RestoreConflictAlert: ViewModifier {
     @Bindable var model: AppModel
 
-    private var title: String {
-        guard let conflicts = model.pendingRestore?.conflicts else { return "" }
-        return conflicts.count == 1 ? "\(conflicts[0].originalPath) zaten var"
+    private func title(_ pending: PendingRestore?) -> String {
+        guard let conflicts = pending?.conflicts, !conflicts.isEmpty else { return "" }
+        return conflicts.count == 1 ? "\(conflicts[0].displayLabel) zaten var"
                                     : "\(conflicts.count) öğe zaten var"
     }
 
-    private var message: String {
-        guard let conflicts = model.pendingRestore?.conflicts, conflicts.count > 1 else {
+    private func message(_ pending: PendingRestore) -> String {
+        guard pending.conflicts.count > 1 else {
             return "Çöp Sepeti'ndeki kopya geri yüklensin mi? Değiştir derseniz mevcut öğe Çöp Sepeti'ne taşınır."
         }
-        return conflicts.map { "\($0.originalPath) zaten var" }.joined(separator: "\n")
+        return pending.conflicts.map { "\($0.displayLabel) zaten var" }.joined(separator: "\n")
             + "\n\nSeçiminiz bu öğelerin tümüne uygulanır. Değiştir derseniz mevcut öğeler Çöp Sepeti'ne taşınır."
     }
 
     func body(content: Content) -> some View {
-        content.alert(title, isPresented: $model.showsRestoreConflicts, presenting: model.pendingRestore) { pending in
+        content.alert(title(model.pendingRestore), isPresented: $model.showsRestoreConflicts, presenting: model.pendingRestore) { pending in
             Button("Atla") { Task { await model.resolveRestore(pending, choice: .skip) } }
             Button("Değiştir") { Task { await model.resolveRestore(pending, choice: .replace) } }
             Button("Vazgeç", role: .cancel) {}
-        } message: { _ in
-            Text(message)
+        } message: { pending in
+            Text(message(pending))
         }
     }
 }
