@@ -45,9 +45,34 @@ Dragging an app to the Trash only removes the `.app`. Its support files, caches,
   <img src="docs/screenshots/history.png" alt="History tab with restorable uninstalls" width="860">
 </p>
 
-## Install
+## Download
 
-Leftless is not on the App Store yet; build it from source (Xcode 16 or later):
+1. Download **`Leftless-<version>.dmg`** from the [latest release](https://github.com/celikkalper/Leftless/releases/latest).
+2. Open it and drag **Leftless** onto the **Applications** folder.
+3. Open Leftless from Launchpad or the Applications folder.
+
+### First launch: "Apple could not verify Leftless"
+
+Leftless is not notarized by Apple yet, so macOS blocks the first launch. You only need to do this once:
+
+1. Open Leftless. When the warning appears, click **Done**.
+2. Open **System Settings → Privacy & Security** and scroll down to **Security**.
+3. Next to *"Leftless" was blocked…*, click **Open Anyway**, then enter your password.
+4. Leftless opens. From now on it starts normally.
+
+<details>
+<summary>Prefer Terminal?</summary>
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Leftless.app
+```
+
+This removes the "downloaded from the internet" flag for Leftless only.
+</details>
+
+## Build from source
+
+Requires Xcode 16 or later:
 
 ```sh
 git clone https://github.com/celikkalper/Leftless.git
@@ -56,7 +81,7 @@ cd Leftless
 ditto build/Leftless.app /Applications/Leftless.app
 ```
 
-Then open Leftless from Launchpad or the Applications folder.
+A Mac that builds Leftless itself does not show the warning above.
 
 ### Full Disk Access
 
@@ -85,6 +110,7 @@ Without it Leftless still works, skips those places and tells you what it couldn
 | Run the tests | `swift test` |
 | End-to-end test (creates and removes a fake app in `~/Applications`) | `LEFTLESS_E2E=1 swift test --filter EndToEnd` |
 | Universal release build | `./scripts/build-universal.sh` → `build/Leftless.app` |
+| Disk image for a release | `./scripts/make-dmg.sh` → `build/Leftless-<version>.dmg` |
 | Regenerate the Xcode project after editing `project.yml` | `xcodegen generate` |
 | Re-render the app icon | `swift scripts/render-icon.swift <out.png>` |
 
@@ -124,7 +150,9 @@ build/DD-debug/Build/Products/Debug/Leftless.app/Contents/MacOS/Leftless \
 
 ### Distribution
 
-`build-universal.sh` produces an ad-hoc signed app that opens without warnings only on the Mac that built it. To share Leftless with other Macs it must be signed with a **Developer ID** and **notarized** by Apple.
+`build-universal.sh` produces an ad-hoc signed app that opens without warnings only on the Mac that built it; `make-dmg.sh` wraps it in a drag-to-install disk image for GitHub Releases. Downloaded copies need the one-time **Open Anyway** step above. Signing with a **Developer ID** and **notarizing** with Apple would remove that step (and keep Full Disk Access across updates).
+
+To publish a release: bump `CFBundleShortVersionString` in `App/Info.plist`, run `./scripts/make-dmg.sh`, then attach `build/Leftless-<version>.dmg` to a new GitHub release tagged `v<version>`.
 
 ---
 
@@ -136,7 +164,15 @@ build/DD-debug/Build/Products/Debug/Leftless.app/Contents/MacOS/Leftless \
   <img src="docs/screenshots/apps-tr.png" alt="Leftless Türkçe arayüz" width="760">
 </p>
 
-**Kurulum:** Yukarıdaki *Install* bölümündeki dört komutu çalıştırın, ardından Leftless'i Launchpad'den açın. İlk açılışta ekrandaki adımlarla **Tam Disk Erişimi** verin (Sistem Ayarları → Gizlilik ve Güvenlik → Tam Disk Erişimi). Kalıntısız'dan geçiyorsanız izni Leftless için yeniden vermeniz gerekir; Geçmiş kayıtlarınız otomatik taşınır.
+**İndirme ve kurulum:**
+
+1. [Son sürüm](https://github.com/celikkalper/Leftless/releases/latest) sayfasından **`Leftless-<sürüm>.dmg`** dosyasını indirin.
+2. Açın ve **Leftless**'i **Applications** (Uygulamalar) klasörüne sürükleyin.
+3. Leftless'i açın. *"Apple, Leftless'i doğrulayamadı"* uyarısı çıkarsa **Bitti**'ye basın.
+4. **Sistem Ayarları → Gizlilik ve Güvenlik**'i açın, aşağı kaydırın ve *Leftless engellendi* satırının yanındaki **Yine de Aç**'a basıp şifrenizi girin. Bu adım yalnızca bir kez gerekir.
+5. İlk açılışta ekrandaki adımlarla **Tam Disk Erişimi** verin (Sistem Ayarları → Gizlilik ve Güvenlik → Tam Disk Erişimi).
+
+Kalıntısız'dan geçiyorsanız izni Leftless için yeniden vermeniz gerekir; Geçmiş kayıtlarınız otomatik taşınır.
 
 **Nasıl çalışır:** Listeden bir uygulama seçin ya da pencereye sürükleyin. *Kesin* öğeler işaretli gelir; *muhtemel* eşleşmeler siz işaretleyene kadar işaretsiz kalır. **Çöp Sepeti'ne Taşı** dediğinizde önce kayıt yazılır, sonra dosyalar taşınır. Çöp Sepeti boşaltılmadığı sürece **Geçmiş → Geri Yükle** her şeyi eski yerine koyar.
 
