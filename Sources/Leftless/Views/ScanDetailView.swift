@@ -7,6 +7,9 @@ struct ScanDetailView: View {
     /// Onay anında dondurulan plan; diyaloglar ve kaldırma yalnızca bunu kullanır.
     @State private var confirmPlan: UninstallPlan?
     @State private var quitPlan: UninstallPlan?
+    /// Frozen reset plan (the app's data only, independent of the checkboxes) and its quit prompt.
+    @State private var confirmReset: ResetPlan?
+    @State private var quitReset: ResetPlan?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -41,10 +44,36 @@ struct ScanDetailView: View {
             Button("Quit") { Task { await model.uninstall(plan, quitFirst: true) } }
             Button("Cancel", role: .cancel) {}
         }
+        .alert(resetTitle, isPresented: presence($confirmReset), presenting: confirmReset) { plan in
+            Button("Reset") { proceed(with: plan) }
+            Button("Cancel", role: .cancel) {}
+        } message: { plan in
+            Text(plan.confirmationText(formattedSize: AppModel.formatSize(plan.totalSize)))
+        }
+        .alert(quitResetTitle, isPresented: presence($quitReset), presenting: quitReset) { plan in
+            Button("Quit") { Task { await model.reset(plan, quitFirst: true) } }
+            Button("Cancel", role: .cancel) {}
+        }
     }
 
     private var quitTitle: String {
         String(localized: "\(quitPlan?.scan.app.name ?? "") is open. Quit it?")
+    }
+
+    private var quitResetTitle: String {
+        String(localized: "\(quitReset?.scan.app.name ?? "") is open. Quit it?")
+    }
+
+    private var resetTitle: String {
+        String(localized: "Reset \(confirmReset?.scan.app.name ?? "")?")
+    }
+
+    private func proceed(with plan: ResetPlan) {
+        if model.isRunning(plan.scan.app) {
+            Task { @MainActor in quitReset = plan }
+        } else {
+            Task { await model.reset(plan, quitFirst: false) }
+        }
     }
 
     private func proceed(with plan: UninstallPlan) {
@@ -56,7 +85,7 @@ struct ScanDetailView: View {
         }
     }
 
-    private func presence(_ plan: Binding<UninstallPlan?>) -> Binding<Bool> {
+    private func presence<Plan>(_ plan: Binding<Plan?>) -> Binding<Bool> {
         Binding(get: { plan.wrappedValue != nil }, set: { if !$0 { plan.wrappedValue = nil } })
     }
 
@@ -114,6 +143,10 @@ struct ScanDetailView: View {
                 ProgressView().controlSize(.small)
                     .accessibilityLabel("In progress")
             }
+            Button("Reset…") { confirmReset = ResetPlan(scan: scan) }
+                .disabled(!model.canReset(scan) || model.isWorking)
+                .help("Moves the app's data to the Trash. The app stays installed.")
+                .accessibilityLabel("Reset the app's data")
             Button("Move to Trash") { confirmPlan = UninstallPlan(scan: scan, checked: model.checked) }
                 .buttonStyle(.borderedProminent)
                 .disabled(model.summary.isEmpty || model.isWorking)

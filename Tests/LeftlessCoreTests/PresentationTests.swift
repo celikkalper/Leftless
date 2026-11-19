@@ -421,3 +421,73 @@ import Foundation
         #expect(Presentation.historyTitle(record(.orphans)) == "Orphaned leftovers")
     }
 }
+
+// MARK: - App reset
+
+@Suite struct ResetSelectionTests {
+    let app = AppInfo(url: URL(fileURLWithPath: "/Applications/SoundWave.app"), bundleID: "com.example.soundwave",
+                      name: "SoundWave")
+
+    func item(_ kind: LeftoverKind, _ confidence: Confidence = .certain, size: Int64 = 10) -> Leftover {
+        Leftover(url: URL(fileURLWithPath: "/u/Library/\(kind.rawValue)/\(UUID().uuidString)"), kind: kind,
+                 confidence: confidence, size: size)
+    }
+
+    @Test func resetExcludesAppBundleLaunchItemsHelpersPluginsReceipts() {
+        let all = LeftoverKind.allCases.map { item($0) }
+        let candidates = ResetSelection.candidates(in: ScanResult(app: app, leftovers: all))
+        #expect(candidates.map(\.kind) == [.applicationSupport, .caches, .preferences, .logs, .savedState,
+                                           .httpStorages, .webKit, .cookies, .container, .groupContainer])
+        #expect(candidates.map(\.id) == all.filter { candidates.map(\.id).contains($0.id) }.map(\.id))
+    }
+
+    @Test func resetExcludesPossibleItems() {
+        let sure = item(.caches)
+        let possible = item(.applicationSupport, .probable)
+        let candidates = ResetSelection.candidates(in: ScanResult(app: app, leftovers: [possible, sure]))
+        #expect(candidates.map(\.id) == [sure.id])
+    }
+
+    @Test func resetEmptyWhenNoData() {
+        let scan = ScanResult(app: app, leftovers: [item(.appBundle), item(.launchAgent), item(.plugin),
+                                                     item(.packageFile), item(.caches, .probable)])
+        #expect(ResetSelection.candidates(in: scan).isEmpty)
+        #expect(ResetPlan(scan: scan) == nil)
+        #expect(ResetPlan(scan: ScanResult(app: app, leftovers: [])) == nil)
+    }
+
+    @Test func resetPlanFreezesCandidatesListsKindsAndSize() throws {
+        let prefs = item(.preferences, size: 3), cache1 = item(.caches, size: 20), cache2 = item(.caches, size: 5)
+        let bundle = item(.appBundle, size: 900)
+        let scan = ScanResult(app: app, leftovers: [bundle, prefs, cache1, cache2])
+        let plan = try #require(ResetPlan(scan: scan))
+        #expect(plan.selected.map(\.id) == [prefs.id, cache1.id, cache2.id])
+        #expect(plan.kinds == [.caches, .preferences])
+        #expect(plan.totalSize == 28)
+        #expect(plan.confirmationText(formattedSize: "28 bytes")
+            == "3 items (28 bytes) will be moved to the Trash: Caches, Preferences. SoundWave itself stays installed. You can undo this from History.")
+    }
+
+    @Test func resetPlanValidOnlyForSameScan() throws {
+        let cache = item(.caches)
+        let scan = ScanResult(app: app, leftovers: [cache])
+        let plan = try #require(ResetPlan(scan: scan))
+        #expect(plan.isValid(for: scan))
+        #expect(!plan.isValid(for: nil))
+        #expect(!plan.isValid(for: ScanResult(app: app, leftovers: [item(.caches)])))   // rescanned
+        var other = scan
+        other.app.url = URL(fileURLWithPath: "/Applications/Clip.app")
+        #expect(!plan.isValid(for: other))
+    }
+
+    @Test func resetPlanBuildsOneResetJob() throws {
+        let cache = item(.caches), agent = item(.launchAgent)
+        let scan = ScanResult(app: app, leftovers: [agent, cache])
+        let plan = try #require(ResetPlan(scan: scan))
+        let job = plan.job(icon: Data([1]))
+        #expect(job.operation == .reset)
+        #expect(job.icon == Data([1]))
+        #expect(job.selected.map(\.id) == [cache.id])
+        #expect(job.scan.app == app)
+    }
+}

@@ -311,3 +311,63 @@ extension Presentation {
         }
     }
 }
+
+// MARK: - App reset
+
+/// What "Reset" clears: only the app's data (certain items of the data kinds). The app itself, launch
+/// agents/daemons, helpers, plug-ins, installer files and possible matches always stay.
+public enum ResetSelection {
+    public static let kinds: Set<LeftoverKind> = [
+        .applicationSupport, .caches, .preferences, .logs, .savedState, .httpStorages, .webKit, .cookies,
+        .container, .groupContainer,
+    ]
+
+    /// Certain data items of the scan, in scan order. Independent of the user's checkboxes.
+    public static func candidates(in scan: ScanResult) -> [Leftover] {
+        scan.leftovers.filter { kinds.contains($0.kind) && $0.confidence == .certain }
+    }
+}
+
+/// Reset plan frozen at confirmation: the reset candidates of one particular scan.
+public struct ResetPlan: Identifiable, Sendable {
+    public let id = UUID()
+    public let scan: ScanResult
+    /// Items to move, in scan order.
+    public let selected: [Leftover]
+
+    /// `nil` when the app has no data to clear.
+    public init?(scan: ScanResult) {
+        let selected = ResetSelection.candidates(in: scan)
+        guard !selected.isEmpty else { return nil }
+        self.scan = scan
+        self.selected = selected
+    }
+
+    public var totalSize: Int64 { selected.reduce(0) { $0 + $1.size } }
+
+    /// Kinds being cleared, in `LeftoverKind.allCases` order.
+    public var kinds: [LeftoverKind] {
+        let present = Set(selected.map(\.kind))
+        return LeftoverKind.allCases.filter(present.contains)
+    }
+
+    /// Is the plan still about the scan on screen? (Same app and same scan, as for `UninstallPlan`.)
+    public func isValid(for current: ScanResult?) -> Bool {
+        guard let current, current.app.url == scan.app.url else { return false }
+        let ids = Set(current.leftovers.map(\.id))
+        return selected.allSatisfy { ids.contains($0.id) }
+    }
+
+    /// E.g. "14 items (412 MB) will be moved to the Trash: Caches, Preferences. SoundWave itself stays
+    /// installed. You can undo this from History."
+    public func confirmationText(formattedSize: String) -> String {
+        // Comma-joined (a catalog key made only of punctuation can't be built by Xcode).
+        let names = kinds.map(\.displayName).joined(separator: ", ")
+        return L("\(selected.count) items (\(formattedSize)) will be moved to the Trash: \(names). \(scan.app.name) itself stays installed. You can undo this from History.")
+    }
+
+    /// The single `.reset` job (one "<App> — Reset" history record) for this plan.
+    public func job(icon: Data?) -> UninstallJob {
+        UninstallJob(scan: scan, selected: selected, icon: icon, operation: .reset)
+    }
+}

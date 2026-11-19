@@ -80,40 +80,49 @@ import Foundation
         var batches: [[String]] { lock.lock(); defer { lock.unlock() }; return _batches }
     }
 
-    static func waitUntil(timeout: Double = 5, _ condition: () -> Bool) async {
+    /// Polls `condition` until it holds or `timeout` passes (no fixed sleeps: a slow machine only waits longer).
+    @discardableResult
+    static func waitUntil(timeout: Double = 3, _ condition: () -> Bool) async -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
-        while !condition(), Date() < deadline { try? await Task.sleep(for: .milliseconds(50)) }
+        while !condition() {
+            guard Date() < deadline else { return false }
+            try? await Task.sleep(for: .milliseconds(20))
+        }
+        return true
     }
 
     @Test func reportsAppsAddedAfterStartOnce() async throws {
         let fs = try FakeSystem(); defer { fs.cleanup() }
         let dir = fs.home.appendingPathComponent(".Trash", isDirectory: true)
-        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: dir.appendingPathComponent("Old.app"), withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: dir.appendingPathComponent("Mine.app"), withIntermediateDirectories: true)
-        try FileManager.default.removeItem(at: dir.appendingPathComponent("Mine.app"))
+        let fm = FileManager.default
+        func path(_ name: String) -> String { dir.appendingPathComponent(name).path }
+        func add(_ name: String) throws { try fm.createDirectory(atPath: path(name), withIntermediateDirectories: true) }
+        try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+        try add("Old.app")
         let collector = Collector()
-        let monitor = TrashMonitor(directory: dir, debounce: 0.2,
-                                   ignoring: [dir.appendingPathComponent("Mine.app").path]) { collector.add($0) }
+        let monitor = TrashMonitor(directory: dir, debounce: 0.1, ignoring: [path("Mine.app")]) { collector.add($0) }
         #expect(monitor.start())
         defer { monitor.stop() }
+        // Batches may be split differently on a busy machine; only the reported paths and their order matter.
+        var reported: [String] { collector.batches.flatMap { $0 } }
 
-        // A burst of changes is reported once, after the debounce.
+        // Non-apps, the ignored bundle and apps present at start are never reported.
         try Data().write(to: dir.appendingPathComponent("notes.txt"))
-        try FileManager.default.createDirectory(at: dir.appendingPathComponent("SoundWave.app"), withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: dir.appendingPathComponent("Mine.app"), withIntermediateDirectories: true)
-        await Self.waitUntil { !collector.batches.isEmpty }
-        #expect(collector.batches == [[dir.appendingPathComponent("SoundWave.app").path]])
+        try add("Mine.app")
+        try add("SoundWave.app")
+        #expect(await Self.waitUntil { reported.contains(path("SoundWave.app")) })
+        #expect(reported == [path("SoundWave.app")])
 
-        // Removing and adding it back doesn't report it again; a different app is reported.
-        try FileManager.default.removeItem(at: dir.appendingPathComponent("SoundWave.app"))
-        try await Task.sleep(for: .milliseconds(400))
-        try FileManager.default.createDirectory(at: dir.appendingPathComponent("SoundWave.app"), withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: dir.appendingPathComponent("Clip.app"), withIntermediateDirectories: true)
-        await Self.waitUntil { collector.batches.count >= 2 }
-        try await Task.sleep(for: .milliseconds(400))
-        #expect(collector.batches == [[dir.appendingPathComponent("SoundWave.app").path],
-                                      [dir.appendingPathComponent("Clip.app").path]])
+        // Removing it and adding it back doesn't report it again; a different app is reported.
+        try fm.removeItem(atPath: path("SoundWave.app"))
+        try add("SoundWave.app")
+        try add("Clip.app")
+        #expect(await Self.waitUntil { reported.contains(path("Clip.app")) })
+
+        // A later app is reported after everything before it, so nothing else can still be on its way.
+        try add("Sentinel.app")
+        #expect(await Self.waitUntil { reported.contains(path("Sentinel.app")) })
+        #expect(reported == [path("SoundWave.app"), path("Clip.app"), path("Sentinel.app")])
     }
 
     @Test func stoppedMonitorReportsNothing() async throws {
@@ -124,8 +133,13 @@ import Foundation
         let monitor = TrashMonitor(directory: dir, debounce: 0.1, ignoring: []) { collector.add($0) }
         #expect(monitor.start())
         monitor.stop()
+        // A second, running monitor shows when the change has been seen (instead of sleeping a fixed time).
+        let control = Collector()
+        let running = TrashMonitor(directory: dir, debounce: 0.1, ignoring: []) { control.add($0) }
+        #expect(running.start())
+        defer { running.stop() }
         try FileManager.default.createDirectory(at: dir.appendingPathComponent("SoundWave.app"), withIntermediateDirectories: true)
-        try await Task.sleep(for: .milliseconds(500))
+        #expect(await Self.waitUntil { !control.batches.isEmpty })
         #expect(collector.batches.isEmpty)
     }
 
@@ -133,5 +147,22 @@ import Foundation
         let fs = try FakeSystem(); defer { fs.cleanup() }
         let monitor = TrashMonitor(directory: fs.root.appendingPathComponent("nope"), debounce: 0.1, ignoring: []) { _ in }
         #expect(!monitor.start())
+    }
+}
+
+@Suite struct TrashNotificationSummaryTests {
+    @Test func countsOnlyCertainLeftovers() throws {
+        let app = AppInfo(url: URL(fileURLWithPath: "/Users/tester/.Trash/SoundWave.app"),
+                          bundleID: "com.example.soundwave", name: "SoundWave")
+        let sure = Leftover(url: URL(fileURLWithPath: "/u/Library/Caches/a"), kind: .caches, confidence: .certain, size: 7)
+        let sure2 = Leftover(url: URL(fileURLWithPath: "/u/Library/Preferences/a"), kind: .preferences,
+                             confidence: .certain, size: 3)
+        let maybe = Leftover(url: URL(fileURLWithPath: "/u/Library/Application Support/a"), kind: .applicationSupport,
+                             confidence: .probable, size: 1000)
+        let summary = try #require(TrashWatch.notificationSummary(ScanResult(app: app, leftovers: [sure, maybe, sure2])))
+        #expect(summary.count == 2)
+        #expect(summary.size == 10)
+        #expect(TrashWatch.notificationSummary(ScanResult(app: app, leftovers: [maybe])) == nil)
+        #expect(TrashWatch.notificationSummary(ScanResult(app: app, leftovers: [])) == nil)
     }
 }

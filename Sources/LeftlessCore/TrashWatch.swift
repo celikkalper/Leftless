@@ -26,6 +26,14 @@ public enum TrashWatch {
         return result
     }
 
+    /// Count and size shown in the "left N items" notification: only certain (pre-ticked) leftovers.
+    /// `nil` when there are none, so no notification is posted.
+    public static func notificationSummary(_ scan: ScanResult) -> (count: Int, size: Int64)? {
+        let certain = scan.leftovers.filter(\.selectedByDefault)
+        guard !certain.isEmpty else { return nil }
+        return (certain.count, certain.reduce(0) { $0 + $1.size })
+    }
+
     /// A trashed app is scanned unless it is Leftless itself, an Apple app, or another copy with the same
     /// bundle ID is still installed (the leftovers then belong to that copy).
     public static func shouldScan(_ app: AppInfo, installed: [AppInfo], ownBundleIDs: Set<String>) -> Bool {

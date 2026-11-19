@@ -10,10 +10,11 @@ struct UninstallResultView: View {
 
     private var title: Text {
         let size = AppModel.formatSize(trashed.reduce(0) { $0 + $1.size })
-        if outcome.record.operation == .orphans {
-            return Text("Orphaned leftovers moved to the Trash — \(trashed.count) items, \(size)")
+        switch outcome.record.operation {
+        case .orphans: return Text("Orphaned leftovers moved to the Trash — \(trashed.count) items, \(size)")
+        case .reset: return Text("\(outcome.record.appName) was reset — \(trashed.count) items, \(size)")
+        case .uninstall: return Text("\(outcome.record.appName) uninstalled — \(trashed.count) items, \(size)")
         }
-        return Text("\(outcome.record.appName) uninstalled — \(trashed.count) items, \(size)")
     }
 
     var body: some View {
@@ -30,7 +31,7 @@ struct UninstallResultView: View {
                     Task { await model.restore(outcome.record) }
                 }
                 .disabled(trashed.isEmpty || model.isWorking)
-                .accessibilityLabel("Undo uninstall")
+                .accessibilityLabel(outcome.record.operation == .reset ? Text("Undo reset") : Text("Undo uninstall"))
                 if model.isWorking {
                     ProgressView().controlSize(.small).accessibilityLabel("In progress")
                 }

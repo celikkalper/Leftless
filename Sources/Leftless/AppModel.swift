@@ -240,9 +240,14 @@ final class AppModel {
     }
 
     /// Shows the leftovers of an app that was moved to the Trash (from a Trash-watch notification) as the
-    /// selected app on the Apps tab; the usual review and confirmation apply. Nothing happens while working.
+    /// selected app on the Apps tab; the usual review and confirmation apply. While an uninstall, reset or
+    /// restore is running, the user is asked to try again afterwards.
     func reviewTrashedApp(at url: URL) async {
-        guard !isWorking, !isDemo else { return }
+        guard !isDemo else { return }
+        guard !isWorking else {
+            alertMessage = String(localized: "Finish the current task, then try again.")
+            return
+        }
         tab = .apps
         let inspected = await Task.detached { () -> InstalledApp? in
             guard FileManager.default.fileExists(atPath: url.path),
@@ -252,6 +257,10 @@ final class AppModel {
         }.value
         guard let app = inspected else {
             alertMessage = String(localized: "This app is no longer in the Trash.")
+            return
+        }
+        guard !isWorking else {   // a task started while the app was being inspected
+            alertMessage = String(localized: "Finish the current task, then try again.")
             return
         }
         await select([app.id], known: [app])
@@ -300,6 +309,49 @@ final class AppModel {
         case .failure:
             alertMessage = String(localized: "Couldn't write the history record; no files were moved.")
         }
+    }
+
+    /// Applies a confirmed reset: the app's data (the frozen plan's items) goes to the Trash as one
+    /// "<App> — Reset" record; the app itself stays. Same rules as `uninstall(_:quitFirst:)`: the app is quit
+    /// first if asked (if it doesn't quit, nothing is moved), and nothing is moved if the plan no longer
+    /// belongs to the scan on screen.
+    func reset(_ plan: ResetPlan, quitFirst: Bool) async {
+        guard !isWorking else { return }
+        isWorking = true
+        defer { isWorking = false }
+        if quitFirst {
+            guard await AppTerminator.quit(bundleID: plan.scan.app.bundleID, timeout: 5) else {
+                alertMessage = String(localized: "\(plan.scan.app.name) couldn't be quit. Please quit the app and try again.")
+                return
+            }
+        }
+        guard isShowing(plan.scan.app), plan.isValid(for: scan) else { return }
+        let job = plan.job(icon: Self.iconData(for: plan.scan.app.url))
+        let env = environment, store = store
+        let result = await Task.detached {
+            let commands = ProcessCommandRunner()
+            let uninstaller = Uninstaller(
+                history: store, files: SystemFileMover(),
+                privileged: OsascriptPrivilegedExecutor(commands: commands), commands: commands,
+                environment: env, trashDirectory: env.home.appendingPathComponent(".Trash", isDirectory: true))
+            return Result { try uninstaller.uninstall(batch: [job]) }
+        }.value
+        switch result {
+        case .success(let outcomes):
+            if let outcome = outcomes.first, !outcome.record.items.isEmpty {
+                if isShowing(plan.scan.app) { lastOutcome = outcome }
+                discardScans(of: [plan.scan.app])
+            }
+            discardOrphanScan()
+            reloadHistory()
+        case .failure:
+            alertMessage = String(localized: "Couldn't write the history record; no files were moved.")
+        }
+    }
+
+    /// Reset is offered only for an installed app (not one already in the Trash) that has data to clear.
+    func canReset(_ scan: ScanResult) -> Bool {
+        !TrashWatch.isInTrash(scan.app.url, home: environment.home) && !ResetSelection.candidates(in: scan).isEmpty
     }
 
     /// Drops the (now out of date) scans of uninstalled apps and their checked items, so a later selection

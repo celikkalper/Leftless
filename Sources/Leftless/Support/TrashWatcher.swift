@@ -78,7 +78,7 @@ final class TrashWatcher {
     }
 
     /// Scans one trashed app off the main actor (installed list read as in `AppModel.select`) and notifies
-    /// if it left anything besides its bundle.
+    /// if it left certain leftovers besides its bundle.
     private func check(_ path: String) async {
         let env = environment
         let restricted = !FullDiskAccess.isGranted()
@@ -97,8 +97,9 @@ final class TrashWatcher {
                 commands: commands, restricted: restricted)
             return TrashWatch.removingAppBundle(from: scanner.scan(info))
         }.value
-        guard isWatching, let scan, !scan.leftovers.isEmpty, notified.insert(path).inserted else { return }
-        TrashNotifications.post(appName: scan.app.name, count: scan.leftovers.count, size: scan.totalSize,
-                                trashedPath: path)
+        // Only certain (pre-ticked) leftovers count; possible matches alone never notify.
+        guard isWatching, let scan, let summary = TrashWatch.notificationSummary(scan),
+              notified.insert(path).inserted else { return }
+        TrashNotifications.post(appName: scan.app.name, count: summary.count, size: summary.size, trashedPath: path)
     }
 }
