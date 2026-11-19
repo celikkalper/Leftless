@@ -6,7 +6,7 @@ struct AppListView: View {
     @Bindable var model: AppModel
 
     private var selection: Binding<InstalledApp?> {
-        Binding(get: { model.selection }, set: { newValue in Task { await model.select(newValue) } })
+        Binding(get: { model.selection }, set: { newValue in model.tab = .apps; Task { await model.select(newValue) } })
     }
 
     var body: some View {

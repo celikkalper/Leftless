@@ -84,6 +84,8 @@ final class AppModel {
         Presentation.historyBadgeCount(history) { historyStatus[$0.id] ?? .unrecoverable }
     }
 
+    var showsOnboarding: Bool { !hasFullDiskAccess && !onboardingSkipped }
+
     func refreshFullDiskAccess() {
         hasFullDiskAccess = FullDiskAccess.isGranted()
     }
@@ -103,7 +105,6 @@ final class AppModel {
             isScanning = false
             return
         }
-        tab = .apps
         let token = UUID()
         scanToken = token
         isScanning = true
@@ -133,6 +134,7 @@ final class AppModel {
     /// Bırakılan ilk `.app` paketini seçer; listede yoksa listeye eklenir.
     func handleDrop(_ urls: [URL]) {
         guard !isWorking, let url = urls.first(where: { $0.pathExtension == "app" }) else { return }
+        tab = .apps   // a dropped app is always shown on the Apps tab, even if it is already selected
         let path = url.standardizedFileURL.path
         if let existing = apps.first(where: { $0.info.url.standardizedFileURL.path == path }) {
             Task { await select(existing) }

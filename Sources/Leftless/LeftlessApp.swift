@@ -51,7 +51,7 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if !model.hasFullDiskAccess && !model.onboardingSkipped {
+            if model.showsOnboarding {
                 OnboardingView(model: model)
             } else {
                 mainContent
@@ -134,10 +134,10 @@ struct TabCommands: Commands {
         CommandGroup(after: .toolbar) {
             Button("Apps") { model.switchTab(.apps) }
                 .keyboardShortcut("1")
-                .disabled(model.isWorking)
+                .disabled(model.isWorking || model.showsOnboarding)
             Button("History") { model.switchTab(.history) }
                 .keyboardShortcut("2")
-                .disabled(model.isWorking)
+                .disabled(model.isWorking || model.showsOnboarding)
         }
     }
 }
