@@ -156,11 +156,18 @@ final class AppModel {
         scanTokens = scanTokens.filter { keep.contains($0.key) }   // sürmekte olan eski taramalar yok sayılır
         let shownIDs = Set(scans.values.flatMap { $0.leftovers.map(\.id) })
         checked = checked.intersection(shownIDs)
-        let tasks = needsScan.map { startScan($0) }
+        guard !needsScan.isEmpty else { return }
+        // Koruma listesi taramayla birlikte diskten okunur (arayüz listesinin yüklenmesine bağlı değildir);
+        // seçim başına bir kez okunur ve tüm taramalar paylaşır.
+        let env = environment
+        let installedApps = Task.detached {
+            InstalledApps(environment: env, inspector: AppInspector(commands: ProcessCommandRunner())).infos()
+        }
+        let tasks = needsScan.map { startScan($0, installedApps: installedApps) }
         for task in tasks { await task.value }
     }
 
-    private func startScan(_ app: InstalledApp) -> Task<Void, Never> {
+    private func startScan(_ app: InstalledApp, installedApps: Task<[AppInfo], Never>) -> Task<Void, Never> {
         let token = UUID()
         scanTokens[app.id] = token
         let env = environment
@@ -170,8 +177,7 @@ final class AppModel {
                 let commands = ProcessCommandRunner()
                 let inspector = AppInspector(commands: commands)
                 let info = (try? inspector.inspect(app.info.url, includeTeamID: true)) ?? app.info
-                // Koruma listesi taramayla birlikte diskten okunur: arayüz listesinin yüklenmesine bağlı değildir.
-                var installed = InstalledApps(environment: env, inspector: inspector).infos()
+                var installed = await installedApps.value
                 let path = app.info.url.standardizedFileURL.path
                 if !installed.contains(where: { $0.url.standardizedFileURL.path == path }) { installed.append(app.info) }
                 let scanner = LeftoverScanner(
@@ -253,11 +259,18 @@ final class AppModel {
         switch result {
         case .success(let outcome):
             if isShowing(plan.scan.app) { lastOutcome = outcome }
+            if !outcome.record.items.isEmpty { discardScans(of: [plan.scan.app]) }
             reloadHistory()
             reloadApps()
         case .failure:
             alertMessage = String(localized: "Couldn't write the history record; no files were moved.")
         }
+    }
+
+    /// Drops the (now out of date) scans of uninstalled apps and their checked items, so a later selection
+    /// change can't show already-trashed items as ticked; they are rescanned when shown again.
+    private func discardScans(of uninstalled: [AppInfo]) {
+        (scans, checked) = Presentation.discardingScans(of: uninstalled, from: scans, checked: checked)
     }
 
     private func isShowing(_ app: AppInfo) -> Bool {
@@ -309,7 +322,11 @@ final class AppModel {
         switch result {
         case .success(let outcomes):
             // A job left with no items (all claimed by an earlier app) has no saved record: not shown.
-            if plan.isValid(for: selectedScans) { batchOutcomes = outcomes.filter { !$0.record.items.isEmpty } }
+            // If nothing at all was recorded, the scan view stays.
+            let shown = outcomes.filter { !$0.record.items.isEmpty }
+            if plan.isValid(for: selectedScans), !shown.isEmpty { batchOutcomes = shown }
+            // Outcomes come back in job order; apps that had something moved are scanned again when next shown.
+            discardScans(of: zip(plan.plans, outcomes).filter { !$1.record.items.isEmpty }.map(\.0.scan.app))
             reloadHistory()
             reloadApps()
         case .failure:
@@ -363,7 +380,9 @@ final class AppModel {
         // scanned again, since restored files may be their leftovers.
         guard batchOutcomes == nil else { return }
         let rescan = selectedApps.filter { FileManager.default.fileExists(atPath: $0.info.url.path) }
-        guard !rescan.isEmpty else { return }
+        // A still-shown single result (of another record) stays unless its app is back; without a result,
+        // apps whose scans were dropped after an uninstall are scanned again too (no endless "Looking for…").
+        guard !rescan.isEmpty || (lastOutcome == nil && selectedApps.contains { scans[$0.id] == nil }) else { return }
         for app in rescan { scans[app.id] = nil }
         await select(selection)
     }

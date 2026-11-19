@@ -19,7 +19,7 @@ struct BatchDetailView: View {
     }
 
     private var summary: BatchUninstallSummary {
-        BatchUninstallSummary(model.selectedScans.map { UninstallSummary(leftovers: $0.leftovers, checked: model.checked) })
+        BatchUninstallSummary(scans: model.selectedScans, checked: model.checked)
     }
 
     private var allScanned: Bool {

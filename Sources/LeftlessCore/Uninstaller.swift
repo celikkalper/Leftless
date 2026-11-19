@@ -67,19 +67,9 @@ public struct Uninstaller: Sendable {
     /// silinir ve hiçbir şey taşınmadan fırlatır. Öğe bazlı hatalar fırlatılmaz, kayıtta `failed` olarak tutulur.
     public func uninstall(batch jobs: [UninstallJob]) throws -> [UninstallOutcome] {
         var chosenTargets = Set<String>()
-        var claimedEarlier: [String] = []
         var works: [Work] = []
-        for job in jobs {
-            // Bir yol yalnızca bir kez taşınabilir. Önceki bir işin aldığı yolla aynı, onun içinde ya da onu
-            // içeren öğe sonraki işten çıkarılır: aksi halde `mv -n` kaynak bulamaz ve `&&` zinciri tüm işler
-            // için durur. İş içi tam yinelenenler de çıkarılır.
-            var seenInJob = Set<String>()
-            let selected = job.selected.filter { leftover in
-                let path = leftover.url.path
-                guard !claimedEarlier.contains(where: { Self.overlaps(path, $0) }) else { return false }
-                return seenInJob.insert(path).inserted
-            }
-            claimedEarlier += selected.map(\.url.path)
+        let selections = Self.effectiveSelections(jobs.map(\.selected))
+        for (job, selected) in zip(jobs, selections) {
             let items: [HistoryItem] = selected.map { leftover in
                 var item = HistoryItem(originalPath: leftover.url.path, kind: leftover.kind, size: leftover.size,
                                        requiresAdmin: leftover.requiresAdmin, launchdLabel: leftover.launchdLabel,
@@ -234,6 +224,23 @@ public struct Uninstaller: Sendable {
         if ns.domain == NSPOSIXErrorDomain, ns.code == Int(EACCES) || ns.code == Int(EPERM) { return true }
         if let underlying = ns.userInfo[NSUnderlyingErrorKey] as? Error { return isPermissionError(underlying) }
         return false
+    }
+
+    /// Her işin gerçekten taşınacak seçimi. Bir yol yalnızca bir kez taşınabilir: önceki bir işin aldığı yolla
+    /// aynı, onun içinde ya da onu içeren öğe sonraki işten çıkarılır (aksi halde `mv -n` kaynak bulamaz ve `&&`
+    /// zinciri tüm işler için durur). İş içi tam yinelenenler de çıkarılır. Onay özeti de bu kuralı kullanır.
+    public static func effectiveSelections(_ selections: [[Leftover]]) -> [[Leftover]] {
+        var claimedEarlier: [String] = []
+        return selections.map { job in
+            var seenInJob = Set<String>()
+            let kept = job.filter { leftover in
+                let path = leftover.url.path
+                guard !claimedEarlier.contains(where: { overlaps(path, $0) }) else { return false }
+                return seenInJob.insert(path).inserted
+            }
+            claimedEarlier += kept.map(\.url.path)
+            return kept
+        }
     }
 
     /// Aynı yol mu, ya da biri diğerinin içinde mi?

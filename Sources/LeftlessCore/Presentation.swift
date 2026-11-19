@@ -127,10 +127,18 @@ public struct BatchUninstallSummary: Equatable, Sendable {
         self.totalSize = totalSize
     }
 
-    public init(_ summaries: [UninstallSummary]) {
-        self.init(appCount: summaries.filter(\.includesApp).count,
-                  otherCount: summaries.reduce(0) { $0 + $1.otherCount },
-                  totalSize: summaries.reduce(0) { $0 + $1.totalSize })
+    /// Totals of what will really be moved: a path shared by several apps (or inside another app's selected
+    /// folder) is counted once, for the first app, exactly as `Uninstaller.uninstall(batch:)` moves it.
+    public init(selections: [[Leftover]]) {
+        let kept = Uninstaller.effectiveSelections(selections)
+        self.init(appCount: kept.filter { $0.contains { $0.kind == .appBundle } }.count,
+                  otherCount: kept.reduce(0) { $0 + $1.filter { $0.kind != .appBundle }.count },
+                  totalSize: kept.reduce(0) { $0 + $1.reduce(0) { $0 + $1.size } })
+    }
+
+    /// Live totals for the shown scans and checkboxes (same rule as the frozen plan).
+    public init(scans: [ScanResult], checked: Set<UUID>) {
+        self.init(selections: scans.map { $0.leftovers.filter { checked.contains($0.id) } })
     }
 
     public var totalCount: Int { appCount + otherCount }
@@ -163,7 +171,7 @@ public struct BatchUninstallPlan: Identifiable, Sendable {
         let plans = scans.compactMap { UninstallPlan(scan: $0, checked: checked) }
         guard !plans.isEmpty else { return nil }
         self.plans = plans
-        self.summary = BatchUninstallSummary(plans.map(\.summary))
+        self.summary = BatchUninstallSummary(selections: plans.map(\.selected))
         self.appPaths = Set(scans.map(\.app.url.path))
     }
 
@@ -184,6 +192,16 @@ extension HistoryItem {
 }
 
 public enum Presentation {
+    /// After an uninstall, the scans of the affected apps are out of date: they are dropped (with their checked
+    /// items) so the apps are scanned again the next time they are shown.
+    public static func discardingScans(of apps: [AppInfo], from scans: [String: ScanResult], checked: Set<UUID>)
+        -> (scans: [String: ScanResult], checked: Set<UUID>) {
+        let urls = Set(apps.map(\.url))
+        let stale = scans.filter { urls.contains($0.value.app.url) }
+        let staleIDs = Set(stale.values.flatMap { $0.leftovers.map(\.id) })
+        return (scans.filter { !urls.contains($0.value.app.url) }, checked.subtracting(staleIDs))
+    }
+
     /// Number of history records that can still be (partly) restored; shown on the History tab.
     public static func historyBadgeCount(_ records: [HistoryRecord], status: (HistoryRecord) -> RestoreStatus) -> Int {
         records.filter {

@@ -242,6 +242,38 @@ import Foundation
         #expect(BatchUninstallPlan(scans: [], checked: [aApp.id]) == nil)
     }
 
+    @Test func batchSummaryCountsSharedPathsOnce() throws {
+        // Aynı satıcı klasörü iki uygulamanın taramasında: Uninstaller onu yalnızca ilk işe verir.
+        let aApp = leftover("/Applications/A.app", .appBundle, size: 100)
+        let aShared = leftover("/u/Library/Application Support/Vendor", .applicationSupport, size: 10)
+        let bApp = leftover("/Applications/B.app", .appBundle, size: 50)
+        let bShared = leftover("/u/Library/Application Support/Vendor", .applicationSupport, size: 10)
+        let bInside = leftover("/u/Library/Application Support/Vendor/B", .applicationSupport, size: 3)
+        let bOwn = leftover("/u/Library/Caches/b", .caches, size: 1)
+        let a = appScan("A", [aApp, aShared]), b = appScan("B", [bApp, bShared, bInside, bOwn])
+        let checked: Set<UUID> = [aApp.id, aShared.id, bApp.id, bShared.id, bInside.id, bOwn.id]
+        let plan = try #require(BatchUninstallPlan(scans: [a, b], checked: checked))
+        #expect(plan.summary.appCount == 2)
+        #expect(plan.summary.otherCount == 2)
+        #expect(plan.summary.totalSize == 161)
+        #expect(BatchUninstallSummary(scans: [a, b], checked: checked) == plan.summary)
+        // Uninstaller ile aynı kural.
+        let kept = Uninstaller.effectiveSelections([[aApp, aShared], [bApp, bShared, bInside, bOwn]])
+        #expect(kept.map { $0.map(\.id) } == [[aApp.id, aShared.id], [bApp.id, bOwn.id]])
+    }
+
+    @Test func discardingScansDropsUninstalledAppsAndTheirChecks() {
+        let aApp = leftover("/Applications/A.app", .appBundle, size: 100)
+        let aCache = leftover("/u/Library/Caches/a", .caches, size: 1)
+        let bCache = leftover("/u/Library/Caches/b", .caches, size: 1)
+        let a = appScan("A", [aApp, aCache]), b = appScan("B", [bCache])
+        let scans = ["/Applications/A.app": a, "/Applications/B.app": b]
+        let result = Presentation.discardingScans(of: [a.app], from: scans,
+                                                  checked: [aApp.id, aCache.id, bCache.id])
+        #expect(Array(result.scans.keys) == ["/Applications/B.app"])
+        #expect(result.checked == [bCache.id])
+    }
+
     @Test func batchConfirmationText() {
         func summary(apps: Int, others: Int) -> BatchUninstallSummary {
             BatchUninstallSummary(appCount: apps, otherCount: others, totalSize: 0)
