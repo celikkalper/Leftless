@@ -97,4 +97,30 @@ import Foundation
         #expect(try store.all().isEmpty)
         #expect(FileManager.default.fileExists(atPath: trash.path))
     }
+
+    @Test func oldRecordWithoutOperationDecodesAsUninstall() throws {
+        let fake = try FakeSystem(); defer { fake.cleanup() }
+        let dir = fake.root.appendingPathComponent("History")
+        let store = HistoryStore(directory: dir)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let json = """
+        {"id":"8E0C5A52-2B1C-4E4C-9C61-6C3B7B6C9A11","appName":"Old","bundleID":"com.old",
+         "date":"2026-01-01T00:00:00Z","items":[]}
+        """
+        try Data(json.utf8).write(to: dir.appendingPathComponent("8E0C5A52-2B1C-4E4C-9C61-6C3B7B6C9A11.json"))
+        let all = try store.all()
+        #expect(all.count == 1)
+        #expect(all[0].operation == .uninstall)
+        #expect(all[0].appName == "Old")
+    }
+
+    @Test func operationRoundTrips() throws {
+        let fake = try FakeSystem(); defer { fake.cleanup() }
+        let store = HistoryStore(directory: fake.root.appendingPathComponent("History"))
+        var r = makeRecord()
+        #expect(r.operation == .uninstall)
+        r.operation = .reset
+        try store.save(r)
+        #expect(try store.all()[0].operation == .reset)
+    }
 }

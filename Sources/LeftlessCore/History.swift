@@ -71,6 +71,11 @@ public struct HistoryItem: Codable, Hashable, Identifiable, Sendable {
     }
 }
 
+/// What produced a history record. Records written before 1.1 have no operation and decode as `.uninstall`.
+public enum HistoryOperation: String, Codable, Sendable {
+    case uninstall, reset, orphans
+}
+
 public struct HistoryRecord: Codable, Identifiable, Sendable {
     public var id: UUID
     public var appName: String
@@ -79,9 +84,11 @@ public struct HistoryRecord: Codable, Identifiable, Sendable {
     public var date: Date
     public var icon: Data?
     public var items: [HistoryItem]
+    public var operation: HistoryOperation
 
     public init(id: UUID = UUID(), appName: String, bundleID: String, version: String? = nil,
-                date: Date = Date(), icon: Data? = nil, items: [HistoryItem]) {
+                date: Date = Date(), icon: Data? = nil, items: [HistoryItem],
+                operation: HistoryOperation = .uninstall) {
         self.id = id
         self.appName = appName
         self.bundleID = bundleID
@@ -89,6 +96,24 @@ public struct HistoryRecord: Codable, Identifiable, Sendable {
         self.date = date
         self.icon = icon
         self.items = items
+        self.operation = operation
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, appName, bundleID, version, date, icon, items, operation
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        appName = try c.decode(String.self, forKey: .appName)
+        bundleID = try c.decode(String.self, forKey: .bundleID)
+        version = try c.decodeIfPresent(String.self, forKey: .version)
+        date = try c.decode(Date.self, forKey: .date)
+        icon = try c.decodeIfPresent(Data.self, forKey: .icon)
+        items = try c.decode([HistoryItem].self, forKey: .items)
+        // Missing (pre-1.1) or unknown (newer version) operations fall back to `.uninstall`; the record stays visible.
+        operation = (try c.decodeIfPresent(String.self, forKey: .operation)).flatMap(HistoryOperation.init(rawValue:)) ?? .uninstall
     }
 
     public var totalSize: Int64 { items.reduce(0) { $0 + $1.size } }

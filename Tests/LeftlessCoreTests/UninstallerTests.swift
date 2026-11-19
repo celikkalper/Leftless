@@ -74,6 +74,21 @@ private struct Rig {
         ScanResult(app: AppInfo(url: URL(fileURLWithPath: "/Applications/X.app"), bundleID: "com.x", name: "X", version: "2"),
                    leftovers: l)
     }
+    func scan(_ l: [Leftover], name: String, bundleID: String) -> ScanResult {
+        ScanResult(app: AppInfo(url: URL(fileURLWithPath: "/Applications/\(name).app"), bundleID: bundleID, name: name, version: "1"),
+                   leftovers: l)
+    }
+
+    /// Simulates a successful privileged run: every `mv` in the list moves its source to its target.
+    func applyMoves(_ cmds: [String]) {
+        for c in cmds where c.contains("/bin/mv -n ") {
+            let parts = c.components(separatedBy: "/bin/mv -n ")[1].components(separatedBy: "' '")
+            let src = String(parts[0].dropFirst()).replacingOccurrences(of: "'\\''", with: "'")
+            let dst = String(parts[1].dropLast()).replacingOccurrences(of: "'\\''", with: "'")
+            files.existing.remove(src)
+            files.existing.insert(dst)
+        }
+    }
 }
 
 @Suite struct UninstallerTests {
@@ -299,5 +314,164 @@ private struct Rig {
         #expect(out.record.items[1].failure == .manifestUpdateFailed)
         #expect(out.record.items[1].error == nil)
         #expect(out.failures.count == 1)
+    }
+
+    @Test func singleUninstallStillBehavesAsBefore() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let a = rig.leftover("/u/a"), b = rig.leftover("/Library/b", admin: true)
+        rig.priv.action = { rig.applyMoves($0) }
+        let out = try rig.uninstaller().uninstall(rig.scan([a, b]), selected: [a, b], icon: nil)
+        #expect(out.record.operation == .uninstall)
+        #expect(out.record.appName == "X")
+        #expect(out.record.items.allSatisfy { $0.state == .trashed })
+        #expect(rig.priv.calls.count == 1)
+        let saved = try rig.store.all()
+        #expect(saved.count == 1)
+        #expect(saved[0].operation == .uninstall)
+    }
+
+    @Test func batchWritesAllManifestsBeforeAnyMove() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let a = rig.leftover("/u/a"), b = rig.leftover("/u/b")
+        nonisolated(unsafe) var seen: [HistoryRecord] = []
+        rig.files.onFirstTrash = { seen = (try? rig.store.all()) ?? [] }
+        let outs = try rig.uninstaller().uninstall(batch: [
+            UninstallJob(scan: rig.scan([a], name: "A", bundleID: "com.a"), selected: [a], icon: nil),
+            UninstallJob(scan: rig.scan([b], name: "B", bundleID: "com.b"), selected: [b], icon: nil, operation: .reset),
+        ])
+        #expect(seen.count == 2)
+        #expect(seen.allSatisfy { $0.items.count == 1 && $0.items[0].state == .pending })
+        #expect(outs.count == 2)
+        #expect(outs.map(\.record.appName) == ["A", "B"])
+        #expect(outs.map(\.record.operation) == [.uninstall, .reset])
+        #expect(outs.allSatisfy { $0.record.items[0].state == .trashed })
+        #expect(Set(try rig.store.all().map(\.id)) == Set(outs.map(\.record.id)))
+    }
+
+    @Test func batchMovesNothingWhenAManifestCannotBeSaved() throws {
+        let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("uninst-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tmp, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tmp) }
+        let blocker = tmp.appendingPathComponent("file")
+        try Data().write(to: blocker)
+        let rig = Rig(storeDirectory: blocker.appendingPathComponent("sub"))
+        let a = rig.leftover("/u/a"), b = rig.leftover("/Library/b", admin: true)
+        #expect(throws: (any Error).self) {
+            try rig.uninstaller().uninstall(batch: [
+                UninstallJob(scan: rig.scan([a], name: "A", bundleID: "com.a"), selected: [a], icon: nil),
+                UninstallJob(scan: rig.scan([b], name: "B", bundleID: "com.b"), selected: [b], icon: nil),
+            ])
+        }
+        #expect(rig.files.trashCalls.isEmpty)
+        #expect(rig.priv.calls.isEmpty)
+        #expect(rig.cmds.calls.isEmpty)
+    }
+
+    @Test func batchUsesSinglePrivilegedRunAcrossApps() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let d = rig.leftover("/Library/LaunchDaemons/com.a.plist", kind: .launchDaemon, admin: true, label: "com.a")
+        let a = rig.leftover("/Library/A/data", kind: .packageFile, admin: true, pkg: "com.a.pkg")
+        let b = rig.leftover("/Library/B/stuff", admin: true)
+        rig.priv.action = { rig.applyMoves($0) }
+        let outs = try rig.uninstaller().uninstall(batch: [
+            UninstallJob(scan: rig.scan([d, a], name: "A", bundleID: "com.a"), selected: [d, a], icon: nil),
+            UninstallJob(scan: rig.scan([b], name: "B", bundleID: "com.b"), selected: [b], icon: nil),
+        ])
+        #expect(rig.priv.calls.count == 1)
+        let cmds = rig.priv.calls[0]
+        #expect(cmds.contains("[ ! -e '/trash/data' ] && /bin/mv -n '/Library/A/data' '/trash/data'"))
+        #expect(cmds.contains("[ ! -e '/trash/stuff' ] && /bin/mv -n '/Library/B/stuff' '/trash/stuff'"))
+        // Bootouts first, receipts last.
+        #expect(cmds[0].hasPrefix("/bin/launchctl bootout system '/Library/LaunchDaemons/com.a.plist'"))
+        #expect(cmds.last == "/usr/sbin/pkgutil --forget 'com.a.pkg'")
+        #expect(outs.allSatisfy { $0.failures.isEmpty && $0.record.items.allSatisfy { $0.state == .trashed } })
+    }
+
+    @Test func batchAdminTargetsUniqueAcrossJobs() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let a = rig.leftover("/Library/A/com.x.plist", admin: true)
+        let b = rig.leftover("/Library/B/com.x.plist", admin: true)
+        nonisolated(unsafe) var manifestTargets: Set<String> = []
+        rig.priv.action = { cmds in
+            manifestTargets = Set(((try? rig.store.all()) ?? []).flatMap { $0.items.compactMap(\.trashPath) })
+            rig.applyMoves(cmds)
+        }
+        let outs = try rig.uninstaller().uninstall(batch: [
+            UninstallJob(scan: rig.scan([a], name: "A", bundleID: "com.a"), selected: [a], icon: nil),
+            UninstallJob(scan: rig.scan([b], name: "B", bundleID: "com.b"), selected: [b], icon: nil),
+        ])
+        let targets = outs.map { $0.record.items[0].trashPath }
+        #expect(targets == ["/trash/com.x.plist", "/trash/com.x 2.plist"])
+        #expect(manifestTargets == ["/trash/com.x.plist", "/trash/com.x 2.plist"])
+        #expect(outs.allSatisfy { $0.record.items[0].state == .trashed })
+    }
+
+    @Test func batchRetargetsPromotedItemsUniquelyAcrossJobs() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let a = rig.leftover("/Applications/A/Helper.app", kind: .appBundle)
+        let b = rig.leftover("/Library/B/Helper.app", admin: true)
+        rig.files.permissionDenied.insert(a.url.path)
+        rig.priv.action = { rig.applyMoves($0) }
+        let outs = try rig.uninstaller().uninstall(batch: [
+            UninstallJob(scan: rig.scan([a], name: "A", bundleID: "com.a"), selected: [a], icon: nil),
+            UninstallJob(scan: rig.scan([b], name: "B", bundleID: "com.b"), selected: [b], icon: nil),
+        ])
+        #expect(rig.priv.calls.count == 1)
+        #expect(Set(outs.map { $0.record.items[0].trashPath }) == ["/trash/Helper.app", "/trash/Helper 2.app"])
+        #expect(outs.allSatisfy { $0.record.items[0].state == .trashed })
+    }
+
+    @Test func batchCancelledMarksAdminItemsOfAllJobsFailed() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let a = rig.leftover("/Library/a", admin: true), u = rig.leftover("/u/u")
+        let b = rig.leftover("/Library/b", admin: true)
+        rig.priv.action = { _ in throw PrivilegedError.cancelled }
+        let outs = try rig.uninstaller().uninstall(batch: [
+            UninstallJob(scan: rig.scan([a, u], name: "A", bundleID: "com.a"), selected: [a, u], icon: nil),
+            UninstallJob(scan: rig.scan([b], name: "B", bundleID: "com.b"), selected: [b], icon: nil),
+        ])
+        #expect(rig.priv.calls.count == 1)
+        #expect(outs[0].record.items[0].failure == .adminDenied)
+        #expect(outs[0].record.items[1].state == .trashed)
+        #expect(outs[1].record.items[0].failure == .adminDenied)
+        #expect(outs.map(\.failures.count) == [1, 1])
+        let saved = try rig.store.all()
+        #expect(saved.flatMap(\.items).filter { $0.state == .failed }.count == 2)
+    }
+
+    @Test func batchSkipsPathAlreadyTakenByEarlierJob() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let shared = rig.leftover("/Library/Shared/thing", admin: true)
+        let shared2 = Leftover(url: shared.url, kind: .caches, confidence: .certain, size: 5, requiresAdmin: true)
+        rig.priv.action = { rig.applyMoves($0) }
+        let outs = try rig.uninstaller().uninstall(batch: [
+            UninstallJob(scan: rig.scan([shared], name: "A", bundleID: "com.a"), selected: [shared], icon: nil),
+            UninstallJob(scan: rig.scan([shared2], name: "B", bundleID: "com.b"), selected: [shared2], icon: nil),
+        ])
+        #expect(rig.priv.calls[0].filter { $0.contains("/bin/mv") }.count == 1)
+        #expect(outs[0].record.items.count == 1)
+        #expect(outs[0].record.items[0].state == .trashed)
+        #expect(outs[1].record.items.isEmpty)
+    }
+
+    @Test func orphansJobKeepsCallerNameAndOperation() throws {
+        let rig = Rig()
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let a = rig.leftover("/Users/t/Library/Caches/com.gone.app")
+        let outs = try rig.uninstaller().uninstall(batch: [
+            UninstallJob(scan: rig.scan([a], name: "Orphaned leftovers", bundleID: "leftless.orphans"),
+                         selected: [a], icon: nil, operation: .orphans),
+        ])
+        #expect(outs[0].record.appName == "Orphaned leftovers")
+        #expect(outs[0].record.bundleID == "leftless.orphans")
+        #expect(outs[0].record.operation == .orphans)
+        #expect(try rig.store.all()[0].operation == .orphans)
     }
 }
