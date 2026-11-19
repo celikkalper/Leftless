@@ -155,7 +155,7 @@ private struct RRig {
         let c = rig.priv.calls[0]
         #expect(c[0] == "/bin/mkdir -p '/Library/App Support' && [ ! -e '/Library/App Support/it'\\''s' ] && /bin/mv -n '/Users/t/.Trash/it'\\''s' '/Library/App Support/it'\\''s'")
         #expect(c[1] == "/bin/mkdir -p '/Library/LaunchDaemons' && [ ! -e '/Library/LaunchDaemons/com.x.plist' ] && /bin/mv -n '/Users/t/.Trash/com.x.plist' '/Library/LaunchDaemons/com.x.plist'")
-        #expect(c[2] == "/bin/launchctl bootstrap system '/Library/LaunchDaemons/com.x.plist' || true")
+        #expect(c[2] == "( /bin/launchctl bootstrap system '/Library/LaunchDaemons/com.x.plist' || true )")
         #expect(c.count == 3)
         #expect(rig.files.moves.isEmpty)
         #expect(rig.cmds.calls.isEmpty)
@@ -228,5 +228,31 @@ private struct RRig {
         #expect(out.record.items.map(\.state) == [.trashed, .trashed, .failed, .pending, .restored])
         #expect(out.failures.count == 2)
         #expect(out.failures.allSatisfy { $0.error != nil })
+    }
+
+    @Test func joinedAdminBatchStopsAtFailureAndSkipsBootstrap() throws {
+        let rig = RRig()
+        let dir = rig.tmp.appendingPathComponent("sh")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: rig.tmp) }
+        let bad = rig.item(dir.appendingPathComponent("out/a").path, trash: dir.appendingPathComponent("missing-src").path, admin: true)
+        let agent = rig.item(dir.appendingPathComponent("out/b.plist").path, trash: dir.appendingPathComponent("missing-src2").path,
+                             kind: .launchDaemon, admin: true, domain: "system")
+        rig.priv.action = { _ in throw PrivilegedError.failed("x") }
+        _ = rig.restorer().restore(rig.record([bad, agent])) { _ in .skip }
+        let shell = rig.priv.calls[0].joined(separator: " && ")
+            .replacingOccurrences(of: "/bin/launchctl", with: "/bin/echo")
+        #expect(shell.contains("( /bin/echo bootstrap"))
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/bin/sh")
+        p.arguments = ["-c", shell]
+        let out = Pipe()
+        p.standardOutput = out
+        p.standardError = Pipe()
+        try p.run()
+        let text = String(decoding: out.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+        p.waitUntilExit()
+        #expect(p.terminationStatus != 0)
+        #expect(!text.contains("bootstrap"))
     }
 }

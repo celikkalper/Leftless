@@ -40,7 +40,7 @@ public struct Restorer: Sendable {
         var items = record.items
         var restored = 0, skipped = 0
         var failedIndices = Set<Int>()
-        var adminIndices: [Int] = []
+        var adminIndices: [(Int, String)] = []
         var replaceCommands: [String] = []
         var chosenTargets = Set<String>()
         let trashDirectory = environment.home.appendingPathComponent(".Trash", isDirectory: true)
@@ -70,7 +70,7 @@ public struct Restorer: Sendable {
                     }
                 }
             }
-            if item.requiresAdmin { adminIndices.append(index); continue }
+            if item.requiresAdmin { adminIndices.append((index, trashPath)); continue }
 
             do {
                 try files.createDirectory(original.deletingLastPathComponent())
@@ -90,15 +90,16 @@ public struct Restorer: Sendable {
 
         if !adminIndices.isEmpty {
             var batch = replaceCommands
-            for index in adminIndices {
+            for (index, trashPath) in adminIndices {
                 let item = items[index]
-                guard let trashPath = item.trashPath else { continue }
                 let parent = URL(fileURLWithPath: item.originalPath).deletingLastPathComponent().path
                 batch.append("/bin/mkdir -p \(ShellQuoting.quote(parent)) && [ ! -e \(ShellQuoting.quote(item.originalPath)) ] && /bin/mv -n \(ShellQuoting.quote(trashPath)) \(ShellQuoting.quote(item.originalPath))")
             }
-            for index in adminIndices {
+            for (index, _) in adminIndices {
                 if let domain = launchdDomain(for: items[index]) {
-                    batch.append("/bin/launchctl bootstrap \(domain) \(ShellQuoting.quote(items[index].originalPath)) || true")
+                    // Yürütücü komutları " && " ile birleştirir; `|| true` parantezlenmezse önceki
+                    // hataları yutar ve geri yüklenmemiş yollar için bootstrap çalışır.
+                    batch.append("( /bin/launchctl bootstrap \(domain) \(ShellQuoting.quote(items[index].originalPath)) || true )")
                 }
             }
             var privilegedError: String?
@@ -112,7 +113,7 @@ public struct Restorer: Sendable {
                 privilegedError = error.localizedDescription
             }
             // Zincir (&&) yarıda kesilmiş olabilir: durum dosya sisteminden belirlenir.
-            for index in adminIndices {
+            for (index, _) in adminIndices {
                 let original = URL(fileURLWithPath: items[index].originalPath)
                 let trashStillThere = items[index].trashPath.map { files.exists(URL(fileURLWithPath: $0)) } ?? false
                 if files.exists(original), !trashStillThere {
@@ -136,6 +137,6 @@ public struct Restorer: Sendable {
 
     private func launchdDomain(for item: HistoryItem) -> String? {
         guard item.kind == .launchAgent || item.kind == .launchDaemon else { return nil }
-        return item.launchdDomain ?? "gui/\(environment.uid)"
+        return item.launchdDomain ?? (item.kind == .launchDaemon ? "system" : "gui/\(environment.uid)")
     }
 }
