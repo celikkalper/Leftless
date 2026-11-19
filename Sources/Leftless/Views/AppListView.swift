@@ -11,44 +11,44 @@ struct AppListView: View {
 
     var body: some View {
         List(selection: selection) {
-            Section("Uygulamalar") {
+            Section("Apps") {
                 if model.isLoadingApps && model.apps.isEmpty {
                     ProgressView().controlSize(.small)
-                        .accessibilityLabel("Uygulamalar yükleniyor")
+                        .accessibilityLabel("Loading apps")
                 }
                 ForEach(model.visibleApps) { app in
                     AppRow(app: app).tag(Selection.app(app))
                 }
             }
             Section {
-                Label("Geçmiş", systemImage: "clock.arrow.circlepath")
+                Label("History", systemImage: "clock.arrow.circlepath")
                     .tag(Selection.history)
-                    .accessibilityLabel("Geçmiş")
+                    .accessibilityLabel("History")
             }
         }
         .listStyle(.sidebar)
         .disabled(model.isWorking)
-        .searchable(text: $model.searchText, placement: .sidebar, prompt: "Ara")
+        .searchable(text: $model.searchText, placement: .sidebar, prompt: "Search")
         .toolbar {
             ToolbarItem {
                 Menu {
-                    Picker("Sırala", selection: $model.sort) {
-                        Text("Ada göre").tag(AppListSort.name)
-                        Text("Boyuta göre").tag(AppListSort.size)
+                    Picker("Sort By", selection: $model.sort) {
+                        Text("Name").tag(AppListSort.name)
+                        Text("Size").tag(AppListSort.size)
                     }
                     .pickerStyle(.inline)
                 } label: {
-                    Label("Sırala", systemImage: "arrow.up.arrow.down")
+                    Label("Sort", systemImage: "arrow.up.arrow.down")
                 }
-                .accessibilityLabel("Sıralama")
+                .accessibilityLabel("Sort order")
             }
             ToolbarItem {
                 Button {
                     model.reloadApps()
                 } label: {
-                    Label("Yenile", systemImage: "arrow.clockwise")
+                    Label("Refresh", systemImage: "arrow.clockwise")
                 }
-                .accessibilityLabel("Uygulama listesini yenile")
+                .accessibilityLabel("Refresh app list")
             }
         }
     }

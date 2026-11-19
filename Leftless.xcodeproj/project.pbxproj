@@ -24,14 +24,17 @@
 		9D6DF1417D4F7646304BF3A6 /* ReceiptScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F14DCD72E89BE0908E99E7B /* ReceiptScannerTests.swift */; };
 		A4A632EEF909FAF208DAC562 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC75783F56DC8897AE3D8B51 /* OnboardingView.swift */; };
 		A924B122D59B09F47FDD3390 /* HistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8113A337C27CC7047D2294A5 /* HistoryStoreTests.swift */; };
+		AC039EECA331F43E9A971B2F /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4C7711F47F435BDB690948B3 /* Localizable.xcstrings */; };
 		AEA7F5CB856A3FB9B79055E2 /* LeftlessCore in Frameworks */ = {isa = PBXBuildFile; productRef = 68A6B1416CBDB8EBD31EF400 /* LeftlessCore */; };
 		B8C27FFFBBF916A4F2C58C35 /* ProtectedPathsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 061B3E8AF8554EE8D5EFF4AD /* ProtectedPathsTests.swift */; };
 		C58DC566BA0ECF134CEBFCCB /* RestorerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 789D494A0D4FDCED12983FA7 /* RestorerTests.swift */; };
 		D228B431FCB83A41A3B063E1 /* UninstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C0D7911E4AB96D6540E262 /* UninstallerTests.swift */; };
 		D87517FC28477C079FAB3798 /* AppInspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14FE338E8B6FFB2792FB4F4A /* AppInspectorTests.swift */; };
+		DB845F733B5A4E1BF4280ACB /* LocalizationCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB87572B111116301DD5F7B /* LocalizationCatalogTests.swift */; };
 		DC7AF2EC9A3E3320AFBD8C67 /* AppTerminator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A239AE492C93BE8F0B59D3 /* AppTerminator.swift */; };
 		ECFA1E88064CDAD1E29D3B71 /* EndToEndTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66C11FED791D8FD17F0D0F23 /* EndToEndTests.swift */; };
 		EDA298F9EE06FDD53163AFD8 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEA9DFBB1F025636B0512658 /* HistoryView.swift */; };
+		FC8EAC39C87AE57B2752D852 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 576EC41B059E20852C2D8CCC /* InfoPlist.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +44,8 @@
 		13666F95E5A37977E015C4C5 /* macos-apps */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "macos-apps"; path = .; sourceTree = SOURCE_ROOT; };
 		14FE338E8B6FFB2792FB4F4A /* AppInspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInspectorTests.swift; sourceTree = "<group>"; };
 		452A29380F5065D9D094CED9 /* ScanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDetailView.swift; sourceTree = "<group>"; };
+		4C7711F47F435BDB690948B3 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		576EC41B059E20852C2D8CCC /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		59BC287D9A4413B1414E673D /* LaunchdScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchdScannerTests.swift; sourceTree = "<group>"; };
 		66C11FED791D8FD17F0D0F23 /* EndToEndTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndToEndTests.swift; sourceTree = "<group>"; };
 		69A89CDA3D5B77A9AEE026F8 /* LeftlessApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftlessApp.swift; sourceTree = "<group>"; };
@@ -57,6 +62,7 @@
 		CC75783F56DC8897AE3D8B51 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		D29FED4CBAD0CA1DEB474D5A /* LeftoverListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftoverListView.swift; sourceTree = "<group>"; };
 		D3EF25EC56A1C43CBF3B3C8E /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		DDB87572B111116301DD5F7B /* LocalizationCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationCatalogTests.swift; sourceTree = "<group>"; };
 		E16629EF476AAC20BF9F466C /* Fixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fixtures.swift; sourceTree = "<group>"; };
 		E7C0D7911E4AB96D6540E262 /* UninstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UninstallerTests.swift; sourceTree = "<group>"; };
 		E959C2A1831D78F1B9444D4C /* FileOpsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOpsTests.swift; sourceTree = "<group>"; };
@@ -86,6 +92,7 @@
 		05E1481412CFB6BE0DB86E9D = {
 			isa = PBXGroup;
 			children = (
+				5FCE45B92C607A9A9FF6FB1D /* App */,
 				7CA3148131F17F3C0E431ECB /* Leftless */,
 				18FF273D6482898C03D4AC61 /* LeftlessCoreTests */,
 				234040A81EAA407BF537537F /* Packages */,
@@ -113,6 +120,7 @@
 				8113A337C27CC7047D2294A5 /* HistoryStoreTests.swift */,
 				59BC287D9A4413B1414E673D /* LaunchdScannerTests.swift */,
 				9FB498A3EF72DE013863B74D /* LeftoverScannerTests.swift */,
+				DDB87572B111116301DD5F7B /* LocalizationCatalogTests.swift */,
 				AC134C96C9EF5D24AEC91700 /* PresentationTests.swift */,
 				061B3E8AF8554EE8D5EFF4AD /* ProtectedPathsTests.swift */,
 				0F14DCD72E89BE0908E99E7B /* ReceiptScannerTests.swift */,
@@ -131,11 +139,20 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
+		5FCE45B92C607A9A9FF6FB1D /* App */ = {
+			isa = PBXGroup;
+			children = (
+				576EC41B059E20852C2D8CCC /* InfoPlist.xcstrings */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
 		7CA3148131F17F3C0E431ECB /* Leftless */ = {
 			isa = PBXGroup;
 			children = (
 				D3EF25EC56A1C43CBF3B3C8E /* AppModel.swift */,
 				69A89CDA3D5B77A9AEE026F8 /* LeftlessApp.swift */,
+				4C7711F47F435BDB690948B3 /* Localizable.xcstrings */,
 				0E13E983DCCCD4096F633CD9 /* Support */,
 				A8A0476B34347C8CBF620467 /* Views */,
 			);
@@ -192,6 +209,7 @@
 			buildConfigurationList = 1AE707260FDEAFD0FA634414 /* Build configuration list for PBXNativeTarget "Leftless" */;
 			buildPhases = (
 				7417D668F1881A5C8B1B452C /* Sources */,
+				E179FC8953F07ABA84CDDD57 /* Resources */,
 				8AC08EFCA7E417FDC561E270 /* Frameworks */,
 			);
 			buildRules = (
@@ -228,7 +246,13 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				de,
 				en,
+				es,
+				fr,
+				ja,
+				"pt-BR",
+				tr,
 			);
 			mainGroup = 05E1481412CFB6BE0DB86E9D;
 			minimizedProjectReferenceProxies = 1;
@@ -246,6 +270,18 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		E179FC8953F07ABA84CDDD57 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FC8EAC39C87AE57B2752D852 /* InfoPlist.xcstrings in Resources */,
+				AC039EECA331F43E9A971B2F /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		41F9FA44DF0765AE936D8800 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -259,6 +295,7 @@
 				A924B122D59B09F47FDD3390 /* HistoryStoreTests.swift in Sources */,
 				18937D936F7862270F5B3B42 /* LaunchdScannerTests.swift in Sources */,
 				3869DC80BD72CAC4172F52E2 /* LeftoverScannerTests.swift in Sources */,
+				DB845F733B5A4E1BF4280ACB /* LocalizationCatalogTests.swift in Sources */,
 				713A74BD3968C979115BD624 /* PresentationTests.swift in Sources */,
 				B8C27FFFBBF916A4F2C58C35 /* ProtectedPathsTests.swift in Sources */,
 				9D6DF1417D4F7646304BF3A6 /* ReceiptScannerTests.swift in Sources */,
@@ -339,6 +376,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -346,6 +384,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
 			};
@@ -477,12 +516,14 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
 			};

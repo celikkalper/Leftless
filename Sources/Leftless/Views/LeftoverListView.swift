@@ -31,10 +31,10 @@ struct LeftoverListView: View {
     private func groupHeader(_ group: LeftoverGroup) -> some View {
         HStack {
             Toggle(sources: group.items.map { binding(for: $0.id) }, isOn: \.self) {
-                Text("\(group.title) (\(group.items.count))").bold()
+                Text("\(group.title) (\(group.items.count.formatted()))").bold()
             }
             .toggleStyle(.checkbox)
-            .accessibilityLabel("\(group.title), \(group.items.count) öğe")
+            .accessibilityLabel("\(group.title), \(group.items.count) items")
             Spacer()
             Text(AppModel.formatSize(group.totalSize))
                 .foregroundStyle(.secondary)
@@ -71,7 +71,7 @@ private struct LeftoverRow: View {
                 HStack(spacing: 6) {
                     Text(item.url.lastPathComponent).lineLimit(1).truncationMode(.middle)
                     if item.confidence == .probable {
-                        Text("muhtemel")
+                        Text("possible")
                             .font(.caption2.weight(.medium))
                             .padding(.horizontal, 5)
                             .padding(.vertical, 1)
@@ -82,7 +82,7 @@ private struct LeftoverRow: View {
                         Image(systemName: "lock.fill")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                            .accessibilityLabel("Yönetici izni gerekir")
+                            .accessibilityLabel("Requires administrator permission")
                     }
                 }
                 if let note = item.note {
@@ -96,7 +96,7 @@ private struct LeftoverRow: View {
         }
         .help(item.url.path)
         .contextMenu {
-            Button("Finder'da Göster") {
+            Button("Show in Finder") {
                 NSWorkspace.shared.activateFileViewerSelecting([item.url])
             }
         }

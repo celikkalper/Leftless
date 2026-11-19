@@ -11,7 +11,8 @@ let package = Package(
     ],
     targets: [
         .target(name: "LeftlessCore", resources: [.process("Localizable.xcstrings")]),
-        .executableTarget(name: "Leftless", dependencies: ["LeftlessCore"]),
+        // The app's String Catalog is compiled by Xcode (project.yml); `swift run` shows the English source text.
+        .executableTarget(name: "Leftless", dependencies: ["LeftlessCore"], exclude: ["Localizable.xcstrings"]),
         .testTarget(name: "LeftlessCoreTests", dependencies: ["LeftlessCore"]),
     ]
 )

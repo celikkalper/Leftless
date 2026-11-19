@@ -134,11 +134,11 @@ final class AppModel {
                 return InstalledApp(info: info, bundleSize: directorySize(url))
             }.value
             guard let app = inspected else {
-                alertMessage = "Bu bir uygulama paketi gibi görünmüyor."
+                alertMessage = String(localized: "This doesn't look like an app.")
                 return
             }
             guard !Self.ownBundleIDs.contains(app.info.bundleID), !ProtectedPaths.isAppleBundleID(app.info.bundleID) else {
-                alertMessage = "Bu uygulama Leftless ile kaldırılamaz."
+                alertMessage = String(localized: "This app can't be uninstalled with Leftless.")
                 return
             }
             if !apps.contains(where: { $0.id == app.id }) { apps.append(app) }
@@ -160,7 +160,7 @@ final class AppModel {
         defer { isWorking = false }
         if quitFirst {
             guard await AppTerminator.quit(bundleID: plan.scan.app.bundleID, timeout: 5) else {
-                alertMessage = "\(plan.scan.app.name) kapatılamadı. Lütfen uygulamayı kapatıp yeniden deneyin."
+                alertMessage = String(localized: "\(plan.scan.app.name) couldn't be quit. Please quit the app and try again.")
                 return
             }
         }
@@ -181,7 +181,7 @@ final class AppModel {
             reloadHistory()
             reloadApps()
         case .failure:
-            alertMessage = "Geçmiş kaydı yazılamadı; hiçbir dosya taşınmadı."
+            alertMessage = String(localized: "Couldn't write the history record; no files were moved.")
         }
     }
 
@@ -221,10 +221,13 @@ final class AppModel {
             // Önceden sorulmamış bir çakışma çıkarsa güvenli tarafta kalınır: atla.
             return restorer.restore(r) { answers[$0.id] ?? .skip }
         }.value
-        var parts = ["\(outcome.restored) öğe geri yüklendi"]
-        if outcome.skipped > 0 { parts.append("\(outcome.skipped) öğe atlandı") }
-        if !outcome.failures.isEmpty { parts.append("\(outcome.failures.count) öğe geri yüklenemedi") }
-        restoreSummary = parts.joined(separator: ", ") + "."
+        // One full sentence per line: counts use the catalog's plural variants.
+        var lines = [String(localized: "\(outcome.restored) items were restored.")]
+        if outcome.skipped > 0 { lines.append(String(localized: "\(outcome.skipped) items were skipped.")) }
+        if !outcome.failures.isEmpty {
+            lines.append(String(localized: "\(outcome.failures.count) items couldn't be restored."))
+        }
+        restoreSummary = lines.joined(separator: "\n")
         isWorking = false   // yeniden tarama `select` ile yapılacağı için burada kapatılır
         if lastOutcome?.record.id == r.id { lastOutcome = nil }
         reloadHistory()
@@ -236,7 +239,7 @@ final class AppModel {
     }
 
     func deleteRecord(_ r: HistoryRecord) {
-        do { try store.delete(id: r.id) } catch { alertMessage = "Kayıt silinemedi." }
+        do { try store.delete(id: r.id) } catch { alertMessage = String(localized: "Couldn't delete the record.") }
         reloadHistory()
     }
 

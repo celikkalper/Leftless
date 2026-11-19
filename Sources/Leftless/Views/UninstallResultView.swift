@@ -15,21 +15,21 @@ struct UninstallResultView: View {
                     .font(.largeTitle)
                     .foregroundStyle(outcome.failures.isEmpty ? .green : .orange)
                     .accessibilityHidden(true)
-                Text("\(outcome.record.appName) kaldırıldı — \(trashed.count) öğe, \(AppModel.formatSize(trashed.reduce(0) { $0 + $1.size }))")
+                Text("\(outcome.record.appName) uninstalled — \(trashed.count) items, \(AppModel.formatSize(trashed.reduce(0) { $0 + $1.size }))")
                     .font(.title2.bold())
             }
             HStack {
-                Button("Geri Al") {
+                Button("Undo") {
                     Task { await model.restore(outcome.record) }
                 }
                 .disabled(trashed.isEmpty || model.isWorking)
-                .accessibilityLabel("Kaldırmayı geri al")
+                .accessibilityLabel("Undo uninstall")
                 if model.isWorking {
-                    ProgressView().controlSize(.small).accessibilityLabel("İşlem sürüyor")
+                    ProgressView().controlSize(.small).accessibilityLabel("In progress")
                 }
             }
             if !outcome.failures.isEmpty {
-                Text("Taşınamayanlar (\(outcome.failures.count))").font(.headline)
+                Text("Couldn't Be Moved (\(outcome.failures.count))").font(.headline)
                 List(outcome.failures) { item in
                     VStack(alignment: .leading, spacing: 2) {
                         Text(URL(fileURLWithPath: item.originalPath).lastPathComponent)
@@ -37,7 +37,7 @@ struct UninstallResultView: View {
                     }
                     .help([item.originalPath, Presentation.failureDetail(item)].compactMap { $0 }.joined(separator: "\n"))
                     .contextMenu {
-                        Button("Finder'da Göster") {
+                        Button("Show in Finder") {
                             NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: item.originalPath)])
                         }
                     }

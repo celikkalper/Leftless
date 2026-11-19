@@ -3,7 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>tr</string>
+	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>tr</string>
+		<string>de</string>
+		<string>fr</string>
+		<string>es</string>
+		<string>ja</string>
+		<string>pt-BR</string>
+	</array>
 	<key>CFBundleIdentifier</key>
 	<string>com.leftless.app</string>
 	<key>CFBundleName</key>
@@ -28,7 +38,7 @@
 	<array>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>Uygulama</string>
+			<string>Application</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -40,6 +50,6 @@
 		</dict>
 	</array>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Yönetici izni gerektiren dosyaları taşımak için</string>
+	<string>Leftless needs this to move files that require administrator permission.</string>
 </dict>
 </plist>

@@ -26,25 +26,25 @@ struct ScanDetailView: View {
                 Divider()
                 footer(scan)
             } else {
-                ProgressView("Kalıntılar aranıyor…")
+                ProgressView("Looking for leftovers…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .alert("Çöp Sepeti'ne Taşı", isPresented: presence($confirmPlan), presenting: confirmPlan) { plan in
-            Button("Taşı") { proceed(with: plan) }
-            Button("Vazgeç", role: .cancel) {}
+        .alert("Move to Trash", isPresented: presence($confirmPlan), presenting: confirmPlan) { plan in
+            Button("Move") { proceed(with: plan) }
+            Button("Cancel", role: .cancel) {}
         } message: { plan in
             Text(plan.summary.confirmationText(appName: plan.scan.app.name,
                                                formattedSize: AppModel.formatSize(plan.summary.totalSize)))
         }
         .alert(quitTitle, isPresented: presence($quitPlan), presenting: quitPlan) { plan in
-            Button("Kapat") { Task { await model.uninstall(plan, quitFirst: true) } }
-            Button("Vazgeç", role: .cancel) {}
+            Button("Quit") { Task { await model.uninstall(plan, quitFirst: true) } }
+            Button("Cancel", role: .cancel) {}
         }
     }
 
     private var quitTitle: String {
-        "\(quitPlan?.scan.app.name ?? "") açık. Kapatılsın mı?"
+        String(localized: "\(quitPlan?.scan.app.name ?? "") is open. Quit it?")
     }
 
     private func proceed(with plan: UninstallPlan) {
@@ -69,17 +69,17 @@ struct ScanDetailView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(scan.app.name).font(.title2.bold())
                 if let version = scan.app.version {
-                    Text("Sürüm \(version)").foregroundStyle(.secondary)
+                    Text("Version \(version)").foregroundStyle(.secondary)
                 }
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text(AppModel.formatSize(model.summary.totalSize))
                     .font(.title2.monospacedDigit())
-                Text("seçili").font(.caption).foregroundStyle(.secondary)
+                Text("selected").font(.caption).foregroundStyle(.secondary)
             }
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("Seçili toplam boyut \(AppModel.formatSize(model.summary.totalSize))")
+            .accessibilityLabel("Selected total size: \(AppModel.formatSize(model.summary.totalSize))")
         }
         .padding()
     }
@@ -90,9 +90,9 @@ struct ScanDetailView: View {
                 .foregroundStyle(.blue)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Bu uygulamaya veya üreticisine ait bir sistem uzantısı bulundu; macOS bunu Sistem Ayarları > Genel > Giriş Öğeleri ve Uzantılar üzerinden kaldırır.")
+                Text("A system extension from this app or its developer was found. macOS removes it in System Settings > General > Login Items & Extensions.")
                     .fixedSize(horizontal: false, vertical: true)
-                Text("\(extensions.count) uzantı")
+                Text("\(extensions.count) extensions")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -107,18 +107,18 @@ struct ScanDetailView: View {
 
     private func footer(_ scan: ScanResult) -> some View {
         HStack {
-            Text("\(model.summary.totalCount) / \(scan.leftovers.count) öğe seçili")
+            Text("\(model.summary.totalCount) of \(scan.leftovers.count) items selected")
                 .foregroundStyle(.secondary)
             Spacer()
             if model.isWorking {
                 ProgressView().controlSize(.small)
-                    .accessibilityLabel("İşlem sürüyor")
+                    .accessibilityLabel("In progress")
             }
-            Button("Çöp Sepeti'ne Taşı") { confirmPlan = UninstallPlan(scan: scan, checked: model.checked) }
+            Button("Move to Trash") { confirmPlan = UninstallPlan(scan: scan, checked: model.checked) }
                 .buttonStyle(.borderedProminent)
                 .disabled(model.summary.isEmpty || model.isWorking)
                 .keyboardShortcut(.delete, modifiers: .command)
-                .accessibilityLabel("Seçili öğeleri Çöp Sepeti'ne taşı")
+                .accessibilityLabel("Move selected items to the Trash")
         }
         .padding()
     }
@@ -128,17 +128,17 @@ struct ScanDetailView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Tam Disk Erişimi yok; bazı kalıntılar görünmeyebilir")
+                Text("No Full Disk Access; some leftovers may not be shown")
                 if let skipped = model.scan?.skippedLocations, !skipped.isEmpty {
-                    Text("Aranmayan yerler: \(skipped.joined(separator: "; "))")
+                    Text("Not searched: \(skipped.joined(separator: "; "))")
                         .font(.caption)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .accessibilityElement(children: .combine)
             Spacer()
-            Button("İzin Ver") { model.onboardingSkipped = false }
-                .accessibilityLabel("Tam Disk Erişimi izni ver")
+            Button("Grant Access") { model.onboardingSkipped = false }
+                .accessibilityLabel("Grant Full Disk Access")
         }
         .padding(.horizontal)
         .padding(.vertical, 6)

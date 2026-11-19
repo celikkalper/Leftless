@@ -1,56 +1,82 @@
 # Leftless
 
-macOS 15+ için bir uygulama kaldırıcı. Bir uygulamayı kaldırırken geride kalan önbellek, tercih, günlük, başlatma aracısı gibi artıkları bulur ve hepsini birlikte Çöp Sepeti'ne taşır. Hiçbir şey kalıcı olarak silinmez; her işlem Geçmiş'e kaydedilir ve geri alınabilir.
+An app uninstaller for macOS 15 and later. When you remove an app, Leftless finds what it leaves behind (caches, preferences, logs, launch agents and more) and moves all of it to the Trash together. Nothing is ever deleted permanently: every uninstall is recorded in History and can be undone.
 
-## Ne yapar?
+Available in English, Turkish, German, French, Spanish, Japanese and Portuguese (Brazil). Leftless follows the macOS system language; to choose a different language for Leftless only, use **System Settings → General → Language & Region → Applications**.
 
-- Kurulu uygulamaları listeler; bir uygulamayı listeden seçebilir ya da `.app` dosyasını pencereye / Dock simgesine sürükleyip bırakabilirsiniz.
-- Uygulamaya ait artıkları tarar ve her birini güven düzeyiyle gösterir: **kesin** olanlar varsayılan olarak seçilir, **olası** olanlar siz işaretleyene kadar seçilmez.
-- Seçilenleri Çöp Sepeti'ne taşır. Yönetici izni gerektiren öğeler için tek seferde parola istenir.
-- `com.apple.*` ve sistem klasörlerine asla dokunmaz.
+## What it does
 
-## Xcode'da açma
+- Lists installed apps. Pick one from the list, or drag an `.app` onto the window or the Dock icon.
+- Scans for the app's leftovers and shows how sure it is about each one: **certain** items are selected by default, **possible** items stay unselected until you tick them.
+- Moves the selected items to the Trash. Items that need administrator permission ask for your password once.
+- Never touches `com.apple.*` items or system folders.
 
-1. `Leftless.xcodeproj` dosyasına çift tıklayın.
-2. Şema olarak **Leftless** seçili olsun ve **⌘R** ile çalıştırın.
+## Opening in Xcode
 
-Proje `project.yml` dosyasından [XcodeGen](https://github.com/yonaskolb/XcodeGen) ile üretilir; yalnızca proje ayarlarını değiştirirseniz gerekir (`brew install xcodegen && xcodegen generate`). Swift Package Manager ile de çalışır: `swift run Leftless`, testler için `swift test`.
+1. Double-click `Leftless.xcodeproj`.
+2. Make sure the **Leftless** scheme is selected and press **⌘R**.
 
-## Universal .app üretme
+The project is generated from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen); you only need it if you change project settings (`brew install xcodegen && xcodegen generate`). Swift Package Manager works too: `swift run Leftless`, and `swift test` for the tests. Under SwiftPM the String Catalogs are not compiled, so the app shows its English source text; build with Xcode to get the translations.
+
+## Translations
+
+Strings live in String Catalogs with English keys: `Sources/Leftless/Localizable.xcstrings` (app), `Sources/LeftlessCore/Localizable.xcstrings` (core) and `App/InfoPlist.xcstrings` (Info.plist). `LocalizationCatalogTests` fails if any key is missing a language or a count string lacks plural forms. Translations were written by Claude; a review by native speakers is recommended before release.
+
+After adding or changing strings in the app, build once and merge the new keys into the catalog (Xcode does this itself when you build in the IDE):
+
+```sh
+xcodebuild -project Leftless.xcodeproj -scheme Leftless -destination 'platform=macOS' build
+xcrun xcstringstool sync Sources/Leftless/Localizable.xcstrings \
+  --stringsdata ~/Library/Developer/Xcode/DerivedData/Leftless-*/Build/Intermediates.noindex/Leftless.build/Debug/Leftless.build/Objects-normal/*/*.stringsdata
+```
+
+## Building a universal .app
 
 ```sh
 ./scripts/build-universal.sh
 ```
 
-Çıktı: `build/Leftless.app` (arm64 + x86_64, ad-hoc imzalı). Denetlemek için:
+Output: `build/Leftless.app` (arm64 + x86_64, ad-hoc signed). To check it:
 
 ```sh
 lipo -info "build/Leftless.app/Contents/MacOS/Leftless"
 codesign -v "build/Leftless.app"
 ```
 
-> Başka Mac'lara dağıtmak için uygulamanın **Developer ID** ile imzalanması ve Apple tarafından **noter onayından (notarization)** geçirilmesi gerekir. Ad-hoc imzalı uygulama yalnızca derlediğiniz Mac'te sorunsuz açılır.
+> To distribute Leftless to other Macs it must be signed with a **Developer ID** and **notarized** by Apple. An ad-hoc signed app only opens without warnings on the Mac that built it.
 
-## Tam Disk Erişimi
+## Full Disk Access
 
-Uygulama sandbox dışında çalışır. Bazı klasörlerin (Posta, Safari verileri, Konteynerler vb.) taranabilmesi için **Tam Disk Erişimi** gerekir:
+Leftless runs outside the sandbox. Some folders (Mail, Safari data, Containers and so on) can only be scanned with **Full Disk Access**:
 
-1. **Sistem Ayarları → Gizlilik ve Güvenlik → Tam Disk Erişimi**
-2. **+** düğmesiyle Leftless'ı ekleyin ve anahtarı açın.
-3. Uygulamayı yeniden başlatın.
+1. Open **System Settings → Privacy & Security → Full Disk Access**.
+2. Click **+**, add Leftless and turn it on.
+3. Restart Leftless.
 
-İzin vermezseniz uygulama yine çalışır, ancak bazı artıklar görünmeyebilir; pencerede bir uyarı şeridi gösterilir.
+Without it the app still works, but some leftovers may not be shown; a warning bar appears in the window.
 
-## Geri alma ve Geçmiş
+> **Upgrading from Kalıntısız:** the bundle ID changed to `com.leftless.app`, so Full Disk Access granted to the old app does not carry over. Grant it again to Leftless (you can remove the old Kalıntısız entry). Your existing History is moved over automatically on first launch.
 
-Her kaldırma işleminden önce hangi dosyanın nereye taşınacağı diske kaydedilir. **Geçmiş** sekmesinde her kayıt "Uygulama adı — N öğe" olarak listelenir. **Geri Yükle** dediğinizde dosyalar Çöp Sepeti'nden özgün yollarına taşınır. Aynı yolda başka bir dosya varsa atlama ya da değiştirme seçeneği sorulur; başlatma aracıları geri yüklenince yeniden yüklenir. Çöp Sepeti'ni boşalttıysanız ilgili öğeler geri yüklenemez ve kayıtta bu belirtilir.
+## Undo and History
 
-## Uçtan uca duman testi (isteğe bağlı)
+Before each uninstall, Leftless writes to disk which file is going where. In **History**, each record is listed as "App name — N items". **Restore** moves the files from the Trash back to their original locations. If something else now exists at the same path, you are asked whether to skip or replace it; launch agents are loaded again after they are restored. If you have emptied the Trash, those items can no longer be restored and the record says so.
 
-Sahte bir uygulama (`~/Applications/LeftlessTest.app`) ve artıkları ile tüm akışı (tara → kaldır → geri yükle) gerçek ortamda dener, sonunda sahte dosyaları siler:
+## End-to-end smoke test (optional)
+
+Runs the whole flow (scan → uninstall → restore) for real against a fake app (`~/Applications/LeftlessTest.app`) and its leftovers, then deletes the fake files:
 
 ```sh
 LEFTLESS_E2E=1 swift test --filter EndToEnd
 ```
 
-Ortam değişkeni olmadan bu test atlanır.
+Without the environment variable this test is skipped.
+
+## Türkçe
+
+Leftless (eski adıyla Kalıntısız), macOS 15 ve sonrası için bir uygulama kaldırıcıdır. Kaldırdığınız uygulamanın geride bıraktığı önbellek, tercih, günlük ve başlatma aracısı gibi kalıntıları bulur ve hepsini birlikte Çöp Sepeti'ne taşır. Hiçbir şey kalıcı olarak silinmez. Uygulama macOS'un sistem dilini kullanır; Türkçe arayüz için ayrıca bir şey yapmanız gerekmez.
+
+- **Xcode'da açma:** `Leftless.xcodeproj` dosyasına çift tıklayın, **Leftless** şemasını seçin ve **⌘R** ile çalıştırın. Proje `project.yml` dosyasından XcodeGen ile üretilir (`xcodegen generate`). `swift run Leftless` ile de çalışır, ancak çeviriler yalnızca Xcode ile derlenince görünür; SwiftPM ile arayüz İngilizce açılır.
+- **Universal .app:** `./scripts/build-universal.sh` komutu `build/Leftless.app` dosyasını üretir (arm64 + x86_64, ad-hoc imzalı).
+- **Tam Disk Erişimi:** **Sistem Ayarları → Gizlilik ve Güvenlik → Tam Disk Erişimi** bölümünde **+** ile Leftless'ı ekleyip açın, sonra uygulamayı yeniden başlatın. Paket kimliği `com.leftless.app` olarak değiştiği için **Kalıntısız'a verdiğiniz izin Leftless'a geçmez; izni yeniden vermeniz gerekir.** Eski geçmişiniz ilk açılışta otomatik olarak taşınır.
+- **Geçmiş ve geri alma:** Her kaldırmadan önce hangi dosyanın nereye taşınacağı diske kaydedilir. **Geçmiş** bölümünde **Geri Yükle** dediğinizde dosyalar Çöp Sepeti'nden özgün yerlerine döner. Çöp Sepeti'ni boşalttıysanız ilgili öğeler geri yüklenemez.
+- **Dağıtım:** Başka Mac'lara dağıtmak için uygulamanın **Developer ID** ile imzalanması ve Apple'ın **noter onayından (notarization)** geçmesi gerekir. Ad-hoc imzalı uygulama yalnızca derlendiği Mac'te sorunsuz açılır.

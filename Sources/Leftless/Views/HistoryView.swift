@@ -8,8 +8,8 @@ struct HistoryView: View {
     var body: some View {
         Group {
             if model.history.isEmpty {
-                ContentUnavailableView("Geçmiş boş", systemImage: "clock",
-                                       description: Text("Kaldırdığınız uygulamalar burada listelenir."))
+                ContentUnavailableView("No History", systemImage: "clock",
+                                       description: Text("Apps you uninstall are listed here."))
             } else {
                 List(model.history) { record in
                     HistoryRow(record: record, status: model.historyStatus[record.id] ?? .unrecoverable,
@@ -17,12 +17,12 @@ struct HistoryView: View {
                         Task { await model.restore(record) }
                     }
                     .contextMenu {
-                        Button("Kaydı Sil", role: .destructive) { model.deleteRecord(record) }
+                        Button("Delete Record", role: .destructive) { model.deleteRecord(record) }
                     }
                 }
             }
         }
-        .navigationTitle("Geçmiş")
+        .navigationTitle("History")
         .onAppear { model.reloadHistory() }
     }
 }
@@ -33,7 +33,8 @@ private struct HistoryRow: View {
     let isWorking: Bool
     let onRestore: () -> Void
 
-    private static let dayMonth = Date.FormatStyle().day().month(.wide).locale(Locale(identifier: "tr_TR"))
+    /// Day and month in the user's locale (e.g. "20 November", "20. November", "11月20日").
+    private static let dayMonth = Date.FormatStyle().day().month(.wide)
 
     private var canRestore: Bool {
         switch status {
@@ -44,10 +45,10 @@ private struct HistoryRow: View {
 
     private var badge: (String, Color) {
         switch status {
-        case .restorable: ("Geri yüklenebilir", .green)
-        case .partial: ("Kısmen", .orange)
-        case .unrecoverable: ("Artık geri alınamaz", .secondary)
-        case .restored: ("Geri yüklendi", .blue)
+        case .restorable: (String(localized: "Restorable"), .green)
+        case .partial: (String(localized: "Partly restorable"), .orange)
+        case .unrecoverable: (String(localized: "No longer restorable"), .secondary)
+        case .restored: (String(localized: "Restored"), .blue)
         }
     }
 
@@ -58,7 +59,7 @@ private struct HistoryRow: View {
                 .frame(width: 32, height: 32)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(record.appName) — \(record.items.count) öğe — \(record.date.formatted(Self.dayMonth))")
+                Text("\(record.appName) — \(record.items.count) items — \(record.date.formatted(Self.dayMonth))")
                 Text(AppModel.formatSize(record.totalSize))
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -70,10 +71,10 @@ private struct HistoryRow: View {
                 .padding(.vertical, 2)
                 .background(badge.1.opacity(0.15), in: Capsule())
                 .foregroundStyle(badge.1)
-                .accessibilityLabel("Durum: \(badge.0)")
-            Button("Geri Yükle", action: onRestore)
+                .accessibilityLabel("Status: \(badge.0)")
+            Button("Restore", action: onRestore)
                 .disabled(!canRestore || isWorking)
-                .accessibilityLabel("\(record.appName) uygulamasını geri yükle")
+                .accessibilityLabel("Restore \(record.appName)")
         }
         .padding(.vertical, 2)
     }
@@ -98,23 +99,24 @@ private struct RestoreConflictAlert: ViewModifier {
 
     private func title(_ pending: PendingRestore?) -> String {
         guard let conflicts = pending?.conflicts, !conflicts.isEmpty else { return "" }
-        return conflicts.count == 1 ? "\(conflicts[0].displayLabel) zaten var"
-                                    : "\(conflicts.count) öğe zaten var"
+        return conflicts.count == 1 ? String(localized: "\(conflicts[0].displayLabel) already exists")
+                                    : String(localized: "\(conflicts.count) items already exist")
     }
 
     private func message(_ pending: PendingRestore) -> String {
         guard pending.conflicts.count > 1 else {
-            return "Çöp Sepeti'ndeki kopya geri yüklensin mi? Değiştir derseniz mevcut öğe Çöp Sepeti'ne taşınır."
+            return String(localized: "Restore the copy from the Trash? If you choose Replace, the existing item will be moved to the Trash.")
         }
-        return pending.conflicts.map { "\($0.displayLabel) zaten var" }.joined(separator: "\n")
-            + "\n\nSeçiminiz bu öğelerin tümüne uygulanır. Değiştir derseniz mevcut öğeler Çöp Sepeti'ne taşınır."
+        let lines = pending.conflicts.map { String(localized: "\($0.displayLabel) already exists") }
+        let note = String(localized: "Your choice applies to all of these items. If you choose Replace, the existing items will be moved to the Trash.")
+        return (lines + ["", note]).joined(separator: "\n")
     }
 
     func body(content: Content) -> some View {
         content.alert(title(model.pendingRestore), isPresented: $model.showsRestoreConflicts, presenting: model.pendingRestore) { pending in
-            Button("Atla") { Task { await model.resolveRestore(pending, choice: .skip) } }
-            Button("Değiştir") { Task { await model.resolveRestore(pending, choice: .replace) } }
-            Button("Vazgeç", role: .cancel) {}
+            Button("Skip") { Task { await model.resolveRestore(pending, choice: .skip) } }
+            Button("Replace") { Task { await model.resolveRestore(pending, choice: .replace) } }
+            Button("Cancel", role: .cancel) {}
         } message: { pending in
             Text(message(pending))
         }

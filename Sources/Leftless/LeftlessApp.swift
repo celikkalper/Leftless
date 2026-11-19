@@ -66,13 +66,13 @@ struct ContentView: View {
             return urls.contains { $0.pathExtension == "app" }
         }
         .restoreConflictAlert(model: model)
-        .alert("Bir sorun oluştu", isPresented: $model.showsAlert) {
-            Button("Tamam", role: .cancel) {}
+        .alert("Something Went Wrong", isPresented: $model.showsAlert) {
+            Button("OK", role: .cancel) {}
         } message: {
             Text(model.alertMessage ?? "")
         }
-        .alert("Geri yükleme tamamlandı", isPresented: $model.showsRestoreSummary) {
-            Button("Tamam", role: .cancel) {}
+        .alert("Restore Complete", isPresented: $model.showsRestoreSummary) {
+            Button("OK", role: .cancel) {}
         } message: {
             Text(model.restoreSummary ?? "")
         }
@@ -86,9 +86,9 @@ struct ContentView: View {
             HistoryView(model: model)
         case nil:
             ContentUnavailableView {
-                Label("Bir uygulama seçin", systemImage: "trash.square")
+                Label("Select an App", systemImage: "trash.square")
             } description: {
-                Text("Kaldırmak istediğiniz uygulamayı listeden seçin ya da bu pencereye sürükleyin.")
+                Text("Choose the app you want to uninstall from the list, or drag it into this window.")
             }
         }
     }

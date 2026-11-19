@@ -10,31 +10,31 @@ struct OnboardingView: View {
                 .font(.system(size: 56))
                 .foregroundStyle(.tint)
                 .accessibilityHidden(true)
-            Text("Tam Disk Erişimi gerekiyor")
+            Text("Full Disk Access Required")
                 .font(.largeTitle.bold())
 
             VStack(alignment: .leading, spacing: 18) {
-                step(1, "Neden gerekli?",
-                     "Uygulamaların bıraktığı bazı dosyalar korunan klasörlerde durur. Leftless bunları ancak Tam Disk Erişimi ile görebilir; hiçbir şey izniniz olmadan taşınmaz.")
-                step(2, "Sistem Ayarları'nı açın", nil) {
-                    Button("Sistem Ayarları'nı Aç") { FullDiskAccess.openSettings() }
+                step(1, "Why is it needed?",
+                     "Some files that apps leave behind are in protected folders. Leftless can see them only with Full Disk Access. Nothing is moved without your permission.")
+                step(2, "Go to System Settings", nil) {
+                    Button("Open System Settings") { FullDiskAccess.openSettings() }
                         .buttonStyle(.borderedProminent)
-                        .accessibilityLabel("Sistem Ayarları'nda Tam Disk Erişimi bölümünü aç")
+                        .accessibilityLabel("Open Full Disk Access in System Settings")
                 }
-                step(3, "+ ile Leftless'ı ekle ve aç",
-                     "Listede Leftless'ı açık konuma getirin. İzin verildiğinde bu ekran kendiliğinden kapanır.")
+                step(3, "Add Leftless with + and turn it on",
+                     "Turn Leftless on in the list. This screen closes by itself once access is granted.")
             }
             .frame(maxWidth: 480)
 
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
                     .accessibilityHidden(true)
-                Text("İzin bekleniyor…").foregroundStyle(.secondary)
+                Text("Waiting for permission…").foregroundStyle(.secondary)
             }
 
-            Button("Şimdilik atla") { model.onboardingSkipped = true }
+            Button("Skip for Now") { model.onboardingSkipped = true }
                 .buttonStyle(.link)
-                .accessibilityLabel("Tam Disk Erişimi olmadan devam et")
+                .accessibilityLabel("Continue without Full Disk Access")
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -46,14 +46,14 @@ struct OnboardingView: View {
         }
     }
 
-    private func step(_ number: Int, _ title: String, _ detail: String?) -> some View {
+    private func step(_ number: Int, _ title: LocalizedStringResource, _ detail: LocalizedStringResource?) -> some View {
         step(number, title, detail) { EmptyView() }
     }
 
-    private func step<Accessory: View>(_ number: Int, _ title: String, _ detail: String?,
+    private func step<Accessory: View>(_ number: Int, _ title: LocalizedStringResource, _ detail: LocalizedStringResource?,
                                        @ViewBuilder accessory: () -> Accessory) -> some View {
         HStack(alignment: .top, spacing: 12) {
-            Text("\(number)")
+            Text(number, format: .number)
                 .font(.headline)
                 .frame(width: 28, height: 28)
                 .background(Circle().fill(.tint.opacity(0.15)))
@@ -67,6 +67,6 @@ struct OnboardingView: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Adım \(number): \(title)")
+        .accessibilityLabel("Step \(number.formatted()): \(String(localized: title))")
     }
 }
