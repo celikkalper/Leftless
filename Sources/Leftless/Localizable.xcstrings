@@ -167,6 +167,200 @@
         }
       }
     },
+    "%@ left %lld items" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ hat %#@count@ hinterlassen"
+          },
+          "substitutions" : {
+            "count" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg Objekt"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg Objekte"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ left %#@count@"
+          },
+          "substitutions" : {
+            "count" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg item"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg items"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ ha dejado %#@count@"
+          },
+          "substitutions" : {
+            "count" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ítem"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ítems"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ a laissé %#@count@"
+          },
+          "substitutions" : {
+            "count" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg élément"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg éléments"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ が %#@count@を残しています"
+          },
+          "substitutions" : {
+            "count" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg 項目"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ deixou %#@count@"
+          },
+          "substitutions" : {
+            "count" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg item"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg itens"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ geride %#@count@ bıraktı"
+          },
+          "substitutions" : {
+            "count" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg öğe"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg öğe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%@ uninstalled — %lld items, %@" : {
       "localizations" : {
         "de" : {
@@ -2389,6 +2583,46 @@
         }
       }
     },
+    "Allow Leftless in Login Items so it can keep watching after you log in. Until then, it watches while it's open." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erlaube Leftless unter „Anmeldeobjekte“, damit es nach der Anmeldung weiter überwachen kann. Bis dahin überwacht es nur, solange es geöffnet ist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite Leftless en Ítems de inicio para que siga vigilando después de iniciar sesión. Hasta entonces, solo vigila mientras está abierto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisez Leftless dans Ouverture pour qu'il continue la surveillance après l'ouverture de session. D'ici là, il surveille uniquement lorsqu'il est ouvert."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ログイン後も監視を続けられるように、「ログイン項目」でLeftlessを許可してください。それまでは、開いている間だけ監視します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permita o Leftless em Itens de Início para que ele continue monitorando depois que você iniciar a sessão. Até lá, ele monitora apenas enquanto estiver aberto."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oturum açtıktan sonra da izlemeye devam edebilmesi için Giriş Öğeleri'nde Leftless'a izin verin. O zamana kadar yalnızca açıkken izler."
+          }
+        }
+      }
+    },
     "Apps" : {
       "localizations" : {
         "de" : {
@@ -2545,6 +2779,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kaldırmak istediğiniz uygulamayı listeden seçin ya da bu pencereye sürükleyin."
+          }
+        }
+      }
+    },
+    "Clean Up" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufräumen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nettoyer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリーンアップ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpar"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temizle"
           }
         }
       }
@@ -3443,6 +3717,86 @@
         }
       }
     },
+    "Leftless can't read the Trash. Check Full Disk Access, then try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless kann den Papierkorb nicht lesen. Prüfe den Festplattenvollzugriff und versuche es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless no puede leer la Papelera. Comprueba el acceso total al disco y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless ne peut pas lire la corbeille. Vérifiez l'accès complet au disque, puis réessayez."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftlessはゴミ箱を読み取れません。フルディスクアクセスを確認してから、もう一度お試しください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Leftless não consegue ler o Lixo. Verifique o acesso total ao disco e tente novamente."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless Çöp Sepeti'ni okuyamıyor. Tam Disk Erişimi'ni kontrol edip yeniden deneyin."
+          }
+        }
+      }
+    },
+    "Leftless couldn't be added to Login Items, so it watches only while it's open." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless konnte nicht zu den Anmeldeobjekten hinzugefügt werden und überwacht daher nur, solange es geöffnet ist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido añadir Leftless a Ítems de inicio, así que solo vigila mientras está abierto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless n'a pas pu être ajouté à Ouverture ; il surveille donc uniquement lorsqu'il est ouvert."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftlessをログイン項目に追加できませんでした。そのため、開いている間だけ監視します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível adicionar o Leftless aos Itens de Início, então ele monitora apenas enquanto estiver aberto."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless Giriş Öğeleri'ne eklenemedi; bu nedenle yalnızca açıkken izler."
+          }
+        }
+      }
+    },
     "Leftless looks in your Library for files left behind by apps that are no longer on this Mac. Nothing is selected or moved until you choose." : {
       "localizations" : {
         "de" : {
@@ -3479,6 +3833,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Leftless, Kitaplık klasörünüzde artık bu Mac'te olmayan uygulamalardan kalan dosyaları arar. Siz seçmedikçe hiçbir şey seçilmez veya taşınmaz."
+          }
+        }
+      }
+    },
+    "Leftless needs Full Disk Access to see what's in the Trash." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless benötigt Festplattenvollzugriff, um den Inhalt des Papierkorbs zu sehen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless necesita acceso total al disco para ver lo que hay en la Papelera."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless a besoin de l'accès complet au disque pour voir le contenu de la corbeille."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ゴミ箱の中身を確認するには、Leftlessにフルディスクアクセスが必要です。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Leftless precisa de acesso total ao disco para ver o que há no Lixo."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless'ın Çöp Sepeti'ndekileri görebilmesi için Tam Disk Erişimi gerekir."
           }
         }
       }
@@ -4175,6 +4569,46 @@
         }
       }
     },
+    "Notifications are turned off for Leftless. Turn them on in System Settings, then try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungen sind für Leftless deaktiviert. Aktiviere sie in den Systemeinstellungen und versuche es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las notificaciones están desactivadas para Leftless. Actívalas en Ajustes del Sistema y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les notifications sont désactivées pour Leftless. Activez-les dans Réglages Système, puis réessayez."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftlessの通知がオフになっています。「システム設定」でオンにしてから、もう一度お試しください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As notificações estão desativadas para o Leftless. Ative-as nos Ajustes do Sistema e tente novamente."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftless için bildirimler kapalı. Sistem Ayarları'nda açıp yeniden deneyin."
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "de" : {
@@ -4251,6 +4685,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sistem Ayarları'nda Tam Disk Erişimi bölümünü aç"
+          }
+        }
+      }
+    },
+    "Open Login Items Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen für Anmeldeobjekte öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ajustes de Ítems de inicio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les réglages Ouverture"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ログイン項目の設定を開く"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Ajustes de Itens de Início"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giriş Öğeleri Ayarlarını Aç"
           }
         }
       }
@@ -5711,6 +6185,46 @@
         }
       }
     },
+    "They take up %@. Click Clean Up to review them." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie belegen %@. Klicke auf „Aufräumen“, um sie zu prüfen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocupan %@. Haz clic en Limpiar para revisarlos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ils occupent %@. Cliquez sur Nettoyer pour les examiner."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合計 %@ を使用しています。確認するには「クリーンアップ」をクリックしてください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eles ocupam %@. Clique em Limpar para revisá-los."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toplam %@ yer kaplıyorlar. Gözden geçirmek için Temizle'yi tıklayın."
+          }
+        }
+      }
+    },
     "This app can't be uninstalled with Leftless." : {
       "localizations" : {
         "de" : {
@@ -5747,6 +6261,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bu uygulama Leftless ile kaldırılamaz."
+          }
+        }
+      }
+    },
+    "This app is no longer in the Trash." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App befindet sich nicht mehr im Papierkorb."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app ya no está en la Papelera."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette app ne se trouve plus dans la corbeille."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアプリはもうゴミ箱にありません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este app não está mais no Lixo."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu uygulama artık Çöp Sepeti'nde değil."
           }
         }
       }
@@ -6073,6 +6627,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "İzin bekleniyor…"
+          }
+        }
+      }
+    },
+    "Watch the Trash for deleted apps" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Papierkorb auf gelöschte Apps überwachen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigilar la Papelera en busca de apps eliminadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Surveiller la corbeille pour détecter les apps supprimées"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除されたアプリがないかゴミ箱を監視"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monitorar o Lixo em busca de apps apagados"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silinen uygulamalar için Çöp Sepeti'ni izle"
+          }
+        }
+      }
+    },
+    "When you move an app to the Trash, Leftless lets you know if it left files behind, so you can review and remove them. Leftless opens at login, without a window, to keep watching." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn du eine App in den Papierkorb legst, teilt Leftless dir mit, ob sie Dateien hinterlassen hat, damit du sie prüfen und entfernen kannst. Leftless wird bei der Anmeldung ohne Fenster geöffnet, um weiter zu überwachen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando trasladas una app a la Papelera, Leftless te avisa si ha dejado archivos para que puedas revisarlos y eliminarlos. Leftless se abre al iniciar sesión, sin ventana, para seguir vigilando."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lorsque vous placez une app dans la corbeille, Leftless vous signale si elle a laissé des fichiers, afin que vous puissiez les examiner et les supprimer. Leftless s'ouvre à l'ouverture de session, sans fenêtre, pour poursuivre la surveillance."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリをゴミ箱に入れたときにファイルが残っていると、Leftlessが知らせるので、確認して削除できます。監視を続けるため、Leftlessはログイン時にウインドウなしで起動します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando você move um app para o Lixo, o Leftless avisa se ele deixou arquivos para trás, para que você possa revisá-los e removê-los. O Leftless abre ao iniciar a sessão, sem janela, para continuar monitorando."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir uygulamayı Çöp Sepeti'ne taşıdığınızda, geride dosya bıraktıysa Leftless size bildirir; böylece bunları gözden geçirip kaldırabilirsiniz. İzlemeye devam etmek için Leftless oturum açılışında penceresiz açılır."
           }
         }
       }

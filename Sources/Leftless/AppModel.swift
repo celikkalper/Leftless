@@ -197,7 +197,10 @@ final class AppModel {
                     launchd: LaunchdScanner(environment: env),
                     receipts: ReceiptScanner(environment: env, provider: PkgutilReceiptProvider()),
                     commands: commands, restricted: restricted)
-                return scanner.scan(info)
+                let result = scanner.scan(info)
+                // An app that is already in the Trash (opened from a Trash-watch notification) is never offered
+                // for moving again: only its leftovers are shown.
+                return TrashWatch.isInTrash(info.url, home: env.home) ? TrashWatch.removingAppBundle(from: result) : result
             }.value
             guard scanTokens[app.id] == token else { return }
             scanTokens[app.id] = nil
@@ -234,6 +237,24 @@ final class AppModel {
             if !apps.contains(where: { $0.id == app.id }) { apps.append(app) }
             await select(app)
         }
+    }
+
+    /// Shows the leftovers of an app that was moved to the Trash (from a Trash-watch notification) as the
+    /// selected app on the Apps tab; the usual review and confirmation apply. Nothing happens while working.
+    func reviewTrashedApp(at url: URL) async {
+        guard !isWorking, !isDemo else { return }
+        tab = .apps
+        let inspected = await Task.detached { () -> InstalledApp? in
+            guard FileManager.default.fileExists(atPath: url.path),
+                  let info = try? AppInspector(commands: ProcessCommandRunner()).inspect(url, includeTeamID: false)
+            else { return nil }
+            return InstalledApp(info: info, bundleSize: directorySize(url))
+        }.value
+        guard let app = inspected else {
+            alertMessage = String(localized: "This app is no longer in the Trash.")
+            return
+        }
+        await select([app.id], known: [app])
     }
 
     // MARK: - Kaldırma

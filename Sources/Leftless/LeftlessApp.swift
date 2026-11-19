@@ -1,10 +1,19 @@
 import AppKit
 import LeftlessCore
 import SwiftUI
+import UserNotifications
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model: AppModel
+    let trashWatcher = TrashWatcher()
+    /// Launched at login with Trash watching on: no window and no Dock icon until the user opens Leftless
+    /// (or clicks a notification); closing the window goes back to the background instead of quitting.
+    private var runsInBackground = false
+    private var launchedAtLogin = false
+    private weak var mainWindow: NSWindow?
+    private var openMainWindow: OpenWindowAction?
+    private var mainWindowCloseObserver: (any NSObjectProtocol)?
 
     override init() {
         // Eski "Kalintisiz" geçmiş klasörü, model geçmişi okumadan önce taşınır; hata olursa geçmiş boş başlar.
@@ -14,10 +23,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         super.init()
     }
 
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        // The delegate must be set before launching finishes to receive a click that launched the app.
+        if TrashNotifications.isAvailable {
+            UNUserNotificationCenter.current().delegate = self
+            TrashNotifications.registerCategory()
+        }
+        launchedAtLogin = LoginItem.isLaunchEventFromLogin()
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // `swift run` ile paketsiz çalışırken pencerenin öne gelmesi için.
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate()
+        launchedAtLogin = launchedAtLogin || LoginItem.isLaunchEventFromLogin()
+        let watching = trashWatcher.startIfEnabled()
+        if launchedAtLogin && watching {
+            runsInBackground = true
+            NSApp.setActivationPolicy(.accessory)
+            hideMainWindow()
+        } else {
+            // `swift run` ile paketsiz çalışırken pencerenin öne gelmesi için.
+            NSApp.setActivationPolicy(.regular)
+            NSApp.activate()
+        }
         #if DEBUG
         _ = Screenshots.runIfRequested()
         #endif
@@ -31,9 +57,83 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Atlanan izin sonradan verilirse sarı şerit kalksın diye her öne gelişte yeniden kontrol edilir.
     func applicationDidBecomeActive(_ notification: Notification) {
         model.refreshFullDiskAccess()
+        // Full Disk Access granted later: start watching if the setting is on.
+        if !trashWatcher.isWatching { trashWatcher.startIfEnabled() }
     }
 
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+    /// Opening Leftless again (Finder, Launchpad, Dock) shows the window, also after a login launch.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showMainWindow()
+        return false
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        !(runsInBackground && trashWatcher.isWatching)
+    }
+
+    // MARK: - Main window
+
+    /// Called by the main window's content whenever it is put in a window.
+    func mainWindowAppeared(_ window: NSWindow, openWindow: OpenWindowAction) {
+        openMainWindow = openWindow
+        guard window !== mainWindow else { return }
+        mainWindow = window
+        if let mainWindowCloseObserver { NotificationCenter.default.removeObserver(mainWindowCloseObserver) }
+        mainWindowCloseObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification, object: window, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.mainWindowWillClose() }
+        }
+        if runsInBackground && NSApp.activationPolicy() == .accessory { hideMainWindow() }
+    }
+
+    private func mainWindowWillClose() {
+        guard runsInBackground, trashWatcher.isWatching else { return }
+        NSApp.setActivationPolicy(.accessory)
+    }
+
+    /// Closes the window at a login launch (on the next run-loop pass: it may still be setting up).
+    private func hideMainWindow() {
+        guard let window = mainWindow else { return }
+        DispatchQueue.main.async {
+            guard NSApp.activationPolicy() == .accessory else { return }
+            window.close()
+        }
+    }
+
+    /// Brings the main window forward (opening it again if it was closed) as a regular app with a Dock icon.
+    func showMainWindow() {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate()
+        if let window = mainWindow, window.isVisible || window.isMiniaturized {
+            if window.isMiniaturized { window.deminiaturize(nil) }
+            window.makeKeyAndOrderFront(nil)
+        } else if let openMainWindow {
+            openMainWindow(id: "main")
+        } else {
+            mainWindow?.makeKeyAndOrderFront(nil)
+        }
+    }
+
+    /// A Trash-watch notification (or its Clean Up button): show that app's leftovers for review.
+    private func reviewTrashedApp(at path: String) {
+        showMainWindow()
+        Task { await model.reviewTrashedApp(at: URL(fileURLWithPath: path)) }
+    }
+}
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification)
+        async -> UNNotificationPresentationOptions {
+        [.banner, .list, .sound]
+    }
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        guard response.actionIdentifier != UNNotificationDismissActionIdentifier,
+              let path = response.notification.request.content.userInfo[TrashNotifications.pathKey] as? String
+        else { return }
+        await reviewTrashedApp(at: path)
+    }
 }
 
 @main
@@ -42,15 +142,24 @@ struct LeftlessApp: App {
 
     var body: some Scene {
         Window("Leftless", id: "main") {
-            ContentView(model: delegate.model)
+            ContentView(model: delegate.model) { [delegate] window, openWindow in
+                delegate.mainWindowAppeared(window, openWindow: openWindow)
+            }
                 .frame(minWidth: 760, minHeight: 480)
         }
         .commands { TabCommands(model: delegate.model) }
+
+        Settings {
+            SettingsView(model: delegate.model, watcher: delegate.trashWatcher)
+        }
     }
 }
 
 struct ContentView: View {
     @Bindable var model: AppModel
+    /// Reports the window the view is shown in (main window only; not used for screenshots).
+    var onWindow: ((NSWindow, OpenWindowAction) -> Void)?
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Group {
@@ -66,6 +175,11 @@ struct ContentView: View {
         .dropDestination(for: URL.self) { urls, _ in
             model.handleDrop(urls)
             return urls.contains { $0.pathExtension == "app" }
+        }
+        .background {
+            if let onWindow {
+                WindowReader { onWindow($0, openWindow) }
+            }
         }
         .restoreConflictAlert(model: model)
         .alert("Something Went Wrong", isPresented: $model.showsAlert) {
@@ -108,6 +222,30 @@ struct ContentView: View {
             } description: {
                 Text("Choose the app you want to uninstall from the list, or drag it into this window.")
             }
+        }
+    }
+}
+
+/// Calls `onWindow` with the window its view is placed in.
+private struct WindowReader: NSViewRepresentable {
+    let onWindow: (NSWindow) -> Void
+
+    func makeNSView(context: Context) -> ReaderView {
+        let view = ReaderView()
+        view.onWindow = onWindow
+        return view
+    }
+
+    func updateNSView(_ view: ReaderView, context: Context) {
+        view.onWindow = onWindow
+    }
+
+    final class ReaderView: NSView {
+        var onWindow: ((NSWindow) -> Void)?
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            if let window { onWindow?(window) }
         }
     }
 }
