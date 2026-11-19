@@ -1,28 +1,109 @@
-# Leftless
+<p align="center">
+  <img src="docs/screenshots/icon.png" width="128" height="128" alt="Leftless icon">
+</p>
 
-An app uninstaller for macOS 15 and later. When you remove an app, Leftless finds what it leaves behind (caches, preferences, logs, launch agents and more) and moves all of it to the Trash together. Nothing is ever deleted permanently: every uninstall is recorded in History and can be undone.
+<h1 align="center">Leftless</h1>
 
-Available in English, Turkish, German, French, Spanish, Japanese and Portuguese (Brazil). Leftless follows the macOS system language; to choose a different language for Leftless only, use **System Settings → General → Language & Region → Applications**.
+<p align="center">
+  <strong>Uninstall Mac apps — and everything they leave behind.</strong><br>
+  Caches, preferences, logs, launch agents and more, moved to the Trash together. Every uninstall can be undone.
+</p>
 
-## What it does
+<p align="center">
+  <img alt="macOS 15+" src="https://img.shields.io/badge/macOS-15%2B-000000?logo=apple&logoColor=white">
+  <img alt="Universal" src="https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-Universal-2F6FED">
+  <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white">
+  <img alt="7 languages" src="https://img.shields.io/badge/languages-7-14B8A6">
+</p>
 
-- Lists installed apps. Pick one from the list, or drag an `.app` onto the window or the Dock icon.
-- Scans for the app's leftovers and shows how sure it is about each one: **certain** items are selected by default, **possible** items stay unselected until you tick them.
-- Moves the selected items to the Trash. Items that need administrator permission ask for your password once.
-- Never touches `com.apple.*` items or system folders.
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/apps-dark.png">
+    <img src="docs/screenshots/apps.png" alt="Leftless showing an app and its leftovers grouped by kind" width="860">
+  </picture>
+</p>
 
-## Opening in Xcode
+<p align="center"><sub>Screenshots use fictional demo apps.</sub></p>
 
-1. Double-click `Leftless.xcodeproj`.
-2. Make sure the **Leftless** scheme is selected and press **⌘R**.
+---
 
-The project is generated from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen); you only need it if you change project settings (`brew install xcodegen && xcodegen generate`). Swift Package Manager works too: `swift run Leftless`, and `swift test` for the tests. Under SwiftPM the String Catalogs are not compiled, so the app shows its English source text; build with Xcode to get the translations.
+## Why Leftless
 
-## Translations
+Dragging an app to the Trash only removes the `.app`. Its support files, caches, preferences, background helpers and installer files stay on your Mac. Leftless finds them, shows you what they are in plain language, and removes them in one step — without ever deleting anything permanently.
 
-Strings live in String Catalogs with English keys: `Sources/Leftless/Localizable.xcstrings` (app), `Sources/LeftlessCore/Localizable.xcstrings` (core) and `App/InfoPlist.xcstrings` (Info.plist). `LocalizationCatalogTests` fails if any key is missing a language or a count string lacks plural forms. Translations were written by Claude; a review by native speakers is recommended before release.
+## Features
 
-After adding or changing strings in the app, build once and merge the new keys into the catalog (Xcode does this itself when you build in the IDE):
+- **Finds what apps leave behind** — Application Support, Caches, Preferences, Logs, Saved State, Containers and Group Containers, Launch Agents and Daemons, privileged helpers, plug-ins, and files installed by `.pkg` installers.
+- **Knows how sure it is** — *certain* items are selected for you; *possible* matches (for example a folder in your Music folder with the same name) stay unselected until you tick them. Folders shared with another app from the same developer are never pre-selected.
+- **Nothing is deleted permanently** — everything goes to the Trash, and every uninstall is recorded first.
+- **One-click undo** — the History tab puts every item back where it was, including restarting launch agents.
+- **Safe by design** — never touches `com.apple.*` items or protected system folders. Files that need administrator rights ask for your password once, through the standard macOS dialog.
+- **Easy to use** — pick an app from the list or drag it onto the window or the Dock icon. Search and sort by name or size.
+- **Speaks your language** — English, Türkçe, Deutsch, Français, Español, 日本語 and Português (Brasil). Leftless follows your system language.
+
+<p align="center">
+  <img src="docs/screenshots/history.png" alt="History tab with restorable uninstalls" width="860">
+</p>
+
+## Install
+
+Leftless is not on the App Store yet; build it from source (Xcode 16 or later):
+
+```sh
+git clone https://github.com/celikkalper/Leftless.git
+cd Leftless
+./scripts/build-universal.sh
+ditto build/Leftless.app /Applications/Leftless.app
+```
+
+Then open Leftless from Launchpad or the Applications folder.
+
+### Full Disk Access
+
+Some folders (Containers, Mail and Safari data and so on) can only be searched with Full Disk Access. Leftless walks you through it on first launch:
+
+1. Open **System Settings → Privacy & Security → Full Disk Access**.
+2. Click **+**, add Leftless and turn it on.
+3. Restart Leftless.
+
+Without it Leftless still works, skips those places and tells you what it couldn't search.
+
+> **Upgrading from Kalıntısız?** The app was renamed and its bundle ID changed to `com.leftless.app`, so grant Full Disk Access again. Your History moves over automatically on first launch.
+
+## How it works
+
+1. **Scan** — Leftless reads the app's bundle ID, name and developer team, then looks for matching items in the standard Library locations, in launchd job definitions (by the program they run, not just by file name), and in installer receipts.
+2. **Review** — results are grouped by kind with sizes. Certain items are ticked; possible items are not.
+3. **Move to Trash** — if the app is running, Leftless offers to quit it first. A history record is written *before* anything moves; items needing admin rights move in a single password prompt.
+4. **Undo anytime** — while the items are still in the Trash, **History → Restore** puts them back. Once the Trash is emptied, the record shows as no longer restorable.
+
+## Development
+
+| Task | Command |
+|---|---|
+| Open in Xcode | open `Leftless.xcodeproj`, choose the **Leftless** scheme, press **⌘R** |
+| Run the tests | `swift test` |
+| End-to-end test (creates and removes a fake app in `~/Applications`) | `LEFTLESS_E2E=1 swift test --filter EndToEnd` |
+| Universal release build | `./scripts/build-universal.sh` → `build/Leftless.app` |
+| Regenerate the Xcode project after editing `project.yml` | `xcodegen generate` |
+| Re-render the app icon | `swift scripts/render-icon.swift <out.png>` |
+
+Project layout:
+
+```
+Sources/LeftlessCore   scanning, uninstall, restore, history (UI-free, unit-tested)
+Sources/Leftless       SwiftUI app
+Tests/LeftlessCoreTests
+App/                   Info.plist, entitlements, asset catalog, InfoPlist strings
+scripts/               build-universal.sh, render-icon.swift
+docs/                  design specs, plans, screenshots
+```
+
+### Translations
+
+Strings live in String Catalogs with English keys: `Sources/Leftless/Localizable.xcstrings` (app), `Sources/LeftlessCore/Localizable.xcstrings` (core) and `App/InfoPlist.xcstrings`. `LocalizationCatalogTests` fails if a key is missing a language or a count string lacks plural forms. Translations were written by Claude; native-speaker review is welcome.
+
+Under `swift run` the catalogs are not compiled, so the app shows English; build with Xcode to see translations. After adding strings outside the Xcode IDE, merge the new keys:
 
 ```sh
 xcodebuild -project Leftless.xcodeproj -scheme Leftless -destination 'platform=macOS' build
@@ -30,55 +111,33 @@ xcrun xcstringstool sync Sources/Leftless/Localizable.xcstrings \
   --stringsdata ~/Library/Developer/Xcode/DerivedData/Leftless-*/Build/Intermediates.noindex/Leftless.build/Debug/Leftless.build/Objects-normal/*/*.stringsdata
 ```
 
-## Building a universal .app
+### Screenshots
+
+The images in `docs/screenshots` are rendered from fictional demo data by a Debug-only mode, so no real apps or personal files appear:
 
 ```sh
-./scripts/build-universal.sh
+xcodebuild -project Leftless.xcodeproj -scheme Leftless -configuration Debug \
+  -derivedDataPath build/DD-debug CODE_SIGNING_ALLOWED=NO build
+build/DD-debug/Build/Products/Debug/Leftless.app/Contents/MacOS/Leftless \
+  --screenshots /tmp/leftless-shots -AppleLanguages "(en)"
 ```
 
-The script runs `xcodebuild` (Release, `ARCHS="arm64 x86_64"`) so the String Catalogs are compiled into `.lproj` folders in the app and in the `Leftless_LeftlessCore.bundle` resource bundle, then ad-hoc signs the result and fails if an architecture, the core bundle or a language is missing. (A plain `swift build` does not compile the catalogs and does not ship the core bundle, so it is not used for the .app.)
+### Distribution
 
-Output: `build/Leftless.app` (arm64 + x86_64, ad-hoc signed). To check it:
+`build-universal.sh` produces an ad-hoc signed app that opens without warnings only on the Mac that built it. To share Leftless with other Macs it must be signed with a **Developer ID** and **notarized** by Apple.
 
-```sh
-lipo -info "build/Leftless.app/Contents/MacOS/Leftless"
-codesign -v "build/Leftless.app"
-```
-
-> To distribute Leftless to other Macs it must be signed with a **Developer ID** and **notarized** by Apple. An ad-hoc signed app only opens without warnings on the Mac that built it.
-
-## Full Disk Access
-
-Leftless runs outside the sandbox. Some folders (Mail, Safari data, Containers and so on) can only be scanned with **Full Disk Access**:
-
-1. Open **System Settings → Privacy & Security → Full Disk Access**.
-2. Click **+**, add Leftless and turn it on.
-3. Restart Leftless.
-
-Without it the app still works, but some leftovers may not be shown; a warning bar appears in the window.
-
-> **Upgrading from Kalıntısız:** the bundle ID changed to `com.leftless.app`, so Full Disk Access granted to the old app does not carry over. Grant it again to Leftless (you can remove the old Kalıntısız entry). Your existing History is moved over automatically on first launch.
-
-## Undo and History
-
-Before each uninstall, Leftless writes to disk which file is going where. In **History**, each record is listed as "App name — N items". **Restore** moves the files from the Trash back to their original locations. If something else now exists at the same path, you are asked whether to skip or replace it; launch agents are loaded again after they are restored. If you have emptied the Trash, those items can no longer be restored and the record says so.
-
-## End-to-end smoke test (optional)
-
-Runs the whole flow (scan → uninstall → restore) for real against a fake app (`~/Applications/LeftlessTest.app`) and its leftovers, then deletes the fake files:
-
-```sh
-LEFTLESS_E2E=1 swift test --filter EndToEnd
-```
-
-Without the environment variable this test is skipped.
+---
 
 ## Türkçe
 
-Leftless (eski adıyla Kalıntısız), macOS 15 ve sonrası için bir uygulama kaldırıcıdır. Kaldırdığınız uygulamanın geride bıraktığı önbellek, tercih, günlük ve başlatma aracısı gibi kalıntıları bulur ve hepsini birlikte Çöp Sepeti'ne taşır. Hiçbir şey kalıcı olarak silinmez. Uygulama macOS'un sistem dilini kullanır; Türkçe arayüz için ayrıca bir şey yapmanız gerekmez.
+**Leftless**, Mac uygulamalarını geride bıraktıkları her şeyle birlikte kaldırır: önbellekler, tercihler, günlükler, arka plan servisleri ve kurulum dosyaları. Hepsi birlikte Çöp Sepeti'ne taşınır, hiçbir şey kalıcı olarak silinmez ve her kaldırma **Geçmiş** sekmesinden tek tıkla geri alınabilir.
 
-- **Xcode'da açma:** `Leftless.xcodeproj` dosyasına çift tıklayın, **Leftless** şemasını seçin ve **⌘R** ile çalıştırın. Proje `project.yml` dosyasından XcodeGen ile üretilir (`xcodegen generate`). `swift run Leftless` ile de çalışır, ancak çeviriler yalnızca Xcode ile derlenince görünür; SwiftPM ile arayüz İngilizce açılır.
-- **Universal .app:** `./scripts/build-universal.sh` komutu `xcodebuild` ile derleyip `build/Leftless.app` dosyasını üretir (arm64 + x86_64, ad-hoc imzalı); çeviri kataloglarını derler ve mimari, çekirdek kaynak paketi ya da dil eksikse hata verir.
-- **Tam Disk Erişimi:** **Sistem Ayarları → Gizlilik ve Güvenlik → Tam Disk Erişimi** bölümünde **+** ile Leftless'ı ekleyip açın, sonra uygulamayı yeniden başlatın. Paket kimliği `com.leftless.app` olarak değiştiği için **Kalıntısız'a verdiğiniz izin Leftless'a geçmez; izni yeniden vermeniz gerekir.** Eski geçmişiniz ilk açılışta otomatik olarak taşınır.
-- **Geçmiş ve geri alma:** Her kaldırmadan önce hangi dosyanın nereye taşınacağı diske kaydedilir. **Geçmiş** bölümünde **Geri Yükle** dediğinizde dosyalar Çöp Sepeti'nden özgün yerlerine döner. Çöp Sepeti'ni boşalttıysanız ilgili öğeler geri yüklenemez.
-- **Dağıtım:** Başka Mac'lara dağıtmak için uygulamanın **Developer ID** ile imzalanması ve Apple'ın **noter onayından (notarization)** geçmesi gerekir. Ad-hoc imzalı uygulama yalnızca derlendiği Mac'te sorunsuz açılır.
+<p align="center">
+  <img src="docs/screenshots/apps-tr.png" alt="Leftless Türkçe arayüz" width="760">
+</p>
+
+**Kurulum:** Yukarıdaki *Install* bölümündeki dört komutu çalıştırın, ardından Leftless'i Launchpad'den açın. İlk açılışta ekrandaki adımlarla **Tam Disk Erişimi** verin (Sistem Ayarları → Gizlilik ve Güvenlik → Tam Disk Erişimi). Kalıntısız'dan geçiyorsanız izni Leftless için yeniden vermeniz gerekir; Geçmiş kayıtlarınız otomatik taşınır.
+
+**Nasıl çalışır:** Listeden bir uygulama seçin ya da pencereye sürükleyin. *Kesin* öğeler işaretli gelir; *muhtemel* eşleşmeler siz işaretleyene kadar işaretsiz kalır. **Çöp Sepeti'ne Taşı** dediğinizde önce kayıt yazılır, sonra dosyalar taşınır. Çöp Sepeti boşaltılmadığı sürece **Geçmiş → Geri Yükle** her şeyi eski yerine koyar.
+
+**Dil:** Leftless sistem dilinizi kullanır. Yalnızca Leftless'in dilini değiştirmek için: Sistem Ayarları → Genel → Dil ve Bölge → Uygulamalar.

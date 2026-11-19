@@ -11,7 +11,12 @@ LANGS=(tr de fr es ja pt-BR)
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
 
-if [ ! -d Leftless.xcodeproj ] || [ project.yml -nt Leftless.xcodeproj/project.pbxproj ]; then
+if [ ! -d Leftless.xcodeproj ]; then
+  command -v xcodegen >/dev/null || fail "Leftless.xcodeproj is missing; install XcodeGen (brew install xcodegen)"
+  echo "==> xcodegen generate"
+  xcodegen generate
+elif [ project.yml -nt Leftless.xcodeproj/project.pbxproj ] && command -v xcodegen >/dev/null; then
+  # The committed project is used as-is on machines without XcodeGen (e.g. a fresh clone).
   echo "==> xcodegen generate"
   xcodegen generate
 fi

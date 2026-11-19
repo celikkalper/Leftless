@@ -48,14 +48,33 @@ final class AppModel {
         UninstallSummary(leftovers: scan?.leftovers ?? [], checked: checked)
     }
 
+    /// Demo models (README screenshots) never read the real disk or history.
+    private(set) var isDemo = false
+
     init() {
         reloadApps()
         reloadHistory()
     }
 
+    #if DEBUG
+    /// A model filled with fictional apps and history, for screenshots. Nothing is read from disk.
+    init(demoApps: [InstalledApp], selection: InstalledApp?, scan: ScanResult?,
+         history: [HistoryRecord], historyStatus: [UUID: RestoreStatus]) {
+        isDemo = true
+        hasFullDiskAccess = true
+        apps = demoApps
+        self.selection = selection
+        self.scan = scan
+        checked = Set((scan?.leftovers ?? []).filter(\.selectedByDefault).map(\.id))
+        self.history = history
+        self.historyStatus = historyStatus
+    }
+    #endif
+
     // MARK: - Liste
 
     func reloadApps() {
+        guard !isDemo else { return }
         isLoadingApps = true
         let env = environment
         Task {
@@ -68,6 +87,7 @@ final class AppModel {
     }
 
     func reloadHistory() {
+        guard !isDemo else { return }
         history = (try? store.all()) ?? []
         historyStatus = Dictionary(uniqueKeysWithValues: history.map { ($0.id, store.status(of: $0)) })
     }
@@ -87,6 +107,7 @@ final class AppModel {
     var showsOnboarding: Bool { !hasFullDiskAccess && !onboardingSkipped }
 
     func refreshFullDiskAccess() {
+        guard !isDemo else { return }
         hasFullDiskAccess = FullDiskAccess.isGranted()
     }
 

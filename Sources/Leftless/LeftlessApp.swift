@@ -18,6 +18,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // `swift run` ile paketsiz çalışırken pencerenin öne gelmesi için.
         NSApp.setActivationPolicy(.regular)
         NSApp.activate()
+        #if DEBUG
+        _ = Screenshots.runIfRequested()
+        #endif
     }
 
     /// Dock simgesine bırakılan uygulamalar.

@@ -17,6 +17,7 @@
 		39EBF8DC93D185500B2540BF /* LeftlessCore in Frameworks */ = {isa = PBXBuildFile; productRef = 14333BC8776F6465869BEBEA /* LeftlessCore */; };
 		4258A966DE21D3574FE259EC /* ScanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 452A29380F5065D9D094CED9 /* ScanDetailView.swift */; };
 		5BD2F23C44E82F705DB4A8BC /* Fixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16629EF476AAC20BF9F466C /* Fixtures.swift */; };
+		6E69EAB1AFF0F2E46A7A622A /* Screenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CAFCD41D3E5EBB87C04FBE5 /* Screenshots.swift */; };
 		713A74BD3968C979115BD624 /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC134C96C9EF5D24AEC91700 /* PresentationTests.swift */; };
 		7B89675DBCC58F75F760FA1A /* HistoryMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D546551AA91B8C1685E46AB /* HistoryMigrationTests.swift */; };
 		80336BFF40A289FAD5FBFA43 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3EF25EC56A1C43CBF3B3C8E /* AppModel.swift */; };
@@ -53,6 +54,7 @@
 		76EAF236E677BD1F7C29AFDC /* LeftlessCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeftlessCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		789AA953BDE6C31C1FEC6653 /* UninstallResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UninstallResultView.swift; sourceTree = "<group>"; };
 		789D494A0D4FDCED12983FA7 /* RestorerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestorerTests.swift; sourceTree = "<group>"; };
+		7CAFCD41D3E5EBB87C04FBE5 /* Screenshots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screenshots.swift; sourceTree = "<group>"; };
 		80FC17B92F9006FDC7B8070C /* Leftless */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Leftless; path = .; sourceTree = SOURCE_ROOT; };
 		8113A337C27CC7047D2294A5 /* HistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreTests.swift; sourceTree = "<group>"; };
 		8AD15482B5D7A34A6DA8521E /* Leftless.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Leftless.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -107,6 +109,7 @@
 			children = (
 				B5A239AE492C93BE8F0B59D3 /* AppTerminator.swift */,
 				F2C1E75397B5F5708B761E2D /* FullDiskAccess.swift */,
+				7CAFCD41D3E5EBB87C04FBE5 /* Screenshots.swift */,
 			);
 			path = Support;
 			sourceTree = "<group>";
@@ -321,6 +324,7 @@
 				0587DB8BF0514549AFE8B401 /* LeftoverListView.swift in Sources */,
 				A4A632EEF909FAF208DAC562 /* OnboardingView.swift in Sources */,
 				4258A966DE21D3574FE259EC /* ScanDetailView.swift in Sources */,
+				6E69EAB1AFF0F2E46A7A622A /* Screenshots.swift in Sources */,
 				8BAC9ED4C894E0DB53CBFB8A /* UninstallResultView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
