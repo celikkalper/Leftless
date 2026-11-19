@@ -36,6 +36,8 @@ xcrun xcstringstool sync Sources/Leftless/Localizable.xcstrings \
 ./scripts/build-universal.sh
 ```
 
+The script runs `xcodebuild` (Release, `ARCHS="arm64 x86_64"`) so the String Catalogs are compiled into `.lproj` folders in the app and in the `Leftless_LeftlessCore.bundle` resource bundle, then ad-hoc signs the result and fails if an architecture, the core bundle or a language is missing. (A plain `swift build` does not compile the catalogs and does not ship the core bundle, so it is not used for the .app.)
+
 Output: `build/Leftless.app` (arm64 + x86_64, ad-hoc signed). To check it:
 
 ```sh
@@ -76,7 +78,7 @@ Without the environment variable this test is skipped.
 Leftless (eski adıyla Kalıntısız), macOS 15 ve sonrası için bir uygulama kaldırıcıdır. Kaldırdığınız uygulamanın geride bıraktığı önbellek, tercih, günlük ve başlatma aracısı gibi kalıntıları bulur ve hepsini birlikte Çöp Sepeti'ne taşır. Hiçbir şey kalıcı olarak silinmez. Uygulama macOS'un sistem dilini kullanır; Türkçe arayüz için ayrıca bir şey yapmanız gerekmez.
 
 - **Xcode'da açma:** `Leftless.xcodeproj` dosyasına çift tıklayın, **Leftless** şemasını seçin ve **⌘R** ile çalıştırın. Proje `project.yml` dosyasından XcodeGen ile üretilir (`xcodegen generate`). `swift run Leftless` ile de çalışır, ancak çeviriler yalnızca Xcode ile derlenince görünür; SwiftPM ile arayüz İngilizce açılır.
-- **Universal .app:** `./scripts/build-universal.sh` komutu `build/Leftless.app` dosyasını üretir (arm64 + x86_64, ad-hoc imzalı).
+- **Universal .app:** `./scripts/build-universal.sh` komutu `xcodebuild` ile derleyip `build/Leftless.app` dosyasını üretir (arm64 + x86_64, ad-hoc imzalı); çeviri kataloglarını derler ve mimari, çekirdek kaynak paketi ya da dil eksikse hata verir.
 - **Tam Disk Erişimi:** **Sistem Ayarları → Gizlilik ve Güvenlik → Tam Disk Erişimi** bölümünde **+** ile Leftless'ı ekleyip açın, sonra uygulamayı yeniden başlatın. Paket kimliği `com.leftless.app` olarak değiştiği için **Kalıntısız'a verdiğiniz izin Leftless'a geçmez; izni yeniden vermeniz gerekir.** Eski geçmişiniz ilk açılışta otomatik olarak taşınır.
 - **Geçmiş ve geri alma:** Her kaldırmadan önce hangi dosyanın nereye taşınacağı diske kaydedilir. **Geçmiş** bölümünde **Geri Yükle** dediğinizde dosyalar Çöp Sepeti'nden özgün yerlerine döner. Çöp Sepeti'ni boşalttıysanız ilgili öğeler geri yüklenemez.
 - **Dağıtım:** Başka Mac'lara dağıtmak için uygulamanın **Developer ID** ile imzalanması ve Apple'ın **noter onayından (notarization)** geçmesi gerekir. Ad-hoc imzalı uygulama yalnızca derlendiği Mac'te sorunsuz açılır.

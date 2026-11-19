@@ -1,31 +1,63 @@
 #!/bin/bash
-# Universal (arm64 + x86_64) Leftless.app üretir: build/Leftless.app
+# Builds a universal (arm64 + x86_64) Leftless.app with compiled string catalogs: build/Leftless.app
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 APP="build/Leftless.app"
 BIN_NAME="Leftless"
+DD="build/DerivedData"
+LANGS=(tr de fr es ja pt-BR)
 
-echo "==> arm64 derleniyor"
-swift build -c release --triple arm64-apple-macosx15.0
-echo "==> x86_64 derleniyor"
-swift build -c release --triple x86_64-apple-macosx15.0
+fail() { echo "ERROR: $*" >&2; exit 1; }
 
-ARM_BIN="$(swift build -c release --triple arm64-apple-macosx15.0 --show-bin-path)/$BIN_NAME"
-X86_BIN="$(swift build -c release --triple x86_64-apple-macosx15.0 --show-bin-path)/$BIN_NAME"
+if [ ! -d Leftless.xcodeproj ] || [ project.yml -nt Leftless.xcodeproj/project.pbxproj ]; then
+  echo "==> xcodegen generate"
+  xcodegen generate
+fi
+
+echo "==> xcodebuild (Release, arm64 + x86_64)"
+xcodebuild -project Leftless.xcodeproj -scheme Leftless -configuration Release \
+  -derivedDataPath "$DD" ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
+  CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=NO build
+
+PRODUCT="$DD/Build/Products/Release/Leftless.app"
+[ -d "$PRODUCT" ] || fail "build product not found: $PRODUCT"
 
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+mkdir -p build
+ditto "$PRODUCT" "$APP"
 
-echo "==> lipo"
-lipo -create "$ARM_BIN" "$X86_BIN" -output "$APP/Contents/MacOS/$BIN_NAME"
-cp App/Info.plist "$APP/Contents/Info.plist"
-
+# Xcode signing is skipped (xattrs on synced folders break it); we sign below.
 xattr -cr "$APP"
-echo "==> imzalanıyor (ad-hoc)"
+echo "==> codesign (ad-hoc)"
 codesign --force --deep -s - --entitlements App/Leftless.entitlements "$APP"
 
-lipo -info "$APP/Contents/MacOS/$BIN_NAME"
+echo "==> checks"
+LIPO="$(lipo -info "$APP/Contents/MacOS/$BIN_NAME")"
+echo "$LIPO"
+case "$LIPO" in *x86_64*) ;; *) fail "x86_64 slice missing";; esac
+case "$LIPO" in *arm64*) ;; *) fail "arm64 slice missing";; esac
 codesign -v "$APP"
-echo "==> Hazır: $APP"
+
+CORE="$(find "$APP/Contents" -maxdepth 3 -type d -name 'Leftless_LeftlessCore.bundle' | head -1)"
+[ -n "$CORE" ] || fail "Leftless_LeftlessCore.bundle missing from app"
+echo "core bundle: $CORE"
+
+has_lproj() { [ -d "$1/$2.lproj" ] || [ -d "$1/${2//-/_}.lproj" ]; }
+for dir in "$APP/Contents/Resources" "$CORE" "$CORE/Contents/Resources"; do
+  [ -d "$dir" ] || continue
+  ok=1
+  for l in "${LANGS[@]}"; do has_lproj "$dir" "$l" || ok=0; done
+  [ "$dir" = "$CORE" ] && [ $ok = 0 ] && continue
+  [ "$dir" = "$CORE/Contents/Resources" ] && [ $ok = 0 ] && continue
+  [ $ok = 1 ] || fail "missing .lproj folders in $dir"
+done
+for dir in "$CORE" "$CORE/Contents/Resources"; do
+  [ -d "$dir" ] || continue
+  ok=1; for l in "${LANGS[@]}"; do has_lproj "$dir" "$l" || ok=0; done
+  [ $ok = 1 ] && found_core=1
+done
+[ "${found_core:-0}" = 1 ] || fail "core bundle lacks .lproj folders"
+
+echo "==> Ready: $APP"
