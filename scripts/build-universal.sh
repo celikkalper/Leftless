@@ -16,6 +16,10 @@ if [ ! -d Leftless.xcodeproj ] || [ project.yml -nt Leftless.xcodeproj/project.p
   xcodegen generate
 fi
 
+# Remove any previous product so stale .lproj folders cannot ship.
+[ -n "$DD" ] || fail "DD is empty"
+rm -rf "$DD/Build/Products/Release/Leftless.app"
+
 echo "==> xcodebuild (Release, arm64 + x86_64)"
 xcodebuild -project Leftless.xcodeproj -scheme Leftless -configuration Release \
   -derivedDataPath "$DD" ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \

@@ -115,10 +115,22 @@ import Foundation
 
     @Test func arrangeQueryIsCaseAndDiacriticInsensitive() {
         let apps = [app("Çizim Aracı", size: 1), app("Spotify", size: 2)]
-        let found = AppListArrangement.arrange(apps, query: "cizim", sort: .name)
+        let found = AppListArrangement.arrange(apps, query: "cizim", sort: .name, locale: Locale(identifier: "en_US"))
         #expect(found.map(\.info.name) == ["Çizim Aracı"])
-        let spaced = AppListArrangement.arrange(apps, query: "  SPOT ", sort: .name)
+        let spaced = AppListArrangement.arrange(apps, query: "  SPOT ", sort: .name, locale: Locale(identifier: "en_US"))
         #expect(spaced.map(\.info.name) == ["Spotify"])
+    }
+
+    @Test func arrangeSearchUsesInjectedLocale() {
+        let en = Locale(identifier: "en_US")
+        let tr = Locale(identifier: "tr_TR")
+        let apps = [app("Instagram", size: 1), app("IntelliJ IDEA", size: 2), app("iTerm", size: 3), app("ISTANBUL Rehberi", size: 4)]
+        #expect(AppListArrangement.arrange(apps, query: "instagram", sort: .name, locale: en).map(\.info.name) == ["Instagram"])
+        #expect(AppListArrangement.arrange(apps, query: "idea", sort: .name, locale: en).map(\.info.name) == ["IntelliJ IDEA"])
+        #expect(AppListArrangement.arrange(apps, query: "ITERM", sort: .name, locale: en).map(\.info.name) == ["iTerm"])
+        #expect(AppListArrangement.arrange(apps, query: "ıstanbul", sort: .name, locale: tr).map(\.info.name) == ["ISTANBUL Rehberi"])
+        // Turkish dotless-ı folds with I only under Turkish rules.
+        #expect(AppListArrangement.arrange(apps, query: "ıstanbul", sort: .name, locale: en).isEmpty)
     }
 
     // MARK: - Onay metni

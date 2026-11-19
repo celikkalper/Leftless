@@ -59,13 +59,13 @@ public enum AppListSort: String, CaseIterable, Sendable {
 
 public enum AppListArrangement {
     public static func arrange(_ apps: [InstalledApp], query: String, sort: AppListSort,
-                               excludingBundleIDs: Set<String> = []) -> [InstalledApp] {
+                               excludingBundleIDs: Set<String> = [], locale: Locale = .current) -> [InstalledApp] {
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let filtered = apps.filter { app in
             if excludingBundleIDs.contains(app.info.bundleID) { return false }
             guard !q.isEmpty else { return true }
             return app.info.name.range(of: q, options: [.caseInsensitive, .diacriticInsensitive],
-                                       locale: Locale(identifier: "tr_TR")) != nil
+                                       locale: locale) != nil
         }
         return filtered.sorted { a, b in
             if sort == .size, a.bundleSize != b.bundleSize { return a.bundleSize > b.bundleSize }
