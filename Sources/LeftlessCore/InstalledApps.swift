@@ -42,6 +42,33 @@ public struct InstalledApps: Sendable {
         return result
     }
 
+    /// Bu Mac'teki tüm uygulamaların bundle ID'leri (Apple uygulamaları dahil): /Applications ve
+    /// ~/Applications (2 alt klasör seviyesi), /System/Applications ve Spotlight'ın bildiği her uygulama.
+    /// mdfind başarısız olursa yalnızca klasör tabanlı liste kullanılır.
+    public func allKnownBundleIDs(commands: CommandRunning) -> Set<String> {
+        var bundles: [URL] = []
+        for dir in [environment.path("/Applications"), environment.homePath("Applications")] {
+            bundles += appBundles(in: dir, depth: 2)
+        }
+        bundles += appBundles(in: environment.path("/System/Applications"), depth: 2)
+        if let out = try? commands.run("/usr/bin/mdfind", ["kMDItemContentType == 'com.apple.application-bundle'"]),
+           out.status == 0 {
+            for line in out.stdout.split(whereSeparator: \.isNewline) {
+                let path = line.trimmingCharacters(in: .whitespaces)
+                if path.hasPrefix("/") { bundles.append(URL(fileURLWithPath: path, isDirectory: true)) }
+            }
+        }
+        var ids = Set<String>()
+        for bundle in bundles {
+            let plistURL = bundle.appendingPathComponent("Contents/Info.plist")
+            guard let data = try? Data(contentsOf: plistURL),
+                  let plist = (try? PropertyListSerialization.propertyList(from: data, format: nil)) as? [String: Any],
+                  let id = plist["CFBundleIdentifier"] as? String, !id.isEmpty else { continue }
+            ids.insert(id)
+        }
+        return ids
+    }
+
     /// `dir` içindeki .app paketleri; `depth` kadar alt klasöre iner (.app içine inmez).
     private func appBundles(in dir: URL, depth: Int) -> [URL] {
         guard let items = try? FileManager.default.contentsOfDirectory(
