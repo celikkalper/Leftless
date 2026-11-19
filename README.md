@@ -14,6 +14,7 @@
   <img alt="Universal" src="https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-Universal-2F6FED">
   <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white">
   <img alt="7 languages" src="https://img.shields.io/badge/languages-7-14B8A6">
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-lightgrey"></a>
 </p>
 
 <p align="center">
@@ -153,6 +154,10 @@ build/DD-debug/Build/Products/Debug/Leftless.app/Contents/MacOS/Leftless \
 `build-universal.sh` produces an ad-hoc signed app that opens without warnings only on the Mac that built it; `make-dmg.sh` wraps it in a drag-to-install disk image for GitHub Releases. Downloaded copies need the one-time **Open Anyway** step above. Signing with a **Developer ID** and **notarizing** with Apple would remove that step (and keep Full Disk Access across updates).
 
 To publish a release: bump `CFBundleShortVersionString` in `App/Info.plist`, run `./scripts/make-dmg.sh`, then attach `build/Leftless-<version>.dmg` to a new GitHub release tagged `v<version>`.
+
+## License
+
+Leftless is released under the [MIT License](LICENSE).
 
 ---
 
