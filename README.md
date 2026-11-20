@@ -40,7 +40,15 @@ Dragging an app to the Trash only removes the `.app`. Its support files, caches,
 - **One-click undo** — the History tab puts every item back where it was, including restarting launch agents.
 - **Safe by design** — never touches `com.apple.*` items or protected system folders. Files that need administrator rights ask for your password once, through the standard macOS dialog.
 - **Easy to use** — pick an app from the list or drag it onto the window or the Dock icon. Search and sort by name or size.
+- **Several apps at once** — ⌘-click apps in the list to review and remove them together: one confirmation, one password prompt, and a separate History entry per app.
+- **Finds orphaned leftovers** — the **Leftovers** tab scans for files left by apps you deleted long ago. Nothing is pre-selected; you choose what goes.
+- **Watches the Trash (optional)** — turn it on in Settings (⌘,) and Leftless runs quietly in the background. Drag an app to the Trash in Finder and it tells you what that app left behind, with a one-click **Clean Up**.
+- **Reset an app** — clears an app's settings, caches and data without uninstalling it, to bring a misbehaving app back to a fresh start. Undo from History like everything else.
 - **Speaks your language** — English, Türkçe, Deutsch, Français, Español, 日本語 and Português (Brasil). Leftless follows your system language.
+
+<p align="center">
+  <img src="docs/screenshots/leftovers.png" alt="Leftovers tab listing files of apps that are no longer installed" width="860">
+</p>
 
 <p align="center">
   <img src="docs/screenshots/history.png" alt="History tab with restorable uninstalls" width="860">
@@ -180,5 +188,7 @@ Leftless is released under the [MIT License](LICENSE).
 Kalıntısız'dan geçiyorsanız izni Leftless için yeniden vermeniz gerekir; Geçmiş kayıtlarınız otomatik taşınır.
 
 **Nasıl çalışır:** Listeden bir uygulama seçin ya da pencereye sürükleyin. *Kesin* öğeler işaretli gelir; *muhtemel* eşleşmeler siz işaretleyene kadar işaretsiz kalır. **Çöp Sepeti'ne Taşı** dediğinizde önce kayıt yazılır, sonra dosyalar taşınır. Çöp Sepeti boşaltılmadığı sürece **Geçmiş → Geri Yükle** her şeyi eski yerine koyar.
+
+**1.1 ile gelenler:** listede ⌘ ile birden fazla uygulama seçip tek seferde kaldırma; eski uygulamalardan kalan dosyaları bulan **Leftovers** sekmesi (hiçbiri işaretli gelmez); Ayarlar'dan (⌘,) açılabilen **Çöp Sepeti izleme** — Finder'da bir uygulamayı çöpe attığınızda kalıntılarını bildirir; ve uygulamayı silmeden verilerini temizleyen **Sıfırla**. Hepsi Geçmiş'ten geri alınabilir.
 
 **Dil:** Leftless sistem dilinizi kullanır. Yalnızca Leftless'in dilini değiştirmek için: Sistem Ayarları → Genel → Dil ve Bölge → Uygulamalar.
