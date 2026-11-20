@@ -203,6 +203,20 @@ public enum Presentation {
     }
 
     /// Number of history records that can still be (partly) restored; shown on the History tab.
+    /// Locale of the language the app's UI resolved to (not just the system region), for formatted lists.
+    public static var appLocale: Locale {
+        Locale(identifier: Bundle.main.preferredLocalizations.first ?? "en")
+    }
+
+    /// Batch result title counts: apps whose bundle was moved to the Trash, and apps of which only leftovers
+    /// were moved (bundle unticked or not moved).
+    public static func batchResultCounts(_ outcomes: [UninstallOutcome]) -> (uninstalled: Int, leftoversOnly: Int) {
+        let uninstalled = outcomes.filter { outcome in
+            outcome.record.items.contains { $0.kind == .appBundle && $0.state == .trashed }
+        }.count
+        return (uninstalled, outcomes.count - uninstalled)
+    }
+
     public static func historyBadgeCount(_ records: [HistoryRecord], status: (HistoryRecord) -> RestoreStatus) -> Int {
         records.filter {
             switch status($0) {
@@ -360,9 +374,9 @@ public struct ResetPlan: Identifiable, Sendable {
 
     /// E.g. "14 items (412 MB) will be moved to the Trash: Caches, Preferences. SoundWave itself stays
     /// installed. You can undo this from History."
-    public func confirmationText(formattedSize: String) -> String {
-        // Comma-joined (a catalog key made only of punctuation can't be built by Xcode).
-        let names = kinds.map(\.displayName).joined(separator: ", ")
+    /// `locale` formats the list of kinds ("Caches and Preferences"); by default the app's resolved language.
+    public func confirmationText(formattedSize: String, locale: Locale = Presentation.appLocale) -> String {
+        let names = kinds.map(\.displayName).formatted(.list(type: .and).locale(locale))
         return L("\(selected.count) items (\(formattedSize)) will be moved to the Trash: \(names). \(scan.app.name) itself stays installed. You can undo this from History.")
     }
 

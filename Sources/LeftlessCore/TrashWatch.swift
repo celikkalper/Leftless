@@ -3,13 +3,39 @@ import Foundation
 /// Rules for the "Watch the Trash" feature: which Trash entries are newly deleted apps, and how their scans
 /// are shown (the bundle itself is already in the Trash, so it is never offered for moving).
 public enum TrashWatch {
-    /// Paths in `current` that are app bundles (`.app`), not in `previous` and not ignored, in `current` order.
-    /// `previous` should hold every path seen so far, so an app is reported at most once.
-    public static func newApps(previous: Set<String>, current: [String], ignoring ownBundlePaths: Set<String>) -> [String] {
+    /// Paths in `current` that are app bundles (`.app` with `Contents/Info.plist`, see `isApp`), not in
+    /// `previous` and not ignored, in `current` order. `previous` should hold every path still present since
+    /// the last snapshot, so an app is reported once per stay in the Trash.
+    public static func newApps(previous: Set<String>, current: [String], ignoring ownBundlePaths: Set<String>,
+                               isApp: (String) -> Bool = hasInfoPlist) -> [String] {
         var seen = previous.union(ownBundlePaths)
         return current.filter { path in
-            path.lowercased().hasSuffix(".app") && seen.insert(path).inserted
+            path.lowercased().hasSuffix(".app") && seen.insert(path).inserted && isApp(path)
         }
+    }
+
+    /// Whether `<path>/Contents/Info.plist` exists (a real app bundle, not just a folder named `.app`).
+    public static func hasInfoPlist(_ path: String) -> Bool {
+        FileManager.default.fileExists(atPath: (path as NSString).appendingPathComponent("Contents/Info.plist"))
+    }
+
+    /// Trash paths that history records say Leftless itself moved something to (moved or still pending).
+    public static func recordedTrashPaths(in records: [HistoryRecord]) -> Set<String> {
+        Set(records.flatMap { $0.items.compactMap(\.trashPath) }.map(standardized))
+    }
+
+    /// Whether a newly trashed app was put there by Leftless itself (an uninstall), so it must not be reported
+    /// as an app the user deleted: its trash path is in a history record or was registered by the running app,
+    /// or (`bundleID` known) an app with that bundle ID is being moved right now.
+    public static func isMovedByLeftless(path: String, bundleID: String?, recordedTrashPaths: Set<String>,
+                                         ignoredPaths: Set<String>, movingBundleIDs: Set<String>) -> Bool {
+        let path = standardized(path)
+        if recordedTrashPaths.contains(path) || ignoredPaths.contains(where: { standardized($0) == path }) { return true }
+        return bundleID.map(movingBundleIDs.contains) ?? false
+    }
+
+    private static func standardized(_ path: String) -> String {
+        URL(fileURLWithPath: path).standardizedFileURL.path
     }
 
     /// Whether the URL is inside the user's Trash (`~/.Trash`) or a volume's `.Trashes` folder.
@@ -45,11 +71,14 @@ public enum TrashWatch {
 
 /// Watches one directory (the Trash) for app bundles that appear after `start()`. Changes are debounced:
 /// after the last change in a burst, the directory is listed once and new apps are passed to `onNewApps`
-/// (on the monitor's own queue). Apps present at start, and any path reported before, are never reported.
+/// (on the monitor's own queue). Apps present at start, and any path reported while it stays in the
+/// directory, are never reported.
 public final class TrashMonitor: @unchecked Sendable {
     private let directory: URL
     private let debounce: TimeInterval
     private let ignoring: Set<String>
+    private let isApp: @Sendable (String) -> Bool
+    private let onSnapshot: (@Sendable (Set<String>) -> Void)?
     private let onNewApps: @Sendable ([String]) -> Void
     private let queue = DispatchQueue(label: "com.leftless.trash-monitor")
     // State below is only touched on `queue`.
@@ -57,11 +86,17 @@ public final class TrashMonitor: @unchecked Sendable {
     private var pending: DispatchWorkItem?
     private var seen: Set<String> = []
 
+    /// `onSnapshot` gets every entry present after each check (also when no new app appeared), so callers can
+    /// forget paths that left the Trash.
     public init(directory: URL, debounce: TimeInterval = 1, ignoring: Set<String>,
+                isApp: @escaping @Sendable (String) -> Bool = TrashWatch.hasInfoPlist,
+                onSnapshot: (@Sendable (Set<String>) -> Void)? = nil,
                 onNewApps: @escaping @Sendable ([String]) -> Void) {
         self.directory = directory
         self.debounce = debounce
         self.ignoring = ignoring
+        self.isApp = isApp
+        self.onSnapshot = onSnapshot
         self.onNewApps = onNewApps
     }
 
@@ -103,8 +138,10 @@ public final class TrashMonitor: @unchecked Sendable {
     private func check() {
         pending = nil
         guard source != nil, let current = snapshot() else { return }
-        let new = TrashWatch.newApps(previous: seen, current: current, ignoring: ignoring)
-        seen.formUnion(current)
+        let new = TrashWatch.newApps(previous: seen, current: current, ignoring: ignoring, isApp: isApp)
+        // Only entries still present are remembered: an app trashed again after the Trash was emptied is new.
+        seen = Set(current)
+        onSnapshot?(seen)
         if !new.isEmpty { onNewApps(new) }
     }
 

@@ -464,8 +464,31 @@ import Foundation
         #expect(plan.selected.map(\.id) == [prefs.id, cache1.id, cache2.id])
         #expect(plan.kinds == [.caches, .preferences])
         #expect(plan.totalSize == 28)
-        #expect(plan.confirmationText(formattedSize: "28 bytes")
-            == "3 items (28 bytes) will be moved to the Trash: Caches, Preferences. SoundWave itself stays installed. You can undo this from History.")
+        #expect(plan.confirmationText(formattedSize: "28 bytes", locale: Locale(identifier: "en"))
+            == "3 items (28 bytes) will be moved to the Trash: Caches and Preferences. SoundWave itself stays installed. You can undo this from History.")
+        let logs = item(.logs, size: 1)
+        let three = try #require(ResetPlan(scan: ScanResult(app: app, leftovers: [prefs, cache1, logs])))
+        #expect(three.confirmationText(formattedSize: "24 bytes", locale: Locale(identifier: "en"))
+            == "3 items (24 bytes) will be moved to the Trash: Caches, Preferences, and Logs. SoundWave itself stays installed. You can undo this from History.")
+    }
+
+    // MARK: - Batch result title
+
+    func outcome(_ kinds: [(LeftoverKind, ItemState)]) -> UninstallOutcome {
+        let items = kinds.map { HistoryItem(originalPath: "/x/\(UUID())", kind: $0.0, size: 1, state: $0.1) }
+        return UninstallOutcome(record: HistoryRecord(appName: "A", bundleID: "a", items: items), failures: [])
+    }
+
+    @Test func batchResultCountsOnlyAppsWhoseBundleMoved() {
+        let counts = Presentation.batchResultCounts([
+            outcome([(.appBundle, .trashed), (.caches, .trashed)]),
+            outcome([(.caches, .trashed)]),                          // bundle unticked: leftovers only
+            outcome([(.appBundle, .failed), (.logs, .trashed)]),     // bundle couldn't be moved
+            outcome([(.appBundle, .trashed)]),
+        ])
+        #expect(counts.uninstalled == 2)
+        #expect(counts.leftoversOnly == 2)
+        #expect(Presentation.batchResultCounts([]) == (0, 0))
     }
 
     @Test func resetPlanValidOnlyForSameScan() throws {

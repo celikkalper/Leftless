@@ -9,7 +9,7 @@ struct HistoryView: View {
         Group {
             if model.history.isEmpty {
                 ContentUnavailableView("No History", systemImage: "clock",
-                                       description: Text("Apps you uninstall are listed here."))
+                                       description: Text("Apps you uninstall, apps you reset and orphaned leftovers you clean up are listed here."))
             } else {
                 List(model.history) { record in
                     HistoryRow(record: record, status: model.historyStatus[record.id] ?? .unrecoverable,

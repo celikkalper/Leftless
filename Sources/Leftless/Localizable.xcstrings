@@ -1635,6 +1635,468 @@
         }
       }
     },
+    "%lld apps uninstalled, leftovers cleaned for %lld — %lld items, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@apps@ uninstalled, leftovers cleaned for %#@others@ — %#@items@, %4$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "others" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg item"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg items"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@apps@ kaldırıldı, %#@others@ için kalıntılar temizlendi — %#@items@, %4$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg uygulama"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg uygulama"
+                    }
+                  }
+                }
+              }
+            },
+            "others" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg uygulama"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg uygulama"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg öğe"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg öğe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@apps@ deinstalliert, Rückstände von %#@others@ entfernt – %#@items@, %4$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg App"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg Apps"
+                    }
+                  }
+                }
+              }
+            },
+            "others" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg App"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg Apps"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg Objekt"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg Objekte"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désinstallation : %#@apps@, fichiers restants supprimés pour %#@others@ — %#@items@, %4$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "others" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg élément"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg éléments"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se han desinstalado %#@apps@ y limpiado restos de %#@others@ — %#@items@, %4$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "others" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ítem"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ítems"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@apps@をアンインストールし、%#@others@の残留ファイルを削除しました — %#@items@、%4$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg 個の App"
+                    }
+                  }
+                }
+              }
+            },
+            "others" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg 個の App"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg 項目"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desinstalação: %#@apps@; resíduos removidos de %#@others@ — %#@items@, %4$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "others" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg item"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg itens"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld extensions" : {
       "localizations" : {
         "de" : {
@@ -2857,42 +3319,42 @@
         }
       }
     },
-    "Apps you uninstall are listed here." : {
+    "Apps you uninstall, apps you reset and orphaned leftovers you clean up are listed here." : {
       "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaldırdığınız ve sıfırladığınız uygulamalar ile temizlediğiniz sahipsiz kalıntılar burada listelenir."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deinstallierte Apps werden hier aufgelistet."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Las apps que desinstales aparecerán aquí."
+            "value" : "Deinstallierte und zurückgesetzte Apps sowie entfernte verwaiste Rückstände werden hier aufgelistet."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les apps que vous désinstallez apparaissent ici."
+            "value" : "Les apps que vous désinstallez ou réinitialisez et les fichiers restants orphelins que vous supprimez apparaissent ici."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las apps que desinstales o restablezcas y los restos huérfanos que limpies aparecerán aquí."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アンインストールしたアプリがここに表示されます。"
+            "value" : "アンインストールしたアプリ、リセットしたアプリ、削除した孤立した残留ファイルがここに表示されます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os apps que você desinstalar aparecem aqui."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kaldırdığınız uygulamalar burada listelenir."
+            "value" : "Os apps que você desinstalar ou redefinir e os resíduos órfãos que você limpar aparecem aqui."
           }
         }
       }
@@ -4147,6 +4609,334 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kalıntılar"
+          }
+        }
+      }
+    },
+    "Leftovers cleaned for %lld apps — %lld items, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leftovers cleaned for %#@apps@ — %#@items@, %3$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg item"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg items"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@apps@ için kalıntılar temizlendi — %#@items@, %3$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg uygulama"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg uygulama"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg öğe"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg öğe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rückstände von %#@apps@ entfernt – %#@items@, %3$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg App"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg Apps"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg Objekt"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg Objekte"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichiers restants supprimés pour %#@apps@ — %#@items@, %3$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg élément"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg éléments"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se han limpiado restos de %#@apps@ — %#@items@, %3$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ítem"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ítems"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@apps@の残留ファイルを削除しました — %#@items@、%3$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg 個の App"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg 項目"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resíduos removidos de %#@apps@ — %#@items@, %3$@"
+          },
+          "substitutions" : {
+            "apps" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg app"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg apps"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg item"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg itens"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -7145,42 +7935,42 @@
         }
       }
     },
-    "When you move an app to the Trash, Leftless lets you know if it left files behind, so you can review and remove them. Leftless opens at login, without a window, to keep watching." : {
+    "When you move an app to the Trash, Leftless lets you know if it left files behind, so you can review and remove them. Leftless opens at login, without a window, to keep watching, and keeps running in the background when you close its window." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wenn du eine App in den Papierkorb legst, teilt Leftless dir mit, ob sie Dateien hinterlassen hat, damit du sie prüfen und entfernen kannst. Leftless wird bei der Anmeldung ohne Fenster geöffnet, um weiter zu überwachen."
+            "value" : "Wenn du eine App in den Papierkorb legst, teilt Leftless dir mit, ob sie Dateien hinterlassen hat, damit du sie prüfen und entfernen kannst. Leftless wird bei der Anmeldung ohne Fenster geöffnet, um weiter zu überwachen. Wenn du das Fenster schließt, läuft Leftless im Hintergrund weiter."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cuando trasladas una app a la Papelera, Leftless te avisa si ha dejado archivos para que puedas revisarlos y eliminarlos. Leftless se abre al iniciar sesión, sin ventana, para seguir vigilando."
+            "value" : "Cuando trasladas una app a la Papelera, Leftless te avisa si ha dejado archivos para que puedas revisarlos y eliminarlos. Leftless se abre al iniciar sesión, sin ventana, para seguir vigilando. Si cierras su ventana, Leftless sigue funcionando en segundo plano."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lorsque vous placez une app dans la corbeille, Leftless vous signale si elle a laissé des fichiers, afin que vous puissiez les examiner et les supprimer. Leftless s'ouvre à l'ouverture de session, sans fenêtre, pour poursuivre la surveillance."
+            "value" : "Lorsque vous placez une app dans la corbeille, Leftless vous signale si elle a laissé des fichiers, afin que vous puissiez les examiner et les supprimer. Leftless s'ouvre à l'ouverture de session, sans fenêtre, pour poursuivre la surveillance. Si vous fermez sa fenêtre, Leftless continue de fonctionner en arrière-plan."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アプリをゴミ箱に入れたときにファイルが残っていると、Leftlessが知らせるので、確認して削除できます。監視を続けるため、Leftlessはログイン時にウインドウなしで起動します。"
+            "value" : "アプリをゴミ箱に入れたときにファイルが残っていると、Leftlessが知らせるので、確認して削除できます。監視を続けるため、Leftlessはログイン時にウインドウなしで起動します。ウインドウを閉じても、Leftlessはバックグラウンドで動作し続けます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quando você move um app para o Lixo, o Leftless avisa se ele deixou arquivos para trás, para que você possa revisá-los e removê-los. O Leftless abre ao iniciar a sessão, sem janela, para continuar monitorando."
+            "value" : "Quando você move um app para o Lixo, o Leftless avisa se ele deixou arquivos para trás, para que você possa revisá-los e removê-los. O Leftless abre ao iniciar a sessão, sem janela, para continuar monitorando. Ao fechar a janela, o Leftless continua em execução em segundo plano."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bir uygulamayı Çöp Sepeti'ne taşıdığınızda, geride dosya bıraktıysa Leftless size bildirir; böylece bunları gözden geçirip kaldırabilirsiniz. İzlemeye devam etmek için Leftless oturum açılışında penceresiz açılır."
+            "value" : "Bir uygulamayı Çöp Sepeti'ne taşıdığınızda, geride dosya bıraktıysa Leftless size bildirir; böylece bunları gözden geçirip kaldırabilirsiniz. İzlemeye devam etmek için Leftless oturum açılışında penceresiz açılır. Penceresini kapattığınızda Leftless arka planda çalışmaya devam eder."
           }
         }
       }

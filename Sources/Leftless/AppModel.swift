@@ -52,6 +52,8 @@ final class AppModel {
     private let store = HistoryStore(directory: HistoryStore.liveDirectory())
     /// Scans in progress; a result whose token no longer matches (app deselected or rescanned) is ignored.
     private var scanTokens: [InstalledApp.ID: UUID] = [:]
+    /// Told about apps Leftless itself moves to the Trash, so it doesn't notify about them.
+    @ObservationIgnored weak var trashWatcher: TrashWatcher?
 
     var selection: Set<InstalledApp.ID> { Set(selectedApps.map(\.id)) }
     /// The selected app when exactly one is selected.
@@ -264,6 +266,7 @@ final class AppModel {
             return
         }
         await select([app.id], known: [app])
+        reloadApps()   // the app is no longer at its old path
     }
 
     // MARK: - Kaldırma
@@ -291,6 +294,8 @@ final class AppModel {
         guard isShowing(plan.scan.app), plan.isValid(for: scan) else { return }
         let icon = Self.iconData(for: plan.scan.app.url)
         let env = environment, store = store
+        let moving = Self.bundleIDsMovingApps([UninstallJob(scan: plan.scan, selected: plan.selected, icon: nil)])
+        trashWatcher?.willMove(bundleIDs: moving)
         let result = await Task.detached {
             let commands = ProcessCommandRunner()
             let uninstaller = Uninstaller(
@@ -299,6 +304,7 @@ final class AppModel {
                 environment: env, trashDirectory: env.home.appendingPathComponent(".Trash", isDirectory: true))
             return Result { try uninstaller.uninstall(plan.scan, selected: plan.selected, icon: icon) }
         }.value
+        trashWatcher?.didMove(bundleIDs: moving, trashPaths: (try? result.get()).map { Self.trashPaths([$0]) } ?? [])
         switch result {
         case .success(let outcome):
             if isShowing(plan.scan.app) { lastOutcome = outcome }
@@ -336,6 +342,7 @@ final class AppModel {
                 environment: env, trashDirectory: env.home.appendingPathComponent(".Trash", isDirectory: true))
             return Result { try uninstaller.uninstall(batch: [job]) }
         }.value
+        trashWatcher?.didMove(bundleIDs: [], trashPaths: (try? result.get()).map(Self.trashPaths) ?? [])
         switch result {
         case .success(let outcomes):
             if let outcome = outcomes.first, !outcome.record.items.isEmpty {
@@ -398,6 +405,8 @@ final class AppModel {
             UninstallJob(scan: $0.scan, selected: $0.selected, icon: Self.iconData(for: $0.scan.app.url))
         }
         let env = environment, store = store
+        let moving = Self.bundleIDsMovingApps(jobs)
+        trashWatcher?.willMove(bundleIDs: moving)
         let result = await Task.detached {
             let commands = ProcessCommandRunner()
             let uninstaller = Uninstaller(
@@ -406,6 +415,7 @@ final class AppModel {
                 environment: env, trashDirectory: env.home.appendingPathComponent(".Trash", isDirectory: true))
             return Result { try uninstaller.uninstall(batch: jobs) }
         }.value
+        trashWatcher?.didMove(bundleIDs: moving, trashPaths: (try? result.get()).map(Self.trashPaths) ?? [])
         switch result {
         case .success(let outcomes):
             // A job left with no items (all claimed by an earlier app) has no saved record: not shown.
@@ -481,6 +491,7 @@ final class AppModel {
             return (Result { try uninstaller.uninstall(batch: [job]) }, kept)
         }.value
         let skipped = planned.count - kept.count
+        trashWatcher?.didMove(bundleIDs: [], trashPaths: (try? result?.get()).map(Self.trashPaths) ?? [])
         switch result {
         case nil:
             discardOrphanScan()
@@ -496,9 +507,31 @@ final class AppModel {
                 alertMessage = String(localized: "Nothing was moved. Scan again.")
             }
             reloadHistory()
+            // Items of the apps shown on the Apps tab may have been moved as orphans: their scans are redone.
+            isWorking = false
+            await rescanShownApps()
         case .failure?:
             alertMessage = String(localized: "Couldn't write the history record; no files were moved.")
         }
+    }
+
+    /// Drops the scans of the selected apps and scans them again. While an uninstall result is shown, the
+    /// scans are only dropped (they are redone when the apps are shown again).
+    private func rescanShownApps() async {
+        guard !selectedApps.isEmpty else { return }
+        discardScans(of: selectedApps.map(\.info))
+        guard lastOutcome == nil, batchOutcomes == nil else { return }
+        await select(selection)
+    }
+
+    /// Bundle IDs of the jobs that move their app's bundle.
+    private static func bundleIDsMovingApps(_ jobs: [UninstallJob]) -> [String] {
+        jobs.filter { $0.selected.contains { $0.kind == .appBundle } }.map(\.scan.app.bundleID)
+    }
+
+    /// Every trash path recorded by these outcomes.
+    private static func trashPaths(_ outcomes: [UninstallOutcome]) -> [String] {
+        outcomes.flatMap { $0.record.items.compactMap(\.trashPath) }
     }
 
     // MARK: - Geri yükleme

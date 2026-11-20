@@ -18,7 +18,7 @@ struct SettingsView: View {
             Section {
                 Toggle("Watch the Trash for deleted apps", isOn: Binding(get: { watchTrash }, set: { change(to: $0) }))
                     .disabled(isChanging || (!watchTrash && !model.hasFullDiskAccess))
-                Text("When you move an app to the Trash, Leftless lets you know if it left files behind, so you can review and remove them. Leftless opens at login, without a window, to keep watching.")
+                Text("When you move an app to the Trash, Leftless lets you know if it left files behind, so you can review and remove them. Leftless opens at login, without a window, to keep watching, and keeps running in the background when you close its window.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

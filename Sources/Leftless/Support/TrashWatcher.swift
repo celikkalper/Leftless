@@ -22,8 +22,13 @@ final class TrashWatcher {
 
     private let environment = ScanEnvironment.live()
     private var monitor: TrashMonitor?
-    /// Trashed paths already notified in this run (also across turning the setting off and on).
+    /// Trashed paths already notified that are still in the Trash (forgotten once they leave it, so an app
+    /// trashed again after emptying the Trash notifies again).
     private var notified: Set<String> = []
+    /// Trash paths Leftless itself moved apps to in this run (registered by `AppModel`); never notified.
+    private var ignoredPaths: Set<String> = []
+    /// Bundle IDs of apps an uninstall is moving right now (count per running operation).
+    private var movingBundleIDs: [String: Int] = [:]
 
     var isWatching: Bool { monitor != nil }
 
@@ -58,7 +63,9 @@ final class TrashWatcher {
         guard monitor == nil else { return true }
         let trash = environment.home.appendingPathComponent(".Trash", isDirectory: true)
         let ownBundle = trash.appendingPathComponent(Bundle.main.bundleURL.lastPathComponent).path
-        let monitor = TrashMonitor(directory: trash, debounce: 1, ignoring: [ownBundle]) { [weak self] paths in
+        let monitor = TrashMonitor(directory: trash, debounce: 1, ignoring: [ownBundle], onSnapshot: { [weak self] present in
+            Task { @MainActor in self?.trimNotified(to: present) }
+        }) { [weak self] paths in
             Task { @MainActor in self?.handle(paths) }
         }
         guard monitor.start() else { return false }
@@ -71,8 +78,37 @@ final class TrashWatcher {
         monitor = nil
     }
 
+    // MARK: - Moves made by Leftless
+
+    /// Called before an uninstall moves these apps' bundles: a trashed app with one of these bundle IDs is not
+    /// reported until `didMove` (the history record on disk covers it afterwards).
+    func willMove(bundleIDs: [String]) {
+        for id in bundleIDs { movingBundleIDs[id, default: 0] += 1 }
+    }
+
+    /// Called after the move with the record's trash paths (belt and braces next to the history check).
+    func didMove(bundleIDs: [String], trashPaths: [String]) {
+        ignoredPaths.formUnion(trashPaths)
+        for id in bundleIDs {
+            let count = (movingBundleIDs[id] ?? 1) - 1
+            movingBundleIDs[id] = count > 0 ? count : nil
+        }
+    }
+
+    private func isMovedByLeftless(_ path: String, bundleID: String?, recorded: Set<String>) -> Bool {
+        TrashWatch.isMovedByLeftless(path: path, bundleID: bundleID, recordedTrashPaths: recorded,
+                                     ignoredPaths: ignoredPaths, movingBundleIDs: Set(movingBundleIDs.keys))
+    }
+
+    // MARK: - Checking trashed apps
+
+    private func trimNotified(to present: Set<String>) {
+        notified.formIntersection(present)
+        ignoredPaths.formIntersection(present)
+    }
+
     private func handle(_ paths: [String]) {
-        for path in paths where !notified.contains(path) {
+        for path in paths where !notified.contains(path) && !isMovedByLeftless(path, bundleID: nil, recorded: []) {
             Task { await check(path) }
         }
     }
@@ -83,23 +119,40 @@ final class TrashWatcher {
         let env = environment
         let restricted = !FullDiskAccess.isGranted()
         let ownIDs = AppModel.ownBundleIDs
-        let scan = await Task.detached { () -> ScanResult? in
+        let moving = Set(movingBundleIDs.keys), ignored = ignoredPaths
+        let (scan, recordedAfterScan) = await Task.detached { () -> (ScanResult?, Set<String>) in
+            // Apps Leftless itself uninstalled: their trash paths are in a history record, saved before the
+            // admin step (so also while the password prompt is open or when items were unticked on purpose).
+            let recorded = Self.recordedTrashPaths()
+            guard !TrashWatch.isMovedByLeftless(path: path, bundleID: nil, recordedTrashPaths: recorded,
+                                                ignoredPaths: ignored, movingBundleIDs: moving) else { return (nil, recorded) }
             let commands = ProcessCommandRunner()
             let inspector = AppInspector(commands: commands)
-            guard let info = try? inspector.inspect(URL(fileURLWithPath: path), includeTeamID: true) else { return nil }
+            guard let info = try? inspector.inspect(URL(fileURLWithPath: path), includeTeamID: true),
+                  !TrashWatch.isMovedByLeftless(path: path, bundleID: info.bundleID, recordedTrashPaths: recorded,
+                                                ignoredPaths: ignored, movingBundleIDs: moving)
+            else { return (nil, recorded) }
             var installed = InstalledApps(environment: env, inspector: inspector).infos()
-            guard TrashWatch.shouldScan(info, installed: installed, ownBundleIDs: ownIDs) else { return nil }
+            guard TrashWatch.shouldScan(info, installed: installed, ownBundleIDs: ownIDs) else { return (nil, recorded) }
             installed.append(info)
             let scanner = LeftoverScanner(
                 environment: env, installedApps: installed,
                 launchd: LaunchdScanner(environment: env),
                 receipts: ReceiptScanner(environment: env, provider: PkgutilReceiptProvider()),
                 commands: commands, restricted: restricted)
-            return TrashWatch.removingAppBundle(from: scanner.scan(info))
+            let scan = TrashWatch.removingAppBundle(from: scanner.scan(info))
+            return (scan, Self.recordedTrashPaths())   // read again: an uninstall may have saved a record meanwhile
         }.value
         // Only certain (pre-ticked) leftovers count; possible matches alone never notify.
+        // Checked again: an uninstall may have started or finished while the scan ran.
         guard isWatching, let scan, let summary = TrashWatch.notificationSummary(scan),
+              !isMovedByLeftless(path, bundleID: scan.app.bundleID, recorded: recordedAfterScan),
               notified.insert(path).inserted else { return }
         TrashNotifications.post(appName: scan.app.name, count: summary.count, size: summary.size, trashedPath: path)
+    }
+
+    /// Trash paths in the history records on disk (read off the main actor).
+    nonisolated private static func recordedTrashPaths() -> Set<String> {
+        TrashWatch.recordedTrashPaths(in: (try? HistoryStore(directory: HistoryStore.liveDirectory()).all()) ?? [])
     }
 }

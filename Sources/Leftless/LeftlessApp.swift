@@ -8,7 +8,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let model: AppModel
     let trashWatcher = TrashWatcher()
     /// Launched at login with Trash watching on: no window and no Dock icon until the user opens Leftless
-    /// (or clicks a notification); closing the window goes back to the background instead of quitting.
+    /// (or clicks a notification). Whenever Trash watching is on (started at launch or turned on later),
+    /// closing the main window goes back to the background instead of quitting; ⌘Q still quits.
     private var runsInBackground = false
     private var launchedAtLogin = false
     private weak var mainWindow: NSWindow?
@@ -21,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = try? HistoryMigration.migrateIfNeeded(applicationSupport: support)
         model = AppModel()
         super.init()
+        model.trashWatcher = trashWatcher
     }
 
     func applicationWillFinishLaunching(_ notification: Notification) {
@@ -68,7 +70,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        !(runsInBackground && trashWatcher.isWatching)
+        !trashWatcher.isWatching
     }
 
     // MARK: - Main window
@@ -87,8 +89,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if runsInBackground && NSApp.activationPolicy() == .accessory { hideMainWindow() }
     }
 
+    /// While watching the Trash, closing the main window keeps Leftless running without a Dock icon (unless
+    /// another window, e.g. Settings, is still open; then it stays a regular app until quit).
     private func mainWindowWillClose() {
-        guard runsInBackground, trashWatcher.isWatching else { return }
+        guard trashWatcher.isWatching else { return }
+        let window = mainWindow
+        let othersVisible = NSApp.windows.contains { $0 !== window && $0.isVisible && $0.canBecomeMain }
+        guard !othersVisible else { return }
         NSApp.setActivationPolicy(.accessory)
     }
 

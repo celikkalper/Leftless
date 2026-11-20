@@ -71,6 +71,19 @@ struct BatchUninstallResultView: View {
     private var allTrashed: [HistoryItem] { outcomes.flatMap(Self.trashed) }
     private var hasFailures: Bool { outcomes.contains { !$0.failures.isEmpty } }
 
+    /// Counts only apps whose bundle went to the Trash; apps of which only leftovers moved are named apart.
+    private var title: Text {
+        let counts = Presentation.batchResultCounts(outcomes)
+        let items = allTrashed.count, size = AppModel.formatSize(allTrashed.reduce(0) { $0 + $1.size })
+        if counts.leftoversOnly == 0 {
+            return Text("\(counts.uninstalled) apps uninstalled — \(items) items, \(size)")
+        } else if counts.uninstalled == 0 {
+            return Text("Leftovers cleaned for \(counts.leftoversOnly) apps — \(items) items, \(size)")
+        } else {
+            return Text("\(counts.uninstalled) apps uninstalled, leftovers cleaned for \(counts.leftoversOnly) — \(items) items, \(size)")
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 10) {
@@ -78,8 +91,7 @@ struct BatchUninstallResultView: View {
                     .font(.largeTitle)
                     .foregroundStyle(hasFailures ? .orange : .green)
                     .accessibilityHidden(true)
-                Text("\(outcomes.count) apps uninstalled — \(allTrashed.count) items, \(AppModel.formatSize(allTrashed.reduce(0) { $0 + $1.size }))")
-                    .font(.title2.bold())
+                title.font(.title2.bold())
                 if model.isWorking {
                     ProgressView().controlSize(.small).accessibilityLabel("In progress")
                 }
